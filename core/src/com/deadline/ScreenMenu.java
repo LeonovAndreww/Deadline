@@ -21,10 +21,6 @@ public class ScreenMenu implements Screen {
 
     Texture imgBg;
 
-    int cx = 0;
-    String strs = "default";
-
-    //
 
     public ScreenMenu(DdlnGame game){
         this.game = game;
@@ -36,7 +32,7 @@ public class ScreenMenu implements Screen {
 
         glyphLayout = new GlyphLayout();
 
-        imgBg = new Texture("badlogic.jpg");
+        imgBg = new Texture("backgroundMenu.jpg");
     }
 
     @Override
@@ -48,22 +44,18 @@ public class ScreenMenu implements Screen {
     @Override
     public void render(float delta) {
         // касания
-        if (Gdx.input.justTouched()) {
+        if (Gdx.input.isTouched()) {
             touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touch);
-            strs = "X: "+touch.x + "\nY: "+touch.y;
+            if (touch.x<SCR_WIDTH/2) game.setScreen(game.screenGame);
         }
 
         // события
 
-        // отрисовка
+        //  отрисовка
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.draw(imgBg, cx,0);
-
-        font.draw(batch, strs, SCR_WIDTH/2, SCR_HEIGHT*9/10);
-
-
+        batch.draw(imgBg, 0, 0);
         batch.end();
     }
 
@@ -89,6 +81,6 @@ public class ScreenMenu implements Screen {
 
     @Override
     public void dispose() {
-//        imgBg.dispose();
+        imgBg.dispose();
     }
 }
