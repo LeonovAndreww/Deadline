@@ -12,14 +12,16 @@ public class OnScreenJoystick {
     private final float knobRadius;
     private final Vector2 knobPos;
 
-    public OnScreenJoystick(float x, float y, float baseRadius, float knobRadius) {
-        position = new Vector2(x, y);
+    public OnScreenJoystick(float baseRadius, float knobRadius) {
+        position = new Vector2(0, 0);
         this.baseRadius = baseRadius;
         this.knobRadius = knobRadius;
         knobPos = new Vector2(position.x, position.y);
     }
 
-    public void render(SpriteBatch batch, Texture base, Texture knob) {
+    public void render(SpriteBatch batch, Texture base, Texture knob, float x, float y) {
+        position.x = x;
+        position.y = y;
         batch.draw(base, position.x - baseRadius, position.y - baseRadius, baseRadius * 2, baseRadius * 2);
         batch.draw(knob, knobPos.x - knobRadius, knobPos.y - knobRadius, knobRadius * 2, knobRadius * 2);
     }

@@ -3,7 +3,6 @@ package com.deadline;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,7 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 
 public class DdlnGame extends Game {
 
-	public static final float SCR_WIDTH = 1920, SCR_HEIGHT = 1080;
+	public static final float SCR_WIDTH = 240, SCR_HEIGHT = 135;
 
 	public SpriteBatch batch;
 	public OrthographicCamera camera;

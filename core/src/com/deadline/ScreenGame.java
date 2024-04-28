@@ -9,7 +9,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 public class ScreenGame implements Screen {
     DdlnGame game;
@@ -17,6 +22,10 @@ public class ScreenGame implements Screen {
     SpriteBatch batch;
     OrthographicCamera camera;
     Vector3 touch;
+
+    World world = new World(new Vector2(0, 0), true);
+    Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
+
     BitmapFont font, fontUi;
 
     OnScreenJoystick joystick;
@@ -25,8 +34,7 @@ public class ScreenGame implements Screen {
     Texture imgPlayer;
     Texture imgJstBase, imgJstKnob;
 
-    float playerSpeed = 5.0f; // ПЕРЕНЕСТИ ВСЁ В ОТДЕЛЬНЫЙ КЛАСС ИГРОКА! НЕ ЗАБЫТЬ
-    float px = 0, py = 0;
+    Player player;
 
     String txtCord = "Empty";
 
@@ -40,11 +48,15 @@ public class ScreenGame implements Screen {
 
         glyphLayout = new GlyphLayout();
 
-        imgPlayer = new Texture("badlogic.jpg");
+        imgBg = new Texture("map.png");
+        imgPlayer = new Texture("bob.png");
+        TextureRegion bobRegion = new TextureRegion(imgPlayer, 0, 0, 16, 32);
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
 
-        joystick = new OnScreenJoystick(200, 200, 150, 75);
+        player = new Player(world, bobRegion, 30, SCR_WIDTH/2, SCR_HEIGHT/2);
+
+        joystick = new OnScreenJoystick(SCR_HEIGHT/6, SCR_HEIGHT/12);
     }
 
     @Override
@@ -59,28 +71,41 @@ public class ScreenGame implements Screen {
             touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touch);
             txtCord = "X "+touch.x + "\nY "+touch.y;
-            joystick.updateKnob(touch);
+            if (touch.x < player.getX())
+            {
+                joystick.updateKnob(touch);
+                player.getBody().setLinearVelocity(
+                        joystick.getDirectionVector().x * player.getSpeed(),
+                        joystick.getDirectionVector().y * player.getSpeed()
+                );
+            }
         }
-        else joystick.resetKnob();
+        else
+        {
+            joystick.resetKnob();
+            player.getBody().setLinearVelocity(0, 0);
+        }
 
         // события
 
-        px += joystick.getDirectionVector().x * playerSpeed;
-        py += joystick.getDirectionVector().y * playerSpeed;
-
         // отрисовка
+        ScreenUtils.clear(0.2f, 0, 0.3f, 1);
+        debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
+        camera.position.set(player.getX(), player.getY(), 0);
+        camera.update();
         batch.begin();
 
+        batch.draw(imgPlayer, player.getX(), player.getY());
+        batch.draw(imgBg, 0, 0);
+        batch.draw(imgPlayer, player.getX(), player.getY());
         font.draw(batch, txtCord, 0, SCR_HEIGHT);
 
-        batch.draw(imgPlayer, px, py);
-
-        joystick.render(batch, imgJstBase, imgJstKnob);
+        joystick.render(batch, imgJstBase, imgJstKnob, player.getX()-SCR_WIDTH/2.75f, player.getY()-SCR_HEIGHT/4);
 
         batch.end();
 
-
+        world.step(1/60f, 6, 2);
     }
 
     @Override
