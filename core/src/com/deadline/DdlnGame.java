@@ -47,10 +47,10 @@ public class DdlnGame extends Game {
 	private void fontGenerate() {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("amarurgt.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = 70;
-		parameter.borderWidth = 3;
+		parameter.size = 12;
+		parameter.borderWidth = 1;
 		font = generator.generateFont(parameter);
-		parameter.size = 50;
+		parameter.size = 32;
 		parameter.borderWidth = 2;
 		fontUi = generator.generateFont(parameter);
 		generator.dispose();

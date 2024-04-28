@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -31,8 +32,9 @@ public class ScreenGame implements Screen {
     OnScreenJoystick joystick;
 
     Texture imgBg;
-    Texture imgPlayer;
     Texture imgJstBase, imgJstKnob;
+    Texture imgPlayerAtlas;
+    TextureRegion[] imgPlayer = new TextureRegion[4];
 
     Player player;
 
@@ -48,13 +50,15 @@ public class ScreenGame implements Screen {
 
         glyphLayout = new GlyphLayout();
 
-        imgBg = new Texture("map.png");
-        imgPlayer = new Texture("bob.png");
-        TextureRegion bobRegion = new TextureRegion(imgPlayer, 0, 0, 16, 32);
+        imgBg = new Texture("grass.png");
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
 
-        player = new Player(world, bobRegion, 30, SCR_WIDTH/2, SCR_HEIGHT/2);
+        imgPlayerAtlas = new Texture("playerIdle.png");
+        for (int i = 0; i < imgPlayer.length; i++) {
+            imgPlayer[i] = new TextureRegion(imgPlayerAtlas, i*16, 0, 16, 32);
+        }
+        player = new Player(world, 30, SCR_WIDTH/2, SCR_HEIGHT/2, 4, 70);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT/6, SCR_HEIGHT/12);
     }
@@ -70,7 +74,6 @@ public class ScreenGame implements Screen {
         if (Gdx.input.isTouched()) {
             touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touch);
-            txtCord = "X "+touch.x + "\nY "+touch.y;
             if (touch.x < player.getX())
             {
                 joystick.updateKnob(touch);
@@ -78,6 +81,14 @@ public class ScreenGame implements Screen {
                         joystick.getDirectionVector().x * player.getSpeed(),
                         joystick.getDirectionVector().y * player.getSpeed()
                 );
+                if (Math.abs(joystick.getDirectionVector().x) > Math.abs(joystick.getDirectionVector().y)) {
+                    if (joystick.getDirectionVector().x>0) player.setDirection('r');
+                    else player.setDirection('l');
+                }
+                else {
+                    if (joystick.getDirectionVector().y>0) player.setDirection('u');
+                    else player.setDirection('d');
+                }
             }
         }
         else
@@ -96,10 +107,14 @@ public class ScreenGame implements Screen {
         camera.update();
         batch.begin();
 
-        batch.draw(imgPlayer, player.getX(), player.getY());
         batch.draw(imgBg, 0, 0);
-        batch.draw(imgPlayer, player.getX(), player.getY());
-        font.draw(batch, txtCord, 0, SCR_HEIGHT);
+        switch(player.getDirection()) {
+            case 'r': batch.draw(imgPlayer[0], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2); break;
+            case 'u': batch.draw(imgPlayer[1], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2); break;
+            case 'l': batch.draw(imgPlayer[2], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2); break;
+            default: batch.draw(imgPlayer[3], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2);
+        }
+        font.draw(batch, txtCord, player.getX()-SCR_WIDTH/3, player.getY()+SCR_HEIGHT/3);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX()-SCR_WIDTH/2.75f, player.getY()-SCR_HEIGHT/4);
 
@@ -131,7 +146,7 @@ public class ScreenGame implements Screen {
     @Override
     public void dispose() {
         imgBg.dispose();
-        imgPlayer.dispose();
+        imgPlayerAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
     }
