@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -34,7 +33,8 @@ public class ScreenGame implements Screen {
     Texture imgBg;
     Texture imgJstBase, imgJstKnob;
     Texture imgPlayerAtlas;
-    TextureRegion[] imgPlayer = new TextureRegion[4];
+    TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
+    TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
 
     Player player;
 
@@ -54,11 +54,16 @@ public class ScreenGame implements Screen {
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
 
-        imgPlayerAtlas = new Texture("playerIdle.png");
-        for (int i = 0; i < imgPlayer.length; i++) {
-            imgPlayer[i] = new TextureRegion(imgPlayerAtlas, i*16, 0, 16, 32);
+        imgPlayerAtlas = new Texture("playerAtlas.png");
+        int iter = 0;
+        for (int i = 0; i < imgPlayerIdle.length; i++) {
+            for (int j = 0; j < imgPlayerIdle[0].length; j++) {
+                imgPlayerIdle[i][j] = new TextureRegion(imgPlayerAtlas, iter*16, 0, 16, 32);
+                imgPlayerRun[i][j] = new TextureRegion(imgPlayerAtlas, iter*16, 32, 16, 32);
+                iter++;
+            }
         }
-        player = new Player(world, 30, SCR_WIDTH/2, SCR_HEIGHT/2, 4, 70);
+        player = new Player(world, 10, SCR_WIDTH/2, SCR_HEIGHT/2, 6, 450);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT/6, SCR_HEIGHT/12);
     }
@@ -99,6 +104,8 @@ public class ScreenGame implements Screen {
 
         // события
 
+        player.changePhase();
+
         // отрисовка
         ScreenUtils.clear(0.2f, 0, 0.3f, 1);
         debugRenderer.render(world, camera.combined);
@@ -108,13 +115,11 @@ public class ScreenGame implements Screen {
         batch.begin();
 
         batch.draw(imgBg, 0, 0);
-        switch(player.getDirection()) {
-            case 'r': batch.draw(imgPlayer[0], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2); break;
-            case 'u': batch.draw(imgPlayer[1], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2); break;
-            case 'l': batch.draw(imgPlayer[2], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2); break;
-            default: batch.draw(imgPlayer[3], player.getX()-imgPlayer[0].getRegionWidth()/2, player.getY()-imgPlayer[0].getRegionY()/2);
-        }
+
+        txtCord = String.valueOf(player.getBody().isAwake());
         font.draw(batch, txtCord, player.getX()-SCR_WIDTH/3, player.getY()+SCR_HEIGHT/3);
+
+        playerBatch();
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX()-SCR_WIDTH/2.75f, player.getY()-SCR_HEIGHT/4);
 
@@ -149,5 +154,27 @@ public class ScreenGame implements Screen {
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
+    }
+
+    public void playerBatch() { // separated it cuz too big
+        int phase = player.getPhase();
+        float x = player.getX()-imgPlayerIdle[0][0].getRegionWidth()/2f; // centralized image x
+        float y = player.getY()-imgPlayerIdle[0][0].getRegionHeight()/2f; // centralized image y
+        boolean isMoving = player.getBody().isAwake();
+
+        switch(player.getDirection()) {
+            case 'r': {
+                if (isMoving) batch.draw(imgPlayerRun[0][phase], x, y);
+                else batch.draw(imgPlayerIdle[0][phase], x, y); } break;
+            case 'u': {
+                if (isMoving) batch.draw(imgPlayerRun[1][phase], x, y);
+                else batch.draw(imgPlayerIdle[1][phase], x, y); } break;
+            case 'l': {
+                if (isMoving) batch.draw(imgPlayerRun[2][phase], x, y);
+                else batch.draw(imgPlayerIdle[2][phase], x, y); } break;
+            default: {
+                if (isMoving) batch.draw(imgPlayerRun[3][phase], x, y);
+                else batch.draw(imgPlayerIdle[3][phase], x, y); }
+        }
     }
 }

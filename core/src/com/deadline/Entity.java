@@ -11,11 +11,13 @@ public class Entity {
     private Body body;
     private float speed = 50f;
     private char direction = 'd';
-    int phase, nPhases;
+    private int phase, nPhases;
     long timeLastPhase, timePhaseInterval;
 
     public Entity(World world, float r, float x, float y, int nPhases, long timePhaseInterval) {
-
+        phase = 0;
+        this.nPhases = nPhases;
+        this.timePhaseInterval = timePhaseInterval; // except running animation!
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(x, y);
@@ -52,9 +54,12 @@ public class Entity {
     public void setDirection(char dir){ direction = dir; }
 
     void changePhase(){
-        if(TimeUtils.millis() > timeLastPhase+timePhaseInterval) {
+        long interval = timePhaseInterval;
+        if (body.isAwake()) interval = 150;
+        if(TimeUtils.millis() > timeLastPhase+interval) {
             if (++phase == nPhases) phase = 0;
             timeLastPhase = TimeUtils.millis();
         }
     }
+    int getPhase() { return phase; }
 }
