@@ -16,6 +16,8 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.util.ArrayList;
+
 public class ScreenGame implements Screen {
     DdlnGame game;
 
@@ -31,13 +33,16 @@ public class ScreenGame implements Screen {
     OnScreenJoystick joystick;
 
     Texture imgBg;
+    Texture imgWall;
     Texture imgJstBase, imgJstKnob;
     Texture imgPlayerAtlas;
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
 
+    ArrayList<Room> rooms = new ArrayList<>();
     Player player;
 
+    ArrayList<Character> doors = new ArrayList<>(); // перенести в отдельный класс или функцию
     String txtCord = "Empty";
 
     public ScreenGame(DdlnGame game) {
@@ -51,10 +56,11 @@ public class ScreenGame implements Screen {
         glyphLayout = new GlyphLayout();
 
         imgBg = new Texture("grass.png");
+        imgWall = new Texture("wall.png");
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
-
         imgPlayerAtlas = new Texture("playerAtlas.png");
+
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
             for (int j = 0; j < imgPlayerIdle[0].length; j++) {
@@ -63,9 +69,17 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
-        player = new Player(world, 10, SCR_WIDTH/2, SCR_HEIGHT/2, 6, 450);
+        player = new Player(world, 16, 12, SCR_WIDTH/2, SCR_HEIGHT/2, 6, 450);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT/6, SCR_HEIGHT/12);
+
+        doors.add('l');
+        Room room0 = new Room(world, -100, 0, 100, 100,doors, rooms);
+        rooms.add(room0);
+        Room room1 = new Room(world, 0, 0, 100, 100,doors, rooms);
+        rooms.add(room1);
+
+        txtCord = "x: "+player.getX()+"\ny: "+player.getY();
     }
 
     @Override
@@ -114,9 +128,9 @@ public class ScreenGame implements Screen {
         camera.update();
         batch.begin();
 
-        batch.draw(imgBg, 0, 0);
+//        batch.draw(imgBg, 100, 100);
 
-        txtCord = String.valueOf(player.getBody().isAwake());
+//        txtCord = String.valueOf(player.getBody().isAwake());
         font.draw(batch, txtCord, player.getX()-SCR_WIDTH/3, player.getY()+SCR_HEIGHT/3);
 
         playerBatch();
@@ -154,12 +168,13 @@ public class ScreenGame implements Screen {
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
+        batch.dispose();
     }
 
     public void playerBatch() { // separated it cuz too big
         int phase = player.getPhase();
         float x = player.getX()-imgPlayerIdle[0][0].getRegionWidth()/2f; // centralized image x
-        float y = player.getY()-imgPlayerIdle[0][0].getRegionHeight()/2f; // centralized image y
+        float y = player.getY()-imgPlayerIdle[0][0].getRegionHeight()/5f; // centralized image y
         boolean isMoving = player.getBody().isAwake();
 
         switch(player.getDirection()) {

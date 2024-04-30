@@ -4,6 +4,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -14,18 +15,19 @@ public class Entity {
     private int phase, nPhases;
     long timeLastPhase, timePhaseInterval;
 
-    public Entity(World world, float r, float x, float y, int nPhases, long timePhaseInterval) {
+    public Entity(World world, float width, float height, float x, float y, int nPhases, long timePhaseInterval) {
         phase = 0;
         this.nPhases = nPhases;
         this.timePhaseInterval = timePhaseInterval; // except running animation!
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(x, y);
+        bodyDef.fixedRotation = true;
 
         body = world.createBody(bodyDef);
 
-        CircleShape shape = new CircleShape();
-        shape.setRadius(r);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(width / 2, height / 2);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -36,7 +38,6 @@ public class Entity {
 
         shape.dispose();
     }
-
     public Body getBody() { return body; }
 
     public float getX() {
