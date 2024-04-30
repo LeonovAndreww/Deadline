@@ -69,7 +69,7 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
-        player = new Player(world, 16, 12, SCR_WIDTH/2, SCR_HEIGHT/2, 6, 450);
+        player = new Player(world, 16, 12, 50, 50, 6, 450);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT/6, SCR_HEIGHT/12);
 
@@ -78,8 +78,6 @@ public class ScreenGame implements Screen {
         rooms.add(room0);
         Room room1 = new Room(world, 0, 0, 100, 100,doors, rooms);
         rooms.add(room1);
-
-        txtCord = "x: "+player.getX()+"\ny: "+player.getY();
     }
 
     @Override
@@ -93,6 +91,7 @@ public class ScreenGame implements Screen {
         if (Gdx.input.isTouched()) {
             touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touch);
+            txtCord = "x: "+player.getX()+"\ny: "+player.getY();
             if (touch.x < player.getX())
             {
                 joystick.updateKnob(touch);

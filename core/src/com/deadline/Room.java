@@ -23,27 +23,27 @@ public class Room {
         this.height = height;
 
         // door check
-        if (doorDir.contains('u') && isRoom(this.x, this.y + this.height, rooms))
+        if ((doorDir.contains('u') && isRoom(this.x, this.y + this.height, rooms)) || getRoomDir(this.x, this.y, rooms).contains('d'))
             this.doors.add('u');
-        if (doorDir.contains('d') && isRoom(this.x, this.y - this.height, rooms))
+        if ((doorDir.contains('d') && isRoom(this.x, this.y - this.height, rooms)) || getRoomDir(this.x, this.y, rooms).contains('u'))
             this.doors.add('d');
-        if (doorDir.contains('l') && isRoom(this.x, this.y - this.width, rooms))
+        if ((doorDir.contains('l') && isRoom(this.x, this.y - this.width, rooms)) || getRoomDir(this.x, this.y, rooms).contains('r'))
             this.doors.add('l');
-        if (doorDir.contains('r') && isRoom(this.x, this.y + this.width, rooms))
+        if ((doorDir.contains('r') && isRoom(this.x, this.y + this.width, rooms)) || getRoomDir(this.x, this.y, rooms).contains('l'))
             this.doors.add('r');
 
         // door create
-        if (doors.contains('u')) createDoubleWall(this.x+10, this.y, this.width, 10, this.width/4);
-        else createWall(this.x+10, this.y, this.width, 10);
+        if (doors.contains('u')) createDoubleWall(this.x, this.y, this.width, 10, this.width/4);
+        else createWall(this.x, this.y, this.width, 10);
 
-        if (doors.contains('d')) createDoubleWall(this.x, this.y+10, 10, this.height, this.height/4);
-        else createWall(this.x, this.y+10, 10, this.height);
+        if (doors.contains('d')) createDoubleWall(this.x, this.y, 10, this.height, this.height/4);
+        else createWall(this.x, this.y, 10, this.height);
 
-        if (doors.contains('l')) createDoubleWall(this.width + 10 + this.x, this.y+10, 10, this.height, this.height/4);
-        else createWall(this.width + 10 + this.x, this.y+10, 10, this.height);
+        if (doors.contains('l')) createDoubleWall(this.width + this.x, this.y, 10, this.height, this.height/4);
+        else createWall(this.width + this.x, this.y, 10, this.height);
 
-        if (doors.contains('r')) createDoubleWall(this.x+10, this.height + 10 + this.y, this.width, 10, this.width/4);
-        else createWall(this.x+10, this.height + 10 + this.y, this.width, 10);
+        if (doors.contains('r')) createDoubleWall(this.x, this.height + this.y, this.width, 10, this.width/4);
+        else createWall(this.x, this.height + this.y, this.width, 10);
     }
 
     boolean isRoom(float x, float y, ArrayList<Room> rooms) {
@@ -51,6 +51,15 @@ public class Room {
             if (rooms.get(i).x == x && rooms.get(i).y == y) return true;
         }
         return false;
+    }
+
+    ArrayList<Character> getRoomDir(float x, float y, ArrayList<Room> rooms) {
+        for (int i = 0; i < rooms.size(); i++) {
+            if (rooms.get(i).x == x && rooms.get(i).y == y) return rooms.get(i).doors;
+        }
+        ArrayList<Character> nullDir = new ArrayList<>();
+//        nullDir.add('n');
+        return nullDir;
     }
 
     private void createWall(float x, float y, float width, float height) {
