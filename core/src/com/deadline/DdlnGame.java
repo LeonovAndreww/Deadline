@@ -34,7 +34,7 @@ public class DdlnGame extends Game {
 		screenMenu = new ScreenMenu(this);
 		screenGame = new ScreenGame(this);
 		//screenSetting = new ScreenSetting(this);
-		setScreen(screenMenu);
+		setScreen(screenGame);
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class DdlnGame extends Game {
 	private void fontGenerate() {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("amarurgt.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = 12;
+		parameter.size = 24;
 		parameter.borderWidth = 1;
 		font = generator.generateFont(parameter);
 		parameter.size = 32;

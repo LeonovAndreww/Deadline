@@ -50,6 +50,7 @@ public class Entity {
     public float getSpeed() {
         return speed;
     }
+    public void setSpeed(float speed) { this.speed = speed; }
 
     public char getDirection () { return direction; }
     public void setDirection(char dir){ direction = dir; }
