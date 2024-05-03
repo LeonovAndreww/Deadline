@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 
 public class DdlnGame extends Game {
 
-	public static final float SCR_WIDTH = 240, SCR_HEIGHT = 135;
+	public static final float SCR_WIDTH = 2400, SCR_HEIGHT = 1350;
 
 	public SpriteBatch batch;
 	public OrthographicCamera camera;

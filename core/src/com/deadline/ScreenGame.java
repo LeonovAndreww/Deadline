@@ -36,7 +36,9 @@ public class ScreenGame implements Screen {
     OnScreenJoystick joystick;
 
     Texture imgBg;
-    Texture imgWall;
+//    Texture imgWallAtlas;
+//    TextureRegion imgRegWall, imgRegWallSmall;
+    Texture imgRoom;
     Texture imgJstBase, imgJstKnob;
     Texture imgPlayerAtlas;
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
@@ -61,10 +63,14 @@ public class ScreenGame implements Screen {
         glyphLayout = new GlyphLayout();
 
         imgBg = new Texture("grass.png");
-        imgWall = new Texture("wall.png");
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
         imgPlayerAtlas = new Texture("playerAtlas.png");
+//        imgWallAtlas = new Texture("wallAtlas.png");
+//        imgRegWall = new TextureRegion(imgWallAtlas, 0, 0, 48, 32);
+//        imgRegWallSmall = new TextureRegion(imgWallAtlas, 49, 25, 15, 7);
+
+        imgRoom = new Texture("room.png");
 
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
@@ -74,20 +80,10 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
-        player = new Player(world, 16, 12, 50, 50, 6, 450);
+        player = new Player(world, 14, 12, 50, 50, 6, 450);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
-//        ArrayList<Character> temp = new ArrayList<>();
-//        temp.add('r');
-//        Room room0 = new Room(world, -150, 0, 150, 150,temp, rooms);
-//        rooms.add(room0);
-//        temp.clear();
-//        Room room1 = new Room(world, 0, 0, 150, 150,temp, rooms);
-//        rooms.add(room1);
-//        temp.add('l');
-//        Room room2 = new Room(world, 150, 0, 150, 150,temp, rooms);
-//        rooms.add(room2);
         generateMap(7);
     }
 
@@ -138,13 +134,13 @@ public class ScreenGame implements Screen {
         camera.update();
         batch.begin();
 
-//        batch.draw(imgBg, 100, 100);
-
-        txtCord="";
+        txtCord = "";
         for (int i = 0; i < rooms.size(); i++) {
-            txtCord+="\nX " + rooms.get(i).getX()+"\nY "+ rooms.get(i).getY()+"\n"+rooms.get(i).getDoors()+"\n"+(hasDir('r', rooms.get(i).getX()+150 , rooms.get(i).getY()) != -1);
+            txtCord += "\nX " + rooms.get(i).getX() + "\nY " + rooms.get(i).getY() + "\n" + rooms.get(i).getDoors() + "\n" + (hasDir('r', rooms.get(i).getX() + 150, rooms.get(i).getY()) != -1);
         }
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
+
+        wallBatch();
 
         playerBatch();
 
@@ -178,13 +174,15 @@ public class ScreenGame implements Screen {
     @Override
     public void dispose() {
         imgBg.dispose();
+//        imgWallAtlas.dispose();
+        imgRoom.dispose();
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
         batch.dispose();
     }
 
-    public void playerBatch() { // separated it cuz too big
+    private void playerBatch() { // separated it cuz too big
         int phase = player.getPhase();
         float x = player.getX() - imgPlayerIdle[0][0].getRegionWidth() / 2f; // centralized image x
         float y = player.getY() - imgPlayerIdle[0][0].getRegionHeight() / 5f; // centralized image y
@@ -213,11 +211,29 @@ public class ScreenGame implements Screen {
         }
     }
 
+    private void wallBatch() {
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+//            batch.draw(imgRoom, room.getX(), room.getY(), room.getWidth(), room.getHeight());
+
+//            for (int j = 0; j < 4; j++) {
+//                if (room.isHasTopWall()) {
+//                    batch.draw(imgRegWall, room.getX(), room.getY() + room.getHeight() - 10, room.getWidth(), 10);
+//                } if (room.isHasBottomWall()) {
+//                    batch.draw(imgRegWallSmall, room.getX(), room.getY(), room.getWidth(), 10);
+//                } if (room.isHasLeftWall()) {
+//                    batch.draw(imgRegWall, room.getX(), room.getY(), 0+10, 0, room.getHeight(), 10, 1f, 1f, 90);
+//                } if (room.isHasRightWall()) {
+//                    batch.draw(imgRegWall, room.getX() + room.getWidth() - 10, room.getY(), 10, room.getHeight());
+//                }
+//            }
+        }
+    }
+
     void generateMap(int maxRooms) {
         float roomX = 0, roomY = 0;
-        float roomWidth = 150, roomHeight = 150;
+        float roomWidth = 200, roomHeight = 200;
         ArrayList<Character> doors = new ArrayList<>();
-        ArrayList<Character> temp = new ArrayList<>();
 
         for (int i = 0; i < maxRooms; i++) {
             doors.clear();
@@ -251,27 +267,37 @@ public class ScreenGame implements Screen {
         }
 
         ArrayList<Character> lastDir = new ArrayList<>();
-        lastDir = rooms.get(rooms.size()-1).getDoors();
+        lastDir = rooms.get(rooms.size() - 1).getDoors();
 
         ArrayList<Character> preLastDir = new ArrayList<>();
-        preLastDir = rooms.get(rooms.size()-2).getDoors();
+        preLastDir = rooms.get(rooms.size() - 2).getDoors();
 
-        if (lastDir.contains('u'))
-        {
-            rooms.get(rooms.size()-1).removeTopWall();
-            rooms.get(rooms.size()-2).removeBottomWall();
+        Room lastRoom = rooms.get(rooms.size() - 1);
+        Room preLastRoom = rooms.get(rooms.size() - 2);
+
+        if (lastDir.contains('u')) {
+            if (lastRoom.getY() + roomHeight == preLastRoom.getY()) {
+                lastRoom.removeTopWall();
+                preLastRoom.removeBottomWall();
+            }
         }
-        else if (lastDir.contains('d')) {
-            rooms.get(rooms.size()-1).removeBottomWall();
-            rooms.get(rooms.size()-2).removeTopWall();
+        if (lastDir.contains('d')) {
+            if (lastRoom.getY() - roomHeight == preLastRoom.getY()) {
+                lastRoom.removeBottomWall();
+                preLastRoom.removeTopWall();
+            }
         }
-        else if (lastDir.contains('l')) {
-            rooms.get(rooms.size()-1).removeLeftWall();
-            rooms.get(rooms.size()-2).removeRightWall();
+        if (lastDir.contains('l')) {
+            if (lastRoom.getX() - roomWidth == preLastRoom.getX()) {
+                lastRoom.removeLeftWall();
+                preLastRoom.removeRightWall();
+            }
         }
-        else if (lastDir.contains('r')) {
-            rooms.get(rooms.size()-1).removeRightWall();
-            rooms.get(rooms.size()-2).removeLeftWall();
+        if (lastDir.contains('r')) {
+            if (lastRoom.getX() + roomWidth == preLastRoom.getX()) {
+                lastRoom.removeRightWall();
+                preLastRoom.removeLeftWall();
+            }
         }
     }
 
@@ -285,10 +311,10 @@ public class ScreenGame implements Screen {
             testX = rooms.get(i).getX();
             testY = rooms.get(i).getY();
 
-            if (testX+width != x) freeCell.add('r');
-            if (testX-width != x) freeCell.add('l');
-            if (testY+height != y) freeCell.add('u');
-            if (testY-height != y) freeCell.add('d');
+            if (testX + width != x) freeCell.add('r');
+            if (testX - width != x) freeCell.add('l');
+            if (testY + height != y) freeCell.add('u');
+            if (testY - height != y) freeCell.add('d');
         }
 
         if (freeCell.isEmpty()) freeCell.add('n'); // cuz it can be empty, leading to crash
@@ -320,8 +346,8 @@ public class ScreenGame implements Screen {
         }
     }
 
-    boolean hasFreeCell(float x, float y){
-        float roomX , roomY; // init
+    boolean hasFreeCell(float x, float y) {
+        float roomX, roomY; // init
 
         for (int i = 0; i < rooms.size(); i++) {
             roomX = rooms.get(i).getX();
@@ -334,7 +360,8 @@ public class ScreenGame implements Screen {
 
     int hasDir(char direction, float x, float y) {
         for (int i = 0; i < rooms.size(); i++) {
-            if (rooms.get(i).getDoors().contains(direction) && rooms.get(i).getX() == x && rooms.get(i).getY() == y) return i;
+            if (rooms.get(i).getDoors().contains(direction) && rooms.get(i).getX() == x && rooms.get(i).getY() == y)
+                return i;
         }
         return -1;
     }
