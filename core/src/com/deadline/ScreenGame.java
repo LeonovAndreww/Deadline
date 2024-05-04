@@ -12,13 +12,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
 public class ScreenGame implements Screen {
     DdlnGame game;
@@ -36,9 +36,9 @@ public class ScreenGame implements Screen {
     OnScreenJoystick joystick;
 
     Texture imgBg;
-//    Texture imgWallAtlas;
-//    TextureRegion imgRegWall, imgRegWallSmall;
     Texture imgRoom;
+    Texture imgHorWall, imgVerWall;
+    Texture imgHorDoor, imgVerDoor;
     Texture imgJstBase, imgJstKnob;
     Texture imgPlayerAtlas;
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
@@ -47,9 +47,7 @@ public class ScreenGame implements Screen {
     ArrayList<Room> rooms = new ArrayList<>();
     Player player;
 
-    Random random = new Random();
-
-    String txtCord = "Empty";
+//    String txtCord = "Empty";
     int roomsCreated = 0;
 
     public ScreenGame(DdlnGame game) {
@@ -63,14 +61,19 @@ public class ScreenGame implements Screen {
         glyphLayout = new GlyphLayout();
 
         imgBg = new Texture("grass.png");
-        imgJstBase = new Texture("joystickBase.png");
-        imgJstKnob = new Texture("joystickKnob.png");
-        imgPlayerAtlas = new Texture("playerAtlas.png");
-//        imgWallAtlas = new Texture("wallAtlas.png");
-//        imgRegWall = new TextureRegion(imgWallAtlas, 0, 0, 48, 32);
-//        imgRegWallSmall = new TextureRegion(imgWallAtlas, 49, 25, 15, 7);
 
         imgRoom = new Texture("room.png");
+
+        imgHorWall = new Texture("horizontalWall.png");
+        imgVerWall = new Texture("verticalWall.png");
+
+        imgHorDoor = new Texture("horizontalDoor.png");
+        imgVerDoor = new Texture("verticalDoor.png");
+
+        imgJstBase = new Texture("joystickBase.png");
+        imgJstKnob = new Texture("joystickKnob.png");
+
+        imgPlayerAtlas = new Texture("playerAtlas.png");
 
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
@@ -80,7 +83,7 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
-        player = new Player(world, 14, 12, 50, 50, 6, 450);
+        player = new Player(world, 14, 16, 50, 50, 6, 450);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -134,15 +137,19 @@ public class ScreenGame implements Screen {
         camera.update();
         batch.begin();
 
-        txtCord = "";
-        for (int i = 0; i < rooms.size(); i++) {
-            txtCord += "\nX " + rooms.get(i).getX() + "\nY " + rooms.get(i).getY() + "\n" + rooms.get(i).getDoors() + "\n" + (hasDir('r', rooms.get(i).getX() + 150, rooms.get(i).getY()) != -1);
-        }
-        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
+//        txtCord = "";
+//        for (int i = 0; i < rooms.size(); i++) {
+//            txtCord += "\nX " + rooms.get(i).getX() + "\nY " + rooms.get(i).getY() + "\n" + rooms.get(i).getDoors() + "\n" + (hasDir('r', rooms.get(i).getX() + 150, rooms.get(i).getY()) != -1);
+//        }
+//        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         wallBatch();
 
+        doorPreBatch();
+
         playerBatch();
+
+        doorPostBatch();
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
 
@@ -174,7 +181,8 @@ public class ScreenGame implements Screen {
     @Override
     public void dispose() {
         imgBg.dispose();
-//        imgWallAtlas.dispose();
+        imgHorWall.dispose();
+        imgVerWall.dispose();
         imgRoom.dispose();
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
@@ -214,19 +222,46 @@ public class ScreenGame implements Screen {
     private void wallBatch() {
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-//            batch.draw(imgRoom, room.getX(), room.getY(), room.getWidth(), room.getHeight());
+            batch.draw(imgRoom, room.getX(), room.getY(), room.getWidth(), room.getHeight());
+        }
+    }
 
-//            for (int j = 0; j < 4; j++) {
-//                if (room.isHasTopWall()) {
-//                    batch.draw(imgRegWall, room.getX(), room.getY() + room.getHeight() - 10, room.getWidth(), 10);
-//                } if (room.isHasBottomWall()) {
-//                    batch.draw(imgRegWallSmall, room.getX(), room.getY(), room.getWidth(), 10);
-//                } if (room.isHasLeftWall()) {
-//                    batch.draw(imgRegWall, room.getX(), room.getY(), 0+10, 0, room.getHeight(), 10, 1f, 1f, 90);
-//                } if (room.isHasRightWall()) {
-//                    batch.draw(imgRegWall, room.getX() + room.getWidth() - 10, room.getY(), 10, room.getHeight());
-//                }
-//            }
+    private void doorPostBatch() {
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            for (int j = 0; j < room.getDoorHorBodies().size(); j++) {
+                Body wall = room.getDoorHorBodies().get(j);
+                if (j % 3 == 1) {
+                    batch.draw(imgHorDoor, room.getX() + room.getWidth() * (1f / 3) + 10, wall.getPosition().y - 5, room.getWidth() - ((room.getWidth() / 3) * 2) - 20, 10);
+                }
+            }
+
+            for (int j = 0; j < room.getDoorVerBodies().size(); j++) {
+                Body wall = room.getDoorVerBodies().get(j);
+                switch (j%3) { // %3 cuz there may be two doors
+                    case 0:
+                        batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + 10, 10, room.getHeight() / 3);
+                        break;
+                    case 1:
+                        batch.draw(imgVerDoor, wall.getPosition().x - 5, room.getY() + room.getHeight() * (1f / 3) + 10, 10, room.getHeight() - ((room.getHeight() / 3) * 2) - 20);
+                        break;
+                    case 2:
+                        batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + room.getHeight() * (2f / 3) - 10, 10, room.getHeight() / 3);
+                }
+            }
+        }
+    }
+
+    private void doorPreBatch() {
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            for (int j = 0; j < room.getDoorHorBodies().size(); j++) {
+                Body wall = room.getDoorHorBodies().get(j);
+                switch (j%3) {
+                    case 0: batch.draw(imgHorWall, room.getX()+10, wall.getPosition().y-5, room.getWidth()/ 3, 10); break;
+                    case 2: batch.draw(imgHorWall, room.getX() + room.getWidth()*(2f/3)-10, wall.getPosition().y-5, room.getWidth()/ 3, 10);
+                }
+            }
         }
     }
 
@@ -266,11 +301,7 @@ public class ScreenGame implements Screen {
             doors.clear();
         }
 
-        ArrayList<Character> lastDir = new ArrayList<>();
-        lastDir = rooms.get(rooms.size() - 1).getDoors();
-
-        ArrayList<Character> preLastDir = new ArrayList<>();
-        preLastDir = rooms.get(rooms.size() - 2).getDoors();
+        ArrayList<Character> lastDir = rooms.get(rooms.size() - 1).getDoors();
 
         Room lastRoom = rooms.get(rooms.size() - 1);
         Room preLastRoom = rooms.get(rooms.size() - 2);
@@ -307,7 +338,7 @@ public class ScreenGame implements Screen {
         float testX, testY;
 
         for (int i = 0; i < rooms.size(); i++) {
-            rooms.get(i).setRooms(rooms);
+//            rooms.get(i).setRooms(rooms);
             testX = rooms.get(i).getX();
             testY = rooms.get(i).getY();
 
@@ -357,15 +388,6 @@ public class ScreenGame implements Screen {
         }
         return true;
     }
-
-    int hasDir(char direction, float x, float y) {
-        for (int i = 0; i < rooms.size(); i++) {
-            if (rooms.get(i).getDoors().contains(direction) && rooms.get(i).getX() == x && rooms.get(i).getY() == y)
-                return i;
-        }
-        return -1;
-    }
-
 //    int hasDirNum(char direction, float x, float y) {
 //        for (int i = 0; i < rooms.size(); i++) {
 //            if (rooms.get(i).getDoors().contains(direction) && rooms.get(i).getX() == x && rooms.get(i).getY() == y) return i;

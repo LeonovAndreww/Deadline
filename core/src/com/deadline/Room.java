@@ -12,10 +12,11 @@ public class Room {
     World world;
     private float x, y;
     private float width, height;
-    private Body topWall, bottomWall, leftWall, rightWall;
+    public Body topWall, bottomWall, leftWall, rightWall;
     private boolean hasTopWall, hasBottomWall, hasLeftWall, hasRightWall;
     private ArrayList<Character> doors = new ArrayList<>();
-    private ArrayList<Room> rooms = new ArrayList<>();
+    private ArrayList<Body> doorHorBodies = new ArrayList<>();
+    private ArrayList<Body> doorVerBodies = new ArrayList<>();
 
     boolean built;
 
@@ -83,50 +84,67 @@ public class Room {
         return body;
     }
 
-    private Body createHorDoor(float x, float y, float width, float height) {
+    private void createHorDoor(float x, float y, float width, float height) {
         BodyDef bodyDef1 = new BodyDef();
-        bodyDef1.position.set(x + width / 4 - 20, y + height / 2);
+        bodyDef1.position.set(x + width*(1f/3)-23, y + height / 2);
         bodyDef1.type = BodyDef.BodyType.StaticBody;
         Body body1 = world.createBody(bodyDef1);
 
         BodyDef bodyDef2 = new BodyDef();
-        bodyDef2.position.set(x + width - 20, y + height / 2);
-        bodyDef2.type = BodyDef.BodyType.StaticBody;
-        Body body2 = world.createBody(bodyDef2);
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width / 8, height / 2);
-
-        FixtureDef fixtureDef1 = new FixtureDef();
-        fixtureDef1.shape = shape;
-
-        FixtureDef fixtureDef2 = new FixtureDef();
-        fixtureDef2.shape = shape;
-
-        body1.createFixture(fixtureDef1);
-        body2.createFixture(fixtureDef2);
-        shape.dispose();
-
-        return body1;
-    }
-    private void createVerDoor  (float x, float y, float width, float height) {
-        BodyDef bodyDef1 = new BodyDef();
-        bodyDef1.position.set(x + width / 2, y + (height)*(1f / 3)-30);
-        bodyDef1.type = BodyDef.BodyType.StaticBody;
-        Body body1 = world.createBody(bodyDef1);
-
-        BodyDef bodyDef2 = new BodyDef();
-        bodyDef2.position.set(x + width / 2, y + (height)*(2f / 3)-30);
+        bodyDef2.position.set(x+ width*(2f/3)-33, y + height / 2);
         bodyDef2.type = BodyDef.BodyType.StaticBody;
         Body body2 = world.createBody(bodyDef2);
 
         BodyDef bodyDef3 = new BodyDef();
-        bodyDef3.position.set(x + width / 2, y + (height)- 30);
+        bodyDef3.position.set(x + width - 43, y + height / 2);
+        bodyDef3.type = BodyDef.BodyType.StaticBody;
+        Body body3 = world.createBody(bodyDef3);
+
+        PolygonShape wallShape = new PolygonShape();
+        wallShape.setAsBox(width/ 3 / 2, height / 2);
+
+        PolygonShape doorShape = new PolygonShape();
+        doorShape.setAsBox(width/3/2 - 10, height/2);
+
+        FixtureDef fixtureDef1 = new FixtureDef();
+        fixtureDef1.shape = wallShape;
+
+        FixtureDef fixtureDef2 = new FixtureDef();
+        fixtureDef2.shape = doorShape;
+        fixtureDef2.isSensor = true;
+
+        FixtureDef fixtureDef3 = new FixtureDef();
+        fixtureDef3.shape = wallShape;
+
+        body1.createFixture(fixtureDef1);
+        doorHorBodies.add(body1);
+
+        body2.createFixture(fixtureDef2);
+        doorHorBodies.add(body2);
+
+        body3.createFixture(fixtureDef3);
+        doorHorBodies.add(body3);
+
+        wallShape.dispose();
+    }
+    private void createVerDoor (float x, float y, float width, float height) {
+        BodyDef bodyDef1 = new BodyDef();
+        bodyDef1.position.set(x + width / 2, y + (height)*(1f / 3)-33);
+        bodyDef1.type = BodyDef.BodyType.StaticBody;
+        Body body1 = world.createBody(bodyDef1);
+
+        BodyDef bodyDef2 = new BodyDef();
+        bodyDef2.position.set(x + width / 2, y + (height)*(2f / 3)-33);
+        bodyDef2.type = BodyDef.BodyType.StaticBody;
+        Body body2 = world.createBody(bodyDef2);
+
+        BodyDef bodyDef3 = new BodyDef();
+        bodyDef3.position.set(x + width / 2, y + (height)- 33);
         bodyDef3.type = BodyDef.BodyType.StaticBody;
         Body body3 = world.createBody(bodyDef3);
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width/2, (height-20) / 3 / 2);
+        shape.setAsBox(width/2, (height) / 3 / 2);
 
         FixtureDef fixtureDef1 = new FixtureDef();
         fixtureDef1.shape = shape;
@@ -139,10 +157,15 @@ public class Room {
         fixtureDef3.shape = shape;
 
         body1.createFixture(fixtureDef1);
-        body2.createFixture(fixtureDef2);
-        body3.createFixture(fixtureDef3);
-        shape.dispose();
+        doorVerBodies.add(body1);
 
+        body2.createFixture(fixtureDef2);
+        doorVerBodies.add(body2);
+
+        body3.createFixture(fixtureDef3);
+        doorVerBodies.add(body3);
+
+        shape.dispose();
     }
 
     public ArrayList<Character> getDoors() {
@@ -197,23 +220,11 @@ public class Room {
         }
     }
 
-    public void setRooms(ArrayList<Room> newRooms) {
-        rooms = newRooms;
+    public ArrayList<Body> getDoorHorBodies() {
+        return doorHorBodies;
     }
 
-    public boolean isHasTopWall() {
-        return hasTopWall;
-    }
-
-    public boolean isHasBottomWall() {
-        return hasBottomWall;
-    }
-
-    public boolean isHasLeftWall() {
-        return hasLeftWall;
-    }
-
-    public boolean isHasRightWall() {
-        return hasRightWall;
+    public ArrayList<Body> getDoorVerBodies() {
+        return doorVerBodies;
     }
 }
