@@ -39,7 +39,6 @@ public class OnScreenJoystick {
         knobPos.set(position.x, position.y);
     }
 
-
     // получение вектора движения в виде нормализованного вектора
     public Vector2 getDirectionVector() {
         float deltaX = knobPos.x - position.x;

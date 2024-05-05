@@ -30,12 +30,10 @@ public class ScreenGame implements Screen {
     World world = new World(new Vector2(0, 0), true);
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
-
     BitmapFont font, fontUi;
 
     OnScreenJoystick joystick;
 
-    Texture imgBg;
     Texture imgRoom;
     Texture imgHorWall, imgVerWall;
     Texture imgHorDoor, imgVerDoor;
@@ -47,8 +45,11 @@ public class ScreenGame implements Screen {
     ArrayList<Room> rooms = new ArrayList<>();
     Player player;
 
-//    String txtCord = "Empty";
-    int roomsCreated = 0;
+    MyButton btnAttack;
+
+    String txtCord = "Empty";
+    boolean actJoystick = false;
+    boolean actAttack = false;
 
     public ScreenGame(DdlnGame game) {
         this.game = game;
@@ -59,8 +60,6 @@ public class ScreenGame implements Screen {
         fontUi = game.fontUi;
 
         glyphLayout = new GlyphLayout();
-
-        imgBg = new Texture("grass.png");
 
         imgRoom = new Texture("room.png");
 
@@ -74,6 +73,8 @@ public class ScreenGame implements Screen {
         imgJstKnob = new Texture("joystickKnob.png");
 
         imgPlayerAtlas = new Texture("playerAtlas.png");
+
+        btnAttack = new MyButton(SCR_WIDTH/3, SCR_HEIGHT/3, SCR_WIDTH/20);
 
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
@@ -98,32 +99,8 @@ public class ScreenGame implements Screen {
     @Override
     public void render(float delta) {
         // касания
-        if (Gdx.input.isTouched()) {
-            touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touch);
-//            txtCord = "x0 "+rooms.get(0).getX()+"\ny0 "+rooms.get(0).getY()+"\nx1 "+rooms.get(1).getX()+"\ny1 "+rooms.get(1).getY();
-//            txtCord = "0 "+rooms.get(0).getDoors()+"\n1 "+rooms.get(1).getDoors();
-            if (touch.x < player.getX()) {
-                joystick.updateKnob(touch);
-                player.getBody().setLinearVelocity(
-                        joystick.getDirectionVector().x * player.getSpeed(),
-                        joystick.getDirectionVector().y * player.getSpeed()
-                );
-                if (Math.abs(joystick.getDirectionVector().x) > Math.abs(joystick.getDirectionVector().y)) {
-                    if (joystick.getDirectionVector().x > 0) player.setDirection('r');
-                    else player.setDirection('l');
-                } else {
-                    if (joystick.getDirectionVector().y > 0) player.setDirection('u');
-                    else player.setDirection('d');
-                }
-            }
-        } else {
-            joystick.resetKnob();
-            player.getBody().setLinearVelocity(0, 0);
-        }
-//        if (Gdx.input.justTouched()) {
-//            if (touch.x > player.getX())player.changeBattleState(!player.getBattleState());
-//        }
+
+        touchHandler();
 
         // события
 
@@ -137,11 +114,6 @@ public class ScreenGame implements Screen {
         camera.update();
         batch.begin();
 
-//        txtCord = "";
-//        for (int i = 0; i < rooms.size(); i++) {
-//            txtCord += "\nX " + rooms.get(i).getX() + "\nY " + rooms.get(i).getY() + "\n" + rooms.get(i).getDoors() + "\n" + (hasDir('r', rooms.get(i).getX() + 150, rooms.get(i).getY()) != -1);
-//        }
-//        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         wallBatch();
 
@@ -151,7 +123,10 @@ public class ScreenGame implements Screen {
 
         doorPostBatch();
 
+        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
+
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
+        batch.draw(imgJstBase, player.getX()+btnAttack.x, player.getY() - btnAttack.y, btnAttack.width, btnAttack.height);
 
         batch.end();
 
@@ -180,7 +155,6 @@ public class ScreenGame implements Screen {
 
     @Override
     public void dispose() {
-        imgBg.dispose();
         imgHorWall.dispose();
         imgVerWall.dispose();
         imgRoom.dispose();
@@ -188,6 +162,57 @@ public class ScreenGame implements Screen {
         imgJstBase.dispose();
         imgJstKnob.dispose();
         batch.dispose();
+    }
+
+    private void touchHandler(){
+        actJoystick = false;
+        actAttack = false;
+        ArrayList<Vector3> touches = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            touches.add(new Vector3());
+        }
+
+        for (int i = 0; i < 3; i++) {
+            if (Gdx.input.isTouched(i)) {
+                touches.get(i).set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
+                camera.unproject(touches.get(i));
+
+                // Check if the touch is on the left side of the player (joystick)
+                if (touches.get(i).x < player.getX()) {
+                    actJoystick = true;
+                    joystick.updateKnob(touches.get(i));
+                }
+                // Check if the touch is on the right side of the player (attack)
+                else if (touches.get(i).x > player.getX()) {
+                    actAttack = true;
+                }
+            }
+        }
+
+        if (actJoystick) {
+            Vector2 directionVector = joystick.getDirectionVector();
+            player.getBody().setLinearVelocity(
+                    directionVector.x * player.getSpeed(),
+                    directionVector.y * player.getSpeed()
+            );
+            // Update player direction based on joystick direction
+            if (Math.abs(directionVector.x) > Math.abs(directionVector.y)) {
+                if (directionVector.x > 0) player.setDirection('r');
+                else player.setDirection('l');
+            } else {
+                if (directionVector.y > 0) player.setDirection('u');
+                else player.setDirection('d');
+            }
+        } else {
+            joystick.resetKnob();
+            player.getBody().setLinearVelocity(0, 0);
+        }
+
+        txtCord="";
+        if (actAttack) {
+            player.changeBattleState(!player.getBattleState());
+            txtCord="attacking";
+        }
     }
 
     private void playerBatch() { // separated it cuz too big
@@ -293,7 +318,6 @@ public class ScreenGame implements Screen {
                 }
             }
 
-            roomsCreated++; // to delete
             ArrayList<Room> tempRooms = new ArrayList<>(rooms);
             Room room = new Room(world, roomX, roomY, roomWidth, roomHeight, doors, tempRooms);
             setDoors();
