@@ -27,7 +27,7 @@ public class ScreenGame implements Screen {
     OrthographicCamera camera;
     Vector3 touch;
 
-    World world = new World(new Vector2(0, 0), true);
+    World world;
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
     BitmapFont font, fontUi;
@@ -38,12 +38,15 @@ public class ScreenGame implements Screen {
     Texture imgHorWall, imgVerWall;
     Texture imgHorDoor, imgVerDoor;
     Texture imgJstBase, imgJstKnob;
+    Texture imgPaperWad;
     Texture imgPlayerAtlas;
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
 
     ArrayList<Room> rooms = new ArrayList<>();
+
     Player player;
+    Weapon paperWad;
 
     MyButton btnAttack;
 
@@ -59,6 +62,9 @@ public class ScreenGame implements Screen {
         font = game.font;
         fontUi = game.fontUi;
 
+        world = new World(new Vector2(0, 0), true);
+        world.setContactListener(new MyContactListener(world));
+
         glyphLayout = new GlyphLayout();
 
         imgRoom = new Texture("room.png");
@@ -73,6 +79,7 @@ public class ScreenGame implements Screen {
         imgJstKnob = new Texture("joystickKnob.png");
 
         imgPlayerAtlas = new Texture("playerAtlas.png");
+        imgPaperWad = new Texture("paperWad.png");
 
         btnAttack = new MyButton(SCR_WIDTH/3, SCR_HEIGHT/3, SCR_WIDTH/20);
 
@@ -84,7 +91,10 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
-        player = new Player(world, 14, 16, 50, 50, 6, 450);
+
+        paperWad = new Weapon(imgPaperWad, false, 60, 950);
+
+        player = new Player(world, 14, 16, 50, 50, 6, 450, paperWad);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -116,11 +126,9 @@ public class ScreenGame implements Screen {
 
 
         wallBatch();
-
+        projectileBatch();
         doorPreBatch();
-
         playerBatch();
-
         doorPostBatch();
 
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
@@ -210,7 +218,8 @@ public class ScreenGame implements Screen {
 
         txtCord="";
         if (actAttack) {
-            player.changeBattleState(!player.getBattleState());
+//            player.changeBattleState(!player.getBattleState());
+            player.attack();
             txtCord="attacking";
         }
     }
@@ -219,7 +228,7 @@ public class ScreenGame implements Screen {
         int phase = player.getPhase();
         float x = player.getX() - imgPlayerIdle[0][0].getRegionWidth() / 2f; // centralized image x
         float y = player.getY() - imgPlayerIdle[0][0].getRegionHeight() / 5f; // centralized image y
-        boolean isMoving = player.getBody().isAwake();
+        boolean isMoving = player.getBody().isAwake(); // реагировать не на сон, а на джойстик! w
 
         switch (player.getDirection()) {
             case 'r': {
@@ -287,6 +296,13 @@ public class ScreenGame implements Screen {
                     case 2: batch.draw(imgHorWall, room.getX() + room.getWidth()*(2f/3)-10, wall.getPosition().y-5, room.getWidth()/ 3, 10);
                 }
             }
+        }
+    }
+
+    private void projectileBatch() {
+        ArrayList<Body> projectiles = player.getProjectiles();
+        for (int i = 0; i < projectiles.size(); i++) {
+            if (projectiles.get(i).isActive()) batch.draw(imgPaperWad, projectiles.get(i).getPosition().x, projectiles.get(i).getPosition().y);
         }
     }
 
