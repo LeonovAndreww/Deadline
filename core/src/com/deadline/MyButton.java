@@ -38,14 +38,17 @@ public class MyButton {
         isCircleButton = true;
     }
 
-    boolean hit(float touchX, float touchY){
+    public void update(float x, float y) {
+        this.x = x;
+        this. y = y;
+    }
+
+    public boolean hit(float touchX, float touchY){
         if (isTextButton) {
             return (x < touchX && touchX < x + width && y > touchY && touchY > y - height);
         }
         else if (isCircleButton) {
-            float centerX = x + width / 2;
-            float centerY = y - height / 2;
-            return Math.sqrt(Math.pow(centerX - touchX, 2) + Math.pow(centerY - touchY, 2)) <= width/2;
+            return (x < touchX && touchX < x + width) && (y < touchY && touchY < y + height);
         }
         else {
             return (x < touchX && touchX < x + width) && (y < touchY && touchY < y + height);

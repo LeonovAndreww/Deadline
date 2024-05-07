@@ -40,12 +40,15 @@ public class ScreenGame implements Screen {
     Texture imgJstBase, imgJstKnob;
     Texture imgPaperWad;
     Texture imgPlayerAtlas;
+    Texture imgGhostAtlas;
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
+    TextureRegion[] imgGhost = new TextureRegion[4];
 
     ArrayList<Room> rooms = new ArrayList<>();
 
     Player player;
+    Ghost ghost;
     Weapon paperWad;
 
     MyButton btnAttack;
@@ -79,9 +82,11 @@ public class ScreenGame implements Screen {
         imgJstKnob = new Texture("joystickKnob.png");
 
         imgPlayerAtlas = new Texture("playerAtlas.png");
+        imgGhostAtlas = new Texture("ghostAtlas.png");
+
         imgPaperWad = new Texture("paperWad.png");
 
-        btnAttack = new MyButton(SCR_WIDTH/3, SCR_HEIGHT/3, SCR_WIDTH/20);
+        btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
@@ -91,10 +96,15 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
+        for (int i = 0; i < imgGhost.length; i++) {
+            imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
+        }
 
-        paperWad = new Weapon(imgPaperWad, false, 60, 950);
+        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950);
 
-        player = new Player(world, 14, 16, 50, 50, 6, 450, paperWad);
+        player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
+
+        ghost = new Ghost(world, 20, 24, 80, 80, 4, 4, 350);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -115,6 +125,9 @@ public class ScreenGame implements Screen {
         // события
 
         player.changePhase();
+        if (ghost.getBody().isAwake()) ghost.changePhase(); // if battling
+        player.updateProjectiles();
+        btnAttack.update(player.getX() + SCR_WIDTH / 3, player.getY() - SCR_HEIGHT / 3);
 
         // отрисовка
         ScreenUtils.clear(0, 0, 0, 0);
@@ -129,12 +142,19 @@ public class ScreenGame implements Screen {
         projectileBatch();
         doorPreBatch();
         playerBatch();
+        ghostBatch();
         doorPostBatch();
 
+
+//        for (int i = 0; i < player.getProjectiles().size(); i++) {
+//            txtCord = String.valueOf(player.getProjectiles().get(i).getCreateTime());
+//        }
+
+//        txtCord = "" +player.timeLastAttack;
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
-        batch.draw(imgJstBase, player.getX()+btnAttack.x, player.getY() - btnAttack.y, btnAttack.width, btnAttack.height);
+        batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
 
         batch.end();
 
@@ -165,14 +185,18 @@ public class ScreenGame implements Screen {
     public void dispose() {
         imgHorWall.dispose();
         imgVerWall.dispose();
+        imgHorDoor.dispose();
+        imgVerDoor.dispose();
         imgRoom.dispose();
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
+        player.dispose();
+        paperWad.dispose();
         batch.dispose();
     }
 
-    private void touchHandler(){
+    private void touchHandler() { // if touch.i == using touchaattack same or == null
         actJoystick = false;
         actAttack = false;
         ArrayList<Vector3> touches = new ArrayList<>();
@@ -185,14 +209,13 @@ public class ScreenGame implements Screen {
                 touches.get(i).set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
                 camera.unproject(touches.get(i));
 
-                // Check if the touch is on the left side of the player (joystick)
                 if (touches.get(i).x < player.getX()) {
                     actJoystick = true;
                     joystick.updateKnob(touches.get(i));
-                }
-                // Check if the touch is on the right side of the player (attack)
-                else if (touches.get(i).x > player.getX()) {
-                    actAttack = true;
+                } else if (touches.get(i).x > player.getX()) {
+                    if (btnAttack.hit(touches.get(i).x, touches.get(i).y)) {
+                        actAttack = true;
+                    }
                 }
             }
         }
@@ -216,15 +239,13 @@ public class ScreenGame implements Screen {
             player.getBody().setLinearVelocity(0, 0);
         }
 
-        txtCord="";
         if (actAttack) {
 //            player.changeBattleState(!player.getBattleState());
             player.attack();
-            txtCord="attacking";
         }
     }
 
-    private void playerBatch() { // separated it cuz too big
+    private void playerBatch() {
         int phase = player.getPhase();
         float x = player.getX() - imgPlayerIdle[0][0].getRegionWidth() / 2f; // centralized image x
         float y = player.getY() - imgPlayerIdle[0][0].getRegionHeight() / 5f; // centralized image y
@@ -252,6 +273,16 @@ public class ScreenGame implements Screen {
             }
         }
     }
+
+    private void ghostBatch() {
+        int phase = ghost.getPhase();
+        float x = ghost.getX() - imgGhost[0].getRegionWidth() / 2f; // centralized image x
+        float y = ghost.getY() - imgGhost[0].getRegionHeight() / 2.25f; // centralized image y
+        boolean isMoving = ghost.getBody().isAwake();
+        if (isMoving) batch.draw(imgGhost[phase], x, y);
+        else batch.draw(imgGhost[1], x, y);
+    }
+
 
     private void wallBatch() {
         for (int i = 0; i < rooms.size(); i++) {
@@ -300,9 +331,9 @@ public class ScreenGame implements Screen {
     }
 
     private void projectileBatch() {
-        ArrayList<Body> projectiles = player.getProjectiles();
+        ArrayList<Projectile> projectiles = player.getProjectiles();
         for (int i = 0; i < projectiles.size(); i++) {
-            if (projectiles.get(i).isActive()) batch.draw(imgPaperWad, projectiles.get(i).getPosition().x, projectiles.get(i).getPosition().y);
+            if (projectiles.get(i).getBody().isActive()) batch.draw(imgPaperWad, projectiles.get(i).getBody().getPosition().x, projectiles.get(i).getBody().getPosition().y);
         }
     }
 

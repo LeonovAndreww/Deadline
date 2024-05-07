@@ -13,16 +13,13 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.TimeUtils;
 
 public class MyContactListener implements ContactListener {
-    private Body body;
-    private World world;
-    private float timeCreated;
-    private float lifetime;
-    Sound sndPaper;
+    private final World world;
+    Sound sndPaperBump;
 
 
     public MyContactListener(World world) {
         this.world = world;
-        sndPaper = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
+        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
     }
 
     @Override
@@ -52,12 +49,12 @@ public class MyContactListener implements ContactListener {
         if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData()=="projectile") {
             bodyA.setActive(false);
             world.destroyBody(bodyA);
-            sndPaper.play();
+            sndPaperBump.play();
         }
         else if (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile") {
             bodyB.setActive(false);
             world.destroyBody(bodyB);
-            sndPaper.play();
+            sndPaperBump.play();
         }
         else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyA.getUserData()=="projectile" && bodyB.getUserData()=="player") {
             contact.setEnabled(false);

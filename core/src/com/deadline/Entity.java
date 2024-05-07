@@ -11,16 +11,19 @@ public class Entity {
     private Body body;
     private float width, height;
     private float speed = 50f;
+    private int health, maxHealth;
     private char direction = 'd';
     private int phase, nPhases;
     long timeLastPhase, timePhaseInterval;
 
-    public Entity(World world, float width, float height, float x, float y, int nPhases, long timePhaseInterval) {
+    public Entity(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval) {
         phase = 0;
         this.nPhases = nPhases;
         this.timePhaseInterval = timePhaseInterval; // except running animation!
         this.width = width;
         this.height = height;
+        this.health = this.maxHealth = maxHealth;
+
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(x, y);
@@ -40,7 +43,18 @@ public class Entity {
 
         shape.dispose();
     }
-    public Body getBody() { return body; }
+
+    void changePhase(){
+        long interval = timePhaseInterval;
+        if(TimeUtils.millis() > timeLastPhase+interval) {
+            if (++phase == nPhases) phase = 0;
+            timeLastPhase = TimeUtils.millis();
+        }
+    }
+
+    public Body getBody() {
+        return body;
+    }
 
     public float getX() {
         return body.getPosition().x;
@@ -60,20 +74,29 @@ public class Entity {
     public float getSpeed() {
         return speed;
     }
-    public void setSpeed(float speed) { this.speed = speed; }
 
-    public char getDirection () { return direction; }
-    public void setDirection(char dir){ direction = dir; }
-
-    void changePhase(){
-        long interval = timePhaseInterval;
-        if (body.isAwake()) interval = 150;
-        if(TimeUtils.millis() > timeLastPhase+interval) {
-            if (++phase == nPhases) phase = 0;
-            timeLastPhase = TimeUtils.millis();
-        }
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
-    int getPhase() { return phase; }
 
+    public char getDirection() {
+        return direction;
+    }
+
+    public void setDirection(char dir) {
+        direction = dir;
+    }
+
+    int getPhase() {
+        return phase;
+    }
+
+    int getHealth() {
+        return health;
+    }
+
+    int getMaxHealth() {
+        return maxHealth;
+    }
 
 }

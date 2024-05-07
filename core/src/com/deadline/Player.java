@@ -12,34 +12,37 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 
-public class Player extends Entity{
+public class Player extends Entity {
     private final World world;
     private boolean isBattle = false;
     private Weapon weapon;
-    private long  timeLastAttack;
-    private MyContactListener myContactListener;
-    private ArrayList<Body> projectiles = new ArrayList<>();
-    private Sound paperSwing;
+    private int health, maxHealth;
+    private long timeLastAttack;
+    private ArrayList<Projectile> projectiles = new ArrayList<>();
+    private final Sound sndPaperSwing, sndPaperBump;
 
-    public Player(World world, float width, float height, float x, float y, int nPhases, long timePhaseInterval, Weapon weapon) {
-        super(world, width, height, x, y, nPhases, timePhaseInterval);
+    public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
+        super(world, width, height, x, y, maxHealth, nPhases, timePhaseInterval);
         getBody().setUserData("player");
         this.weapon = weapon;
+        this.health = health;
+        this.maxHealth = maxHealth;
         this.world = world;
-        paperSwing = Gdx.audio.newSound(Gdx.files.internal("paperSwing.mp3"));
+        sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("paperSwing.mp3"));
+        sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
         world.setContactListener(new MyContactListener(world));
     }
 
-    void attack(){
+    void attack() {
         if (weapon == null) return;
 
-        if (TimeUtils.millis()-timeLastAttack> weapon.getReloadTime()) {
+        if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()) {
             if (weapon.isMelee()) {
                 meleeAttack();
             } else {
                 rangedAttack();
             }
-            paperSwing.play();
+            sndPaperSwing.play();
             timeLastAttack = TimeUtils.millis();
         }
     }
@@ -49,48 +52,9 @@ public class Player extends Entity{
     }
 
     private void rangedAttack() {
-        float angle = 0;
-        switch (getDirection()) {
-            case 'u':
-                angle = MathUtils.PI / 2;
-                break;
-            case 'd':
-                angle = -MathUtils.PI / 2;
-                break;
-            case 'l':
-                angle = -MathUtils.PI;
-                break;
-            case 'r':
-                angle = 0;
-                break;
-        }
-
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(getX()-getWidth()/4, getY());
-        bodyDef.linearDamping = 0; // No damping
-        bodyDef.angularDamping = 0; // No damping
-        bodyDef.gravityScale = 0; // No gravity
-        Body body = world.createBody(bodyDef);
-        body.setUserData("projectile");
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 1.0f; // Set the density to a non-zero value
-        fixtureDef.friction = 0; // No friction
-        fixtureDef.restitution = 0; // No restitution
-
-        CircleShape circleShape = new CircleShape();
-        circleShape.setRadius(1.5f);
-        fixtureDef.shape = circleShape;
-
-        body.createFixture(fixtureDef);
-
-        projectiles.add(body);
-        circleShape.dispose();
-
-        body.setLinearVelocity(weapon.getRange() * 2 * (float) Math.cos(angle), weapon.getRange() * 2 * (float) Math.sin(angle));
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), weapon.getSpeed(), getDirection(), TimeUtils.millis());
+        projectiles.add(projectile);
     }
-
     void changeBattleState(boolean isBattle) {
         this.isBattle = isBattle;
         if (this.isBattle) super.setSpeed(75f);
@@ -101,15 +65,30 @@ public class Player extends Entity{
         return isBattle;
     }
 
-    public MyContactListener getProjectileListener() {
-        return myContactListener;
-    }
-
     public Weapon getWeapon() {
         return weapon;
     }
 
-    public ArrayList<Body> getProjectiles() {
+    public ArrayList<Projectile> getProjectiles() {
         return projectiles;
+    }
+
+    public void updateProjectiles() {
+        for (int i = 0; i < projectiles.size(); i++) {
+            if (!projectiles.get(i).getBody().isActive()) {
+                projectiles.remove(i);
+//                i--;
+            } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() < TimeUtils.millis()){
+                projectiles.get(i).getBody().setActive(false);
+                world.destroyBody(projectiles.get(i).getBody());
+                projectiles.remove(i);
+                sndPaperBump.play();
+            }
+        }
+    }
+
+    public void dispose() {
+        sndPaperSwing.dispose();
+        sndPaperBump.dispose();
     }
 }
