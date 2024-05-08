@@ -73,6 +73,10 @@ public class Player extends Entity {
         return projectiles;
     }
 
+    public void setProjectiles(ArrayList<Projectile> projectiles) {
+        this.projectiles=projectiles;
+    }
+
     public void updateProjectiles() {
         for (int i = 0; i < projectiles.size(); i++) {
             if (!projectiles.get(i).getBody().isActive()) {

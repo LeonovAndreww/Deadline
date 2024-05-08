@@ -158,7 +158,7 @@ public class ScreenGame implements Screen {
 //            txtCord = String.valueOf(player.getProjectiles().get(i).getCreateTime());
 //        }
 
-//        txtCord = ghosts.get(0).getBody().getUserData() + "";
+        txtCord=player.getProjectiles().size()+"";
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
@@ -376,13 +376,16 @@ public class ScreenGame implements Screen {
         for (int i = 0; i < ghosts.size(); i++) {
             if (ghosts.get(i).isAlive()) {
                 if (ghosts.get(i).getBody().getUserData()=="hit") {
-                    ghosts.get(i).update(player.getWeapon().getDamage());
+                    ghosts.get(i).hit(player.getWeapon().getDamage());
                     player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                     world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
-
+                    player.getProjectiles().remove(player.getProjectiles().size() - 1);
                     ghosts.get(i).getBody().setUserData("ghost");
                 }
-            } else {
+            }
+            if (!ghosts.get(i).isAlive()) {
+                ghosts.get(i).getBody().setActive(false);
+                world.destroyBody(ghosts.get(i).getBody());
                 ghosts.remove(i);
                 break;
             }

@@ -72,6 +72,9 @@ public class MyContactListener implements ContactListener {
             bodyB.setUserData("hit");
             sndPaperBump.play();
         }
+        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile" && bodyA.getUserData()=="projectile") {
+            contact.setEnabled(false);
+        }
     }
 
     @Override
