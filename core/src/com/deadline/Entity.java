@@ -14,7 +14,8 @@ public class Entity {
     private int health, maxHealth;
     private char direction = 'd';
     private int phase, nPhases;
-    long timeLastPhase, timePhaseInterval;
+    private long timeLastPhase, timePhaseInterval;
+    private boolean isAlive;
 
     public Entity(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval) {
         phase = 0;
@@ -23,6 +24,7 @@ public class Entity {
         this.width = width;
         this.height = height;
         this.health = this.maxHealth = maxHealth;
+        this.isAlive = true;
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -49,6 +51,14 @@ public class Entity {
         if(TimeUtils.millis() > timeLastPhase+interval) {
             if (++phase == nPhases) phase = 0;
             timeLastPhase = TimeUtils.millis();
+        }
+    }
+
+    public void hit(int damage) {
+        health-=damage;
+        if (health<=0) {
+            isAlive = false;
+            health = 0;
         }
     }
 
@@ -99,4 +109,7 @@ public class Entity {
         return maxHealth;
     }
 
+    public boolean isAlive() {
+        return isAlive;
+    }
 }

@@ -9,12 +9,15 @@ import com.badlogic.gdx.physics.box2d.World;
 
 public class Projectile {
     private final Body body;
+    private float x, y;
     private final float speed;
     private final long createTime;
+    private final int damage;
 
-    public Projectile(World world, float x, float y, float speed, char direction, long createTime) {
+    public Projectile(World world, float x, float y, float speed, char direction, long createTime, int damage) {
         this.speed = speed;
         this.createTime = createTime;
+        this.damage = damage;
 
         float vx = 0, vy = 0;
         switch (direction) {
@@ -66,5 +69,17 @@ public class Projectile {
 
     public long getCreateTime() {
         return createTime;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 }

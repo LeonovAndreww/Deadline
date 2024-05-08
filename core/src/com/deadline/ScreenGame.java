@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -28,6 +29,7 @@ public class ScreenGame implements Screen {
     Vector3 touch;
 
     World world;
+    MyContactListener contactListener;
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
     BitmapFont font, fontUi;
@@ -48,8 +50,10 @@ public class ScreenGame implements Screen {
     ArrayList<Room> rooms = new ArrayList<>();
 
     Player player;
-    Ghost ghost;
+    Ghost ghost1;
     Weapon paperWad;
+
+    ArrayList<Ghost> ghosts = new ArrayList<>();
 
     MyButton btnAttack;
 
@@ -66,7 +70,8 @@ public class ScreenGame implements Screen {
         fontUi = game.fontUi;
 
         world = new World(new Vector2(0, 0), true);
-        world.setContactListener(new MyContactListener(world));
+        MyContactListener contactListener = new MyContactListener(world);
+        world.setContactListener(contactListener);
 
         glyphLayout = new GlyphLayout();
 
@@ -100,11 +105,12 @@ public class ScreenGame implements Screen {
             imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
         }
 
-        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950);
+        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950,1);
 
         player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
 
-        ghost = new Ghost(world, 20, 24, 80, 80, 4, 4, 350);
+        ghost1 = new Ghost(world, 20, 24, 80, 80, 4, 4, 350,null);
+        ghosts.add(ghost1);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -125,8 +131,10 @@ public class ScreenGame implements Screen {
         // события
 
         player.changePhase();
-        if (ghost.getBody().isAwake()) ghost.changePhase(); // if battling
+        ghostsChangePhase();
         player.updateProjectiles();
+        ghostsUpdate();
+//        ghostHitCheck();
         btnAttack.update(player.getX() + SCR_WIDTH / 3, player.getY() - SCR_HEIGHT / 3);
 
         // отрисовка
@@ -150,7 +158,7 @@ public class ScreenGame implements Screen {
 //            txtCord = String.valueOf(player.getProjectiles().get(i).getCreateTime());
 //        }
 
-//        txtCord = "" +player.timeLastAttack;
+//        txtCord = ghosts.get(0).getBody().getUserData() + "";
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
@@ -275,14 +283,23 @@ public class ScreenGame implements Screen {
     }
 
     private void ghostBatch() {
-        int phase = ghost.getPhase();
-        float x = ghost.getX() - imgGhost[0].getRegionWidth() / 2f; // centralized image x
-        float y = ghost.getY() - imgGhost[0].getRegionHeight() / 2.25f; // centralized image y
-        boolean isMoving = ghost.getBody().isAwake();
-        if (isMoving) batch.draw(imgGhost[phase], x, y);
-        else batch.draw(imgGhost[1], x, y);
+        if (!ghosts.isEmpty()) {
+            for (int i = 0; i < ghosts.size(); i++) {
+                int phase = ghosts.get(0).getPhase();
+                float x = ghosts.get(0).getX() - imgGhost[0].getRegionWidth() / 2f; // centralized image x
+                float y = ghosts.get(0).getY() - imgGhost[0].getRegionHeight() / 2.25f; // centralized image y
+                boolean isMoving = ghosts.get(0).getBody().isAwake();
+                if (isMoving) batch.draw(imgGhost[phase], x, y);
+                else batch.draw(imgGhost[1], x, y);
+            }
+        }
     }
 
+    private void ghostsChangePhase() {
+        for (int i = 0; i < ghosts.size(); i++) {
+            ghosts.get(i).changePhase();
+        }
+    }
 
     private void wallBatch() {
         for (int i = 0; i < rooms.size(); i++) {
@@ -334,6 +351,42 @@ public class ScreenGame implements Screen {
         ArrayList<Projectile> projectiles = player.getProjectiles();
         for (int i = 0; i < projectiles.size(); i++) {
             if (projectiles.get(i).getBody().isActive()) batch.draw(imgPaperWad, projectiles.get(i).getBody().getPosition().x, projectiles.get(i).getBody().getPosition().y);
+        }
+    }
+
+//    private void ghostHitCheck() {
+//        if (!player.getProjectiles().isEmpty() && !ghosts.isEmpty()) {
+//        for (int i = 0; i < ghosts.size(); i++) {
+//            for (int j = 0; j < player.getProjectiles().size(); j++) {
+//                Ghost ghost = ghosts.get(i);
+//                Projectile projectile = player.getProjectiles().get(j);
+//                if ((projectile.getX()>ghost.getX()-ghost.getWidth()/2 && projectile.getX()<ghost.getX()+ghost.getWidth()/2)
+//                        &&(projectile.getY()>ghost.getY()-ghost.getHeight()/2 && projectile.getY()<ghost.getY()+ghost.getHeight()/2)) {
+//                    ghosts.get(i).hit(player.getProjectiles().get(j).getDamage());
+//                    player.getProjectiles().get(j).getBody().setActive(false);
+//                    world.destroyBody(player.getProjectiles().get(j).getBody());
+//                }
+//            }
+//        }
+//        }
+//    }
+
+    private void ghostsUpdate() {
+        if (ghosts != null) {
+        for (int i = 0; i < ghosts.size(); i++) {
+            if (ghosts.get(i).isAlive()) {
+                if (ghosts.get(i).getBody().getUserData()=="hit") {
+                    ghosts.get(i).update(player.getWeapon().getDamage());
+                    player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
+                    world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
+
+                    ghosts.get(i).getBody().setUserData("ghost");
+                }
+            } else {
+                ghosts.remove(i);
+                break;
+            }
+        }
         }
     }
 

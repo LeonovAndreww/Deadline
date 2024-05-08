@@ -24,12 +24,12 @@ public class MyContactListener implements ContactListener {
 
     @Override
     public void beginContact(Contact contact) {
-        Fixture fixtureA = contact.getFixtureA();
-        Fixture fixtureB = contact.getFixtureB();
-
-        Body bodyA = fixtureA.getBody();
-        Body bodyB = fixtureB.getBody();
-
+//        Fixture fixtureA = contact.getFixtureA();
+//        Fixture fixtureB = contact.getFixtureB();
+//
+//        Body bodyA = fixtureA.getBody();
+//        Body bodyB = fixtureB.getBody();
+//
 
     }
 
@@ -56,6 +56,7 @@ public class MyContactListener implements ContactListener {
             world.destroyBody(bodyB);
             sndPaperBump.play();
         }
+
         else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyA.getUserData()=="projectile" && bodyB.getUserData()=="player") {
             contact.setEnabled(false);
         }
@@ -63,11 +64,14 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-//        if (bodyA.getUserData().equals("player") && bodyB.getUserData().equals("projectile")) {
-//            contact.setEnabled(false);
-//        } else if (bodyB.getUserData().equals("player") && bodyA.getUserData().equals("projectile")) {
-//            contact.setEnabled(false);
-//        }
+        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
+            bodyA.setUserData("hit");
+            sndPaperBump.play();
+        }
+        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
+            bodyB.setUserData("hit");
+            sndPaperBump.play();
+        }
     }
 
     @Override

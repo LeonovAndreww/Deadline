@@ -8,13 +8,15 @@ public class Weapon {
     private final boolean isMelee;
     private final Texture texture;
     private final float reloadTime;
+    private final int damage;
 
-    public Weapon(Texture texture, boolean isMelee, float speed, long duration, float reloadTime) {
+    public Weapon(Texture texture, boolean isMelee, float speed, long duration, float reloadTime, int damage) {
         this.texture = texture;
         this.isMelee = isMelee;
         this.speed = speed;
         this.duration = duration;
         this.reloadTime = reloadTime;
+        this.damage = damage;
     }
 
     public Texture getTexture() {
@@ -35,6 +37,10 @@ public class Weapon {
 
     public float getReloadTime() {
         return reloadTime;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     public void dispose(){
