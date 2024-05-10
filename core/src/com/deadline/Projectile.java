@@ -6,18 +6,21 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class Projectile {
     private final Body body;
     private float x, y;
     private final float speed;
-    private final long createTime;
+    private long createTime;
     private final int damage;
+    private final float radius;
 
-    public Projectile(World world, float x, float y, float speed, char direction, long createTime, int damage) {
+    public Projectile(World world, float x, float y, float radius, float speed, char direction, long createTime, int damage) {
         this.speed = speed;
         this.createTime = createTime;
         this.damage = damage;
+        this.radius = radius;
 
         float vx = 0, vy = 0;
         switch (direction) {
@@ -50,7 +53,7 @@ public class Projectile {
         fixtureDef.restitution = 0; // No restitution
 
         CircleShape circleShape = new CircleShape();
-        circleShape.setRadius(1.5f);
+        circleShape.setRadius(radius);
         fixtureDef.shape = circleShape;
 
         body.createFixture(fixtureDef);
@@ -71,12 +74,20 @@ public class Projectile {
         return createTime;
     }
 
+    public void resetCreateTime() {
+        createTime = TimeUtils.millis();
+    }
+
     public float getX() {
-        return x;
+        return getBody().getPosition().x;
     }
 
     public float getY() {
-        return y;
+        return getBody().getPosition().y;
+    }
+
+    public float getRadius() {
+        return radius;
     }
 
     public int getDamage() {

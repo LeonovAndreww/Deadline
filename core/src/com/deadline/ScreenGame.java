@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -50,7 +51,6 @@ public class ScreenGame implements Screen {
     ArrayList<Room> rooms = new ArrayList<>();
 
     Player player;
-    Ghost ghost1;
     Weapon paperWad;
 
     ArrayList<Ghost> ghosts = new ArrayList<>();
@@ -105,16 +105,14 @@ public class ScreenGame implements Screen {
             imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
         }
 
-        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950,1);
+        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950, 1);
 
         player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
-
-        ghost1 = new Ghost(world, 20, 24, 80, 80, 4, 4, 350,null);
-        ghosts.add(ghost1);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
         generateMap(7);
+        generateRooms();
     }
 
     @Override
@@ -134,7 +132,6 @@ public class ScreenGame implements Screen {
         ghostsChangePhase();
         player.updateProjectiles();
         ghostsUpdate();
-//        ghostHitCheck();
         btnAttack.update(player.getX() + SCR_WIDTH / 3, player.getY() - SCR_HEIGHT / 3);
 
         // отрисовка
@@ -150,7 +147,7 @@ public class ScreenGame implements Screen {
         projectileBatch();
         doorPreBatch();
         playerBatch();
-        ghostBatch();
+        ghostsBatch();
         doorPostBatch();
 
 
@@ -158,7 +155,8 @@ public class ScreenGame implements Screen {
 //            txtCord = String.valueOf(player.getProjectiles().get(i).getCreateTime());
 //        }
 
-        txtCord=player.getProjectiles().size()+"";
+        // ghost roomnum in constructor
+        txtCord = "" + rooms.get(0).getX() + " " + rooms.get(0).getY();
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
@@ -256,7 +254,7 @@ public class ScreenGame implements Screen {
     private void playerBatch() {
         int phase = player.getPhase();
         float x = player.getX() - imgPlayerIdle[0][0].getRegionWidth() / 2f; // centralized image x
-        float y = player.getY() - imgPlayerIdle[0][0].getRegionHeight() / 5f; // centralized image y
+        float y = player.getY() - imgPlayerIdle[0][0].getRegionHeight() / 3.5f; // centralized image y
         boolean isMoving = player.getBody().isAwake(); // реагировать не на сон, а на джойстик! w
 
         switch (player.getDirection()) {
@@ -282,12 +280,12 @@ public class ScreenGame implements Screen {
         }
     }
 
-    private void ghostBatch() {
+    private void ghostsBatch() {
         if (!ghosts.isEmpty()) {
             for (int i = 0; i < ghosts.size(); i++) {
-                int phase = ghosts.get(0).getPhase();
-                float x = ghosts.get(0).getX() - imgGhost[0].getRegionWidth() / 2f; // centralized image x
-                float y = ghosts.get(0).getY() - imgGhost[0].getRegionHeight() / 2.25f; // centralized image y
+                int phase = ghosts.get(i).getPhase();
+                float x = ghosts.get(i).getX() - imgGhost[0].getRegionWidth() / 2f; // centralized image x
+                float y = ghosts.get(i).getY() - imgGhost[0].getRegionHeight() / 2.25f; // centralized image y
                 boolean isMoving = ghosts.get(0).getBody().isAwake();
                 if (isMoving) batch.draw(imgGhost[phase], x, y);
                 else batch.draw(imgGhost[1], x, y);
@@ -320,7 +318,7 @@ public class ScreenGame implements Screen {
 
             for (int j = 0; j < room.getDoorVerBodies().size(); j++) {
                 Body wall = room.getDoorVerBodies().get(j);
-                switch (j%3) { // %3 cuz there may be two doors
+                switch (j % 3) { // %3 cuz there may be two doors
                     case 0:
                         batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + 10, 10, room.getHeight() / 3);
                         break;
@@ -339,18 +337,22 @@ public class ScreenGame implements Screen {
             Room room = rooms.get(i);
             for (int j = 0; j < room.getDoorHorBodies().size(); j++) {
                 Body wall = room.getDoorHorBodies().get(j);
-                switch (j%3) {
-                    case 0: batch.draw(imgHorWall, room.getX()+10, wall.getPosition().y-5, room.getWidth()/ 3, 10); break;
-                    case 2: batch.draw(imgHorWall, room.getX() + room.getWidth()*(2f/3)-10, wall.getPosition().y-5, room.getWidth()/ 3, 10);
+                switch (j % 3) {
+                    case 0:
+                        batch.draw(imgHorWall, room.getX() + 10, wall.getPosition().y - 5, room.getWidth() / 3, 10);
+                        break;
+                    case 2:
+                        batch.draw(imgHorWall, room.getX() + room.getWidth() * (2f / 3) - 10, wall.getPosition().y - 5, room.getWidth() / 3, 10);
                 }
             }
         }
     }
 
     private void projectileBatch() {
-        ArrayList<Projectile> projectiles = player.getProjectiles();
-        for (int i = 0; i < projectiles.size(); i++) {
-            if (projectiles.get(i).getBody().isActive()) batch.draw(imgPaperWad, projectiles.get(i).getBody().getPosition().x, projectiles.get(i).getBody().getPosition().y);
+        for (int i = 0; i < player.getProjectiles().size(); i++) {
+            Projectile projectile = player.getProjectiles().get(i);
+            if (projectile.getBody().isActive())
+                batch.draw(imgPaperWad, projectile.getX()-projectile.getRadius()*2, projectile.getY()-projectile.getRadius()*2);
         }
     }
 
@@ -373,32 +375,40 @@ public class ScreenGame implements Screen {
 
     private void ghostsUpdate() {
         if (ghosts != null) {
-        for (int i = 0; i < ghosts.size(); i++) {
-            if (ghosts.get(i).isAlive()) {
-                if (ghosts.get(i).getBody().getUserData()=="hit") {
-                    ghosts.get(i).hit(player.getWeapon().getDamage());
-                    player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
-                    world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
-                    player.getProjectiles().remove(player.getProjectiles().size() - 1);
-                    ghosts.get(i).getBody().setUserData("ghost");
+            for (int i = 0; i < ghosts.size(); i++) {
+                if (ghosts.get(i).isAlive()) {
+                    if (!player.getProjectiles().isEmpty()) {
+                        if (ghosts.get(i).getBody().getUserData() == "hit") {
+                            ghosts.get(i).hit(player.getWeapon().getDamage());
+                            player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
+                            world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
+                            player.getProjectiles().remove(player.getProjectiles().size() - 1);
+                            ghosts.get(i).getBody().setUserData("ghost");
+                        }
+                    }
+                }
+                if (!ghosts.get(i).isAlive()) {
+                    ghosts.get(i).getBody().setActive(false);
+                    world.destroyBody(ghosts.get(i).getBody());
+                    ghosts.remove(i);
+                    break;
                 }
             }
-            if (!ghosts.get(i).isAlive()) {
-                ghosts.get(i).getBody().setActive(false);
-                world.destroyBody(ghosts.get(i).getBody());
-                ghosts.remove(i);
-                break;
-            }
-        }
         }
     }
 
-    void generateMap(int maxRooms) {
+    private void generateMap(int maxRooms) {
         float roomX = 0, roomY = 0;
         float roomWidth = 200, roomHeight = 200;
+        char roomType = 'd';
         ArrayList<Character> doors = new ArrayList<>();
 
+
         for (int i = 0; i < maxRooms; i++) {
+            if (i == 0) roomType = 's';
+            else if (i == maxRooms - 1) roomType = 'q';
+            else roomType = 'd';
+
             doors.clear();
             doors = generateDir(roomX, roomY, roomWidth, roomHeight);
 
@@ -422,7 +432,7 @@ public class ScreenGame implements Screen {
             }
 
             ArrayList<Room> tempRooms = new ArrayList<>(rooms);
-            Room room = new Room(world, roomX, roomY, roomWidth, roomHeight, doors, tempRooms);
+            Room room = new Room(world, roomX, roomY, roomWidth, roomHeight, doors, tempRooms, roomType);
             setDoors();
             rooms.add(room);
             doors.clear();
@@ -460,7 +470,7 @@ public class ScreenGame implements Screen {
     }
 
 
-    ArrayList<Character> generateDir(float x, float y, float width, float height) {
+    private ArrayList<Character> generateDir(float x, float y, float width, float height) {
         ArrayList<Character> freeCell = new ArrayList<>();
         float testX, testY;
 
@@ -480,7 +490,7 @@ public class ScreenGame implements Screen {
         return freeCell;
     }
 
-    void setDoors() {
+    private void setDoors() {
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
             for (int j = 0; j < rooms.size(); j++) {
@@ -504,7 +514,7 @@ public class ScreenGame implements Screen {
         }
     }
 
-    boolean hasFreeCell(float x, float y) {
+    private boolean hasFreeCell(float x, float y) {
         float roomX, roomY; // init
 
         for (int i = 0; i < rooms.size(); i++) {
@@ -515,10 +525,24 @@ public class ScreenGame implements Screen {
         }
         return true;
     }
-//    int hasDirNum(char direction, float x, float y) {
-//        for (int i = 0; i < rooms.size(); i++) {
-//            if (rooms.get(i).getDoors().contains(direction) && rooms.get(i).getX() == x && rooms.get(i).getY() == y) return i;
-//        }
-//        return -1;
-//    }
+
+    private void generateRooms() {
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            switch (room.getType()) {
+                case 's':
+                    continue;
+                case 'q':
+                    continue;
+                case 'd':
+                    for (int j = 0; j < MathUtils.random(3) + 1; j++) {
+//                        float randomFloat = a + new Random().nextFloat() * (b - a);
+                        float spawnX = MathUtils.random(room.getX() + 10, room.getX() + room.getWidth() - 10);
+                        float spawnY = MathUtils.random(room.getY() + 10, room.getY() + room.getHeight() - 10);
+                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 4, 4, 350, null);
+                        ghosts.add(ghost);
+                    }
+            }
+        }
+    }
 }

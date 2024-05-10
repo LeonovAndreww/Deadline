@@ -18,6 +18,7 @@ public class Ghost extends Entity{
         this.nPhases = nPhases;
         this.timePhaseInterval = timePhaseInterval;
         this.weapon = weapon;
+        phase = 0;
         getBody().setUserData("ghost");
     }
 
@@ -33,15 +34,15 @@ public class Ghost extends Entity{
     }
 
     public void update(int damage) {
-        if (!isAlive()) {
-            getBody().setActive(false);
-            world.destroyBody(getBody());
-        }
-        else {
+        if (isAlive()) {
             if (getBody().getUserData()=="hit") {
                 hit(damage);
                 getBody().setUserData("ghost");
             }
         }
+    }
+
+    public void attack(float playerX, float playerY) {
+
     }
 }

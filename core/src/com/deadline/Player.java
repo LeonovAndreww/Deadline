@@ -52,7 +52,7 @@ public class Player extends Entity {
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), weapon.getSpeed(), getDirection(), TimeUtils.millis(), weapon.getDamage());
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed(), getDirection(), TimeUtils.millis(), weapon.getDamage());
         projectiles.add(projectile);
     }
     void changeBattleState(boolean isBattle) {
@@ -80,13 +80,18 @@ public class Player extends Entity {
     public void updateProjectiles() {
         for (int i = 0; i < projectiles.size(); i++) {
             if (!projectiles.get(i).getBody().isActive()) {
+                projectiles.get(i).resetCreateTime();
+                world.destroyBody(projectiles.get(i).getBody());
                 projectiles.remove(i);
+                break;
 //                i--;
-            } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() < TimeUtils.millis()){
+            } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() <= TimeUtils.millis()){
+                projectiles.get(i).resetCreateTime();
                 projectiles.get(i).getBody().setActive(false);
                 world.destroyBody(projectiles.get(i).getBody());
                 projectiles.remove(i);
                 sndPaperBump.play();
+                break;
             }
         }
     }

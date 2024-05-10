@@ -16,6 +16,7 @@ public class Entity {
     private int phase, nPhases;
     private long timeLastPhase, timePhaseInterval;
     private boolean isAlive;
+    private boolean isBattle;
 
     public Entity(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval) {
         phase = 0;

@@ -12,6 +12,7 @@ public class Room {
     World world;
     private float x, y;
     private float width, height;
+    private char type;
     public Body topWall, bottomWall, leftWall, rightWall;
     private boolean hasTopWall, hasBottomWall, hasLeftWall, hasRightWall;
     private ArrayList<Character> doors = new ArrayList<>();
@@ -20,12 +21,13 @@ public class Room {
 
     boolean built;
 
-    public Room(World world, float x, float y, float width, float height, ArrayList<Character> doorDir, ArrayList<Room> rooms) {
+    public Room(World world, float x, float y, float width, float height, ArrayList<Character> doorDir, ArrayList<Room> rooms, char type) {
         this.world = world;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.type = type;
         built = false;
 
         // door check
@@ -91,27 +93,27 @@ public class Room {
         Body body1 = world.createBody(bodyDef1);
 
         BodyDef bodyDef2 = new BodyDef();
-        bodyDef2.position.set(x+ width*(2f/3)-33, y + height / 2);
+        bodyDef2.position.set(x+ width*(2f/3)-33, y + height/2);
         bodyDef2.type = BodyDef.BodyType.StaticBody;
         Body body2 = world.createBody(bodyDef2);
 
         BodyDef bodyDef3 = new BodyDef();
-        bodyDef3.position.set(x + width - 43, y + height / 2);
+        bodyDef3.position.set(x + width - 43, y + height/2);
         bodyDef3.type = BodyDef.BodyType.StaticBody;
         Body body3 = world.createBody(bodyDef3);
 
         PolygonShape wallShape = new PolygonShape();
-        wallShape.setAsBox(width/ 3 / 2, height / 2);
+        wallShape.setAsBox(width/3/2, height/2);
 
         PolygonShape doorShape = new PolygonShape();
-        doorShape.setAsBox(width/3/2 - 10, height/2);
+        doorShape.setAsBox(width/3/2-10, height/2);
 
         FixtureDef fixtureDef1 = new FixtureDef();
         fixtureDef1.shape = wallShape;
 
         FixtureDef fixtureDef2 = new FixtureDef();
         fixtureDef2.shape = doorShape;
-        fixtureDef2.isSensor = true;
+//        fixtureDef2.isSensor = true;
 
         FixtureDef fixtureDef3 = new FixtureDef();
         fixtureDef3.shape = wallShape;
@@ -120,6 +122,7 @@ public class Room {
         doorHorBodies.add(body1);
 
         body2.createFixture(fixtureDef2);
+        body2.setUserData("door");
         doorHorBodies.add(body2);
 
         body3.createFixture(fixtureDef3);
@@ -129,29 +132,32 @@ public class Room {
     }
     private void createVerDoor (float x, float y, float width, float height) {
         BodyDef bodyDef1 = new BodyDef();
-        bodyDef1.position.set(x + width / 2, y + (height)*(1f / 3)-33);
+        bodyDef1.position.set(x + width / 2, y + (height)*(1f/3)-23);
         bodyDef1.type = BodyDef.BodyType.StaticBody;
         Body body1 = world.createBody(bodyDef1);
 
         BodyDef bodyDef2 = new BodyDef();
-        bodyDef2.position.set(x + width / 2, y + (height)*(2f / 3)-33);
+        bodyDef2.position.set(x + width / 2, y + (height)*(2f/3)-33);
         bodyDef2.type = BodyDef.BodyType.StaticBody;
         Body body2 = world.createBody(bodyDef2);
 
         BodyDef bodyDef3 = new BodyDef();
-        bodyDef3.position.set(x + width / 2, y + (height)- 33);
+        bodyDef3.position.set(x + width / 2, y + (height)- 43);
         bodyDef3.type = BodyDef.BodyType.StaticBody;
         Body body3 = world.createBody(bodyDef3);
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width/2, (height) / 3 / 2);
+        shape.setAsBox(width/2, (height)/3/2);
+
+        PolygonShape doorShape = new PolygonShape();
+        doorShape.setAsBox(width/2, height/3/2-10);
 
         FixtureDef fixtureDef1 = new FixtureDef();
         fixtureDef1.shape = shape;
 
         FixtureDef fixtureDef2 = new FixtureDef();
-        fixtureDef2.shape = shape;
-        fixtureDef2.isSensor = true;
+        fixtureDef2.shape = doorShape;
+//        fixtureDef2.isSensor = true;
 
         FixtureDef fixtureDef3 = new FixtureDef();
         fixtureDef3.shape = shape;
@@ -160,6 +166,7 @@ public class Room {
         doorVerBodies.add(body1);
 
         body2.createFixture(fixtureDef2);
+        body2.setUserData("door");
         doorVerBodies.add(body2);
 
         body3.createFixture(fixtureDef3);
@@ -226,5 +233,9 @@ public class Room {
 
     public ArrayList<Body> getDoorVerBodies() {
         return doorVerBodies;
+    }
+
+    public char getType() {
+        return type;
     }
 }
