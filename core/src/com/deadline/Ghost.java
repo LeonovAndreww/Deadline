@@ -11,6 +11,7 @@ public class Ghost extends Entity{
     private int health, maxHealth;
     private long timeLastAttack, timeLastPhase;
     private int phase, nPhases;
+    private int room;
 
     public Ghost(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
         super(world, width, height, x, y, maxHealth, nPhases, timePhaseInterval);
@@ -44,5 +45,13 @@ public class Ghost extends Entity{
 
     public void attack(float playerX, float playerY) {
 
+    }
+
+    public int getRoom() {
+        return room;
+    }
+
+    public void setRoomNum(int room) {
+        this.room = room;
     }
 }

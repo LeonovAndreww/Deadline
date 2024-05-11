@@ -73,6 +73,7 @@ public class Room {
         bodyDef.position.set(x + width / 2, y + height / 2);
         bodyDef.type = BodyDef.BodyType.StaticBody;
         Body body = world.createBody(bodyDef);
+        body.setUserData("wall");
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(width / 2, height / 2);
@@ -119,13 +120,15 @@ public class Room {
         fixtureDef3.shape = wallShape;
 
         body1.createFixture(fixtureDef1);
+        body1.setUserData("wall");
         doorHorBodies.add(body1);
 
         body2.createFixture(fixtureDef2);
-        body2.setUserData("door");
+        body2.setUserData("openDoor");
         doorHorBodies.add(body2);
 
         body3.createFixture(fixtureDef3);
+        body3.setUserData("wall");
         doorHorBodies.add(body3);
 
         wallShape.dispose();
@@ -163,13 +166,15 @@ public class Room {
         fixtureDef3.shape = shape;
 
         body1.createFixture(fixtureDef1);
+        body1.setUserData("wall");
         doorVerBodies.add(body1);
 
         body2.createFixture(fixtureDef2);
-        body2.setUserData("door");
+        body2.setUserData("openDoor");
         doorVerBodies.add(body2);
 
         body3.createFixture(fixtureDef3);
+        body3.setUserData("wall");
         doorVerBodies.add(body3);
 
         shape.dispose();

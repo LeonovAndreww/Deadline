@@ -39,11 +39,13 @@ public class ScreenGame implements Screen {
 
     Texture imgRoom;
     Texture imgHorWall, imgVerWall;
-    Texture imgHorDoor, imgVerDoor;
     Texture imgJstBase, imgJstKnob;
     Texture imgPaperWad;
+    Texture imgHorDoorAtlas, imgVerDoorAtlas;
     Texture imgPlayerAtlas;
     Texture imgGhostAtlas;
+    TextureRegion[] imgHorDoor = new TextureRegion[2];
+    TextureRegion[] imgVerDoor = new TextureRegion[2];
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
     TextureRegion[] imgGhost = new TextureRegion[4];
@@ -60,6 +62,8 @@ public class ScreenGame implements Screen {
     String txtCord = "Empty";
     boolean actJoystick = false;
     boolean actAttack = false;
+
+    static final int THICKNESS = 10;
 
     public ScreenGame(DdlnGame game) {
         this.game = game;
@@ -80,12 +84,11 @@ public class ScreenGame implements Screen {
         imgHorWall = new Texture("horizontalWall.png");
         imgVerWall = new Texture("verticalWall.png");
 
-        imgHorDoor = new Texture("horizontalDoor.png");
-        imgVerDoor = new Texture("verticalDoor.png");
-
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
 
+        imgHorDoorAtlas = new Texture("horizontalDoorAtlas.png");
+        imgVerDoorAtlas = new Texture("verticalDoorAtlas.png");
         imgPlayerAtlas = new Texture("playerAtlas.png");
         imgGhostAtlas = new Texture("ghostAtlas.png");
 
@@ -104,8 +107,13 @@ public class ScreenGame implements Screen {
         for (int i = 0; i < imgGhost.length; i++) {
             imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
         }
+        imgHorDoor[0] = new TextureRegion(imgHorDoorAtlas, 0, 0, 64, 16);
+        imgHorDoor[1] = new TextureRegion(imgHorDoorAtlas, 0, 16, 64, 16);
+        imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
+        imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
-        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950, 1);
+
+        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950, 2);
 
         player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
 
@@ -132,6 +140,7 @@ public class ScreenGame implements Screen {
         ghostsChangePhase();
         player.updateProjectiles();
         ghostsUpdate();
+        doorsUpdate();
         btnAttack.update(player.getX() + SCR_WIDTH / 3, player.getY() - SCR_HEIGHT / 3);
 
         // отрисовка
@@ -155,8 +164,7 @@ public class ScreenGame implements Screen {
 //            txtCord = String.valueOf(player.getProjectiles().get(i).getCreateTime());
 //        }
 
-        // ghost roomnum in constructor
-        txtCord = "" + rooms.get(0).getX() + " " + rooms.get(0).getY();
+        txtCord = getPlayerRoom() + "";
         font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
@@ -191,8 +199,8 @@ public class ScreenGame implements Screen {
     public void dispose() {
         imgHorWall.dispose();
         imgVerWall.dispose();
-        imgHorDoor.dispose();
-        imgVerDoor.dispose();
+        imgHorDoorAtlas.dispose();
+        imgVerDoorAtlas.dispose();
         imgRoom.dispose();
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
@@ -312,7 +320,12 @@ public class ScreenGame implements Screen {
             for (int j = 0; j < room.getDoorHorBodies().size(); j++) {
                 Body wall = room.getDoorHorBodies().get(j);
                 if (j % 3 == 1) {
-                    batch.draw(imgHorDoor, room.getX() + room.getWidth() * (1f / 3) + 10, wall.getPosition().y - 5, room.getWidth() - ((room.getWidth() / 3) * 2) - 20, 10);
+                    if (wall.getUserData() == "closeDoor") {
+                        batch.draw(imgHorDoor[1], room.getX() + room.getWidth() * (1f / 3) + THICKNESS, wall.getPosition().y - 5, room.getWidth() - ((room.getWidth() / 3) * 2) - 20, THICKNESS);
+                    } else {
+                        batch.draw(imgHorDoor[0], room.getX() + room.getWidth() * (1f / 3) + THICKNESS, wall.getPosition().y - 5, room.getWidth() - ((room.getWidth() / 3) * 2) - 20, THICKNESS);
+
+                    }
                 }
             }
 
@@ -320,13 +333,17 @@ public class ScreenGame implements Screen {
                 Body wall = room.getDoorVerBodies().get(j);
                 switch (j % 3) { // %3 cuz there may be two doors
                     case 0:
-                        batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + 10, 10, room.getHeight() / 3);
+                        batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + THICKNESS, THICKNESS, room.getHeight() / 3);
                         break;
                     case 1:
-                        batch.draw(imgVerDoor, wall.getPosition().x - 5, room.getY() + room.getHeight() * (1f / 3) + 10, 10, room.getHeight() - ((room.getHeight() / 3) * 2) - 20);
+                        if (wall.getUserData() == "closeDoor") {
+                            batch.draw(imgVerDoor[1], wall.getPosition().x - 5, room.getY() + room.getHeight() * (1f / 3) + THICKNESS, THICKNESS, room.getHeight() - ((room.getHeight() / 3) * 2) - 20);
+                        } else {
+                            batch.draw(imgVerDoor[0], wall.getPosition().x - 5, room.getY() + room.getHeight() * (1f / 3) + THICKNESS, THICKNESS, room.getHeight() - ((room.getHeight() / 3) * 2) - 20);
+                        }
                         break;
                     case 2:
-                        batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + room.getHeight() * (2f / 3) - 10, 10, room.getHeight() / 3);
+                        batch.draw(imgVerWall, wall.getPosition().x - 5, room.getY() + room.getHeight() * (2f / 3) - THICKNESS, THICKNESS, room.getHeight() / 3);
                 }
             }
         }
@@ -339,10 +356,10 @@ public class ScreenGame implements Screen {
                 Body wall = room.getDoorHorBodies().get(j);
                 switch (j % 3) {
                     case 0:
-                        batch.draw(imgHorWall, room.getX() + 10, wall.getPosition().y - 5, room.getWidth() / 3, 10);
+                        batch.draw(imgHorWall, room.getX() + THICKNESS, wall.getPosition().y - 5, room.getWidth() / 3, THICKNESS);
                         break;
                     case 2:
-                        batch.draw(imgHorWall, room.getX() + room.getWidth() * (2f / 3) - 10, wall.getPosition().y - 5, room.getWidth() / 3, 10);
+                        batch.draw(imgHorWall, room.getX() + room.getWidth() * (2f / 3) - THICKNESS, wall.getPosition().y - 5, room.getWidth() / 3, THICKNESS);
                 }
             }
         }
@@ -352,7 +369,7 @@ public class ScreenGame implements Screen {
         for (int i = 0; i < player.getProjectiles().size(); i++) {
             Projectile projectile = player.getProjectiles().get(i);
             if (projectile.getBody().isActive())
-                batch.draw(imgPaperWad, projectile.getX()-projectile.getRadius()*2, projectile.getY()-projectile.getRadius()*2);
+                batch.draw(imgPaperWad, projectile.getX() - projectile.getRadius() * 2, projectile.getY() - projectile.getRadius() * 2);
         }
     }
 
@@ -393,6 +410,33 @@ public class ScreenGame implements Screen {
                     ghosts.remove(i);
                     break;
                 }
+            }
+        }
+    }
+
+    private void doorsUpdate() {
+        Room room = rooms.get(getPlayerRoom());
+        int ghostNum = 0;
+        for (int i = 0; i < ghosts.size(); i++) {
+            if (ghosts.get(i).getRoom() == getPlayerRoom()) ghostNum++;
+        }
+
+        for (int i = 1; i < room.getDoorVerBodies().size(); i += 3) {
+            if (ghostNum > 0) {
+                room.getDoorVerBodies().get(i).setUserData("closeDoor");
+                player.setBattleState(true);
+            } else {
+                room.getDoorVerBodies().get(i).setUserData("openDoor");
+                player.setBattleState(false);
+            }
+        }
+        for (int i = 1; i < room.getDoorHorBodies().size(); i += 3) {
+            if (ghostNum > 0) {
+                room.getDoorHorBodies().get(i).setUserData("closeDoor");
+                player.setBattleState(true);
+            } else {
+                room.getDoorHorBodies().get(i).setUserData("openDoor");
+                player.setBattleState(false);
             }
         }
     }
@@ -535,14 +579,25 @@ public class ScreenGame implements Screen {
                 case 'q':
                     continue;
                 case 'd':
-                    for (int j = 0; j < MathUtils.random(3) + 1; j++) {
+                    for (int j = 0; j < MathUtils.random(2) + 1; j++) {
 //                        float randomFloat = a + new Random().nextFloat() * (b - a);
-                        float spawnX = MathUtils.random(room.getX() + 10, room.getX() + room.getWidth() - 10);
-                        float spawnY = MathUtils.random(room.getY() + 10, room.getY() + room.getHeight() - 10);
-                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 4, 4, 350, null);
+                        float spawnX = MathUtils.random(room.getX() + THICKNESS, room.getX() + room.getWidth() - THICKNESS);
+                        float spawnY = MathUtils.random(room.getY() + THICKNESS, room.getY() + room.getHeight() - THICKNESS);
+                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 5, 4, 350, null);
+                        ghost.setRoomNum(i);
                         ghosts.add(ghost);
                     }
             }
         }
+    }
+
+    public int getPlayerRoom() {
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            if (player.getX() > room.getX() + THICKNESS && player.getX() < room.getX() + room.getWidth() - THICKNESS && player.getY() > room.getY() + THICKNESS && player.getY() < room.getY() + room.getHeight() - THICKNESS) {
+                return i;
+            }
+        }
+        return 0;
     }
 }

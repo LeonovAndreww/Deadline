@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.util.ArrayList;
 
 public class Player extends Entity {
+    private static final float BASIC_SPEED = 50f, BATTLE_SPEED = 75f;
     private final World world;
     private boolean isBattle = false;
     private Weapon weapon;
@@ -55,10 +56,10 @@ public class Player extends Entity {
         Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed(), getDirection(), TimeUtils.millis(), weapon.getDamage());
         projectiles.add(projectile);
     }
-    void changeBattleState(boolean isBattle) {
+    void setBattleState(boolean isBattle) {
         this.isBattle = isBattle;
-        if (this.isBattle) super.setSpeed(75f);
-        else super.setSpeed(50f);
+        if (this.isBattle) super.setSpeed(BATTLE_SPEED);
+        else super.setSpeed(BASIC_SPEED);
     }
 
     public boolean getBattleState() {

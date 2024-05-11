@@ -46,15 +46,19 @@ public class MyContactListener implements ContactListener {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData()=="projectile") {
+        if (bodyA.getUserData()=="projectile" && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor")) {
             bodyA.setActive(false);
-//            world.destroyBody(bodyA);
             sndPaperBump.play();
         }
-        else if (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile") {
+        else if (bodyB.getUserData()=="projectile" && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor")) {
             bodyB.setActive(false);
-//            world.destroyBody(bodyB);
             sndPaperBump.play();
+        }
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="openDoor") {
+            contact.setEnabled(false);
+        }
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="openDoor") {
+            contact.setEnabled(false);
         }
 
         else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyA.getUserData()=="projectile" && bodyB.getUserData()=="player") {
@@ -77,10 +81,10 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData()=="player" && bodyB.getUserData()=="door") {
+        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData()=="player" && bodyB.getUserData()=="openDoor") {
             contact.setEnabled(false);
         }
-        else if (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="player" && bodyA.getUserData()=="door") {
+        else if (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="player" && bodyA.getUserData()=="openDoor") {
             contact.setEnabled(false);
         }
 
