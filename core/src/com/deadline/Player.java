@@ -82,8 +82,10 @@ public class Player extends Entity {
         for (int i = 0; i < projectiles.size(); i++) {
             if (!projectiles.get(i).getBody().isActive()) {
                 projectiles.get(i).resetCreateTime();
+                projectiles.get(i).resetCreateTime();
                 world.destroyBody(projectiles.get(i).getBody());
                 projectiles.remove(i);
+                sndPaperBump.play();
                 break;
 //                i--;
             } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() <= TimeUtils.millis()){

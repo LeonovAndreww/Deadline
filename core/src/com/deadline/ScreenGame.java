@@ -4,6 +4,7 @@ import static com.deadline.DdlnGame.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -41,6 +42,7 @@ public class ScreenGame implements Screen {
     Texture imgHorWall, imgVerWall;
     Texture imgJstBase, imgJstKnob;
     Texture imgPaperWad;
+    Texture imgRouble;
     Texture imgHorDoorAtlas, imgVerDoorAtlas;
     Texture imgPlayerAtlas;
     Texture imgGhostAtlas;
@@ -50,18 +52,22 @@ public class ScreenGame implements Screen {
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
     TextureRegion[] imgGhost = new TextureRegion[4];
 
+    Sound sndPaperBump;
+
     ArrayList<Room> rooms = new ArrayList<>();
 
     Player player;
     Weapon paperWad;
 
     ArrayList<Ghost> ghosts = new ArrayList<>();
+    ArrayList<Coin> coins = new ArrayList<>();
 
     MyButton btnAttack;
 
     String txtCord = "Empty";
     boolean actJoystick = false;
     boolean actAttack = false;
+    public int wallet = 0;
 
     static final int THICKNESS = 10;
 
@@ -93,6 +99,10 @@ public class ScreenGame implements Screen {
         imgGhostAtlas = new Texture("ghostAtlas.png");
 
         imgPaperWad = new Texture("paperWad.png");
+        imgRouble = new Texture("rouble.png");
+
+        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
+
 
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 
@@ -141,6 +151,7 @@ public class ScreenGame implements Screen {
         player.updateProjectiles();
         ghostsUpdate();
         doorsUpdate();
+        coinsUpdate();
         btnAttack.update(player.getX() + SCR_WIDTH / 3, player.getY() - SCR_HEIGHT / 3);
 
         // отрисовка
@@ -154,18 +165,13 @@ public class ScreenGame implements Screen {
 
         wallBatch();
         projectileBatch();
+        coinBatch();
         doorPreBatch();
         playerBatch();
         ghostsBatch();
         doorPostBatch();
 
-
-//        for (int i = 0; i < player.getProjectiles().size(); i++) {
-//            txtCord = String.valueOf(player.getProjectiles().get(i).getCreateTime());
-//        }
-
-        txtCord = getPlayerRoom() + "";
-        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
+//        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
@@ -197,14 +203,16 @@ public class ScreenGame implements Screen {
 
     @Override
     public void dispose() {
+        imgRoom.dispose();
         imgHorWall.dispose();
         imgVerWall.dispose();
         imgHorDoorAtlas.dispose();
         imgVerDoorAtlas.dispose();
-        imgRoom.dispose();
         imgPlayerAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
+        imgPaperWad.dispose();
+        imgRouble.dispose();
         player.dispose();
         paperWad.dispose();
         batch.dispose();
@@ -291,12 +299,11 @@ public class ScreenGame implements Screen {
     private void ghostsBatch() {
         if (!ghosts.isEmpty()) {
             for (int i = 0; i < ghosts.size(); i++) {
-                int phase = ghosts.get(i).getPhase();
+                Ghost ghost = ghosts.get(i);
+                int phase = ghost.getPhase();
                 float x = ghosts.get(i).getX() - imgGhost[0].getRegionWidth() / 2f; // centralized image x
                 float y = ghosts.get(i).getY() - imgGhost[0].getRegionHeight() / 2.25f; // centralized image y
-                boolean isMoving = ghosts.get(0).getBody().isAwake();
-                if (isMoving) batch.draw(imgGhost[phase], x, y);
-                else batch.draw(imgGhost[1], x, y);
+                batch.draw(imgGhost[phase], x, y);
             }
         }
     }
@@ -373,6 +380,13 @@ public class ScreenGame implements Screen {
         }
     }
 
+    private void coinBatch() {
+        for (int i = 0; i < coins.size(); i++) {
+            Coin coin = coins.get(i);
+            batch.draw(imgRouble, coin.getX()-coin.getRadius(), coin.getY()-coin.getRadius(), coin.getRadius()*2, coin.getRadius()*2);
+        }
+    }
+
 //    private void ghostHitCheck() {
 //        if (!player.getProjectiles().isEmpty() && !ghosts.isEmpty()) {
 //        for (int i = 0; i < ghosts.size(); i++) {
@@ -393,21 +407,27 @@ public class ScreenGame implements Screen {
     private void ghostsUpdate() {
         if (ghosts != null) {
             for (int i = 0; i < ghosts.size(); i++) {
-                if (ghosts.get(i).isAlive()) {
+                Ghost ghost = ghosts.get(i);
+                if (ghost.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
-                        if (ghosts.get(i).getBody().getUserData() == "hit") {
+                        if (ghost.getBody().getUserData() == "hit") {
                             ghosts.get(i).hit(player.getWeapon().getDamage());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
-                            ghosts.get(i).getBody().setUserData("ghost");
+                            ghost.getBody().setUserData("ghost");
+                            sndPaperBump.play();
                         }
                     }
                 }
-                if (!ghosts.get(i).isAlive()) {
-                    ghosts.get(i).getBody().setActive(false);
-                    world.destroyBody(ghosts.get(i).getBody());
+                if (!ghost.isAlive()) {
+                    ghost.getBody().setActive(false);
+                    world.destroyBody(ghost.getBody());
                     ghosts.remove(i);
+
+                    Coin coin = new Coin(world, ghost.getX(), ghost.getY(), 4.5f, 1);
+                    coins.add(coin);
+
                     break;
                 }
             }
@@ -418,7 +438,10 @@ public class ScreenGame implements Screen {
         Room room = rooms.get(getPlayerRoom());
         int ghostNum = 0;
         for (int i = 0; i < ghosts.size(); i++) {
-            if (ghosts.get(i).getRoom() == getPlayerRoom()) ghostNum++;
+            if (ghosts.get(i).getRoom() == getPlayerRoom()) {
+                ghostNum++;
+                ghosts.get(i).setBattle(true);
+            }
         }
 
         for (int i = 1; i < room.getDoorVerBodies().size(); i += 3) {
@@ -437,6 +460,18 @@ public class ScreenGame implements Screen {
             } else {
                 room.getDoorHorBodies().get(i).setUserData("openDoor");
                 player.setBattleState(false);
+            }
+        }
+    }
+
+    private void coinsUpdate() {
+        for (int i = 0; i < coins.size(); i++) {
+            Coin coin = coins.get(i);
+            if (!coin.getBody().isActive()) {
+                world.destroyBody(coin.getBody());
+                wallet+=coin.getValue();
+                coins.remove(i);
+                break;
             }
         }
     }

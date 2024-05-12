@@ -14,12 +14,10 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 public class MyContactListener implements ContactListener {
     private final World world;
-    Sound sndPaperBump;
 
 
     public MyContactListener(World world) {
         this.world = world;
-        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
     }
 
     @Override
@@ -48,11 +46,9 @@ public class MyContactListener implements ContactListener {
 
         if (bodyA.getUserData()=="projectile" && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor")) {
             bodyA.setActive(false);
-            sndPaperBump.play();
         }
         else if (bodyB.getUserData()=="projectile" && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor")) {
             bodyB.setActive(false);
-            sndPaperBump.play();
         }
         else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="openDoor") {
             contact.setEnabled(false);
@@ -61,33 +57,39 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyA.getUserData()=="projectile" && bodyB.getUserData()=="player") {
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="player") {
             contact.setEnabled(false);
         }
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile" && bodyA.getUserData()=="player") {
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="player") {
             contact.setEnabled(false);
         }
 
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
+//            bodyB.setActive(false);
             bodyA.setUserData("hit");
-            sndPaperBump.play();
         }
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
+//            bodyA.setActive(false);
             bodyB.setUserData("hit");
-            sndPaperBump.play();
         }
 
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="projectile" && bodyA.getUserData()=="projectile") {
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="projectile") {
             contact.setEnabled(false);
         }
 
-        else if (bodyA.getType() == BodyDef.BodyType.DynamicBody && bodyB.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData()=="player" && bodyB.getUserData()=="openDoor") {
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="openDoor") {
             contact.setEnabled(false);
         }
-        else if (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyB.getType() == BodyDef.BodyType.DynamicBody && bodyB.getUserData()=="player" && bodyA.getUserData()=="openDoor") {
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="openDoor") {
             contact.setEnabled(false);
         }
 
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="coin") {
+            bodyA.setActive(false);
+        }
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="coin") {
+            bodyB.setActive(false);
+        }
 
     }
 
