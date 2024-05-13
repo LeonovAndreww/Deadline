@@ -1,5 +1,6 @@
     package com.deadline;
 
+    import com.badlogic.gdx.math.Vector2;
     import com.badlogic.gdx.physics.box2d.World;
     import com.badlogic.gdx.utils.TimeUtils;
     import java.util.Random;
@@ -47,8 +48,15 @@
             }
         }
 
-        public void attack(float playerX, float playerY) {
-
+        public void attack(Vector2 playerPos) {
+            if (isBattle) {
+                if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
+                    getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(45.0f+random.nextInt(20)));
+                    //sndPaperSwing.play();
+                    timeLastAttack = TimeUtils.millis();
+                    System.out.println(playerPos);
+                }
+            }
         }
 
         public int getRoom() {

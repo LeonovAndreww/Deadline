@@ -12,8 +12,11 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.util.Random;
+
 public class MyContactListener implements ContactListener {
     private final World world;
+    Random random = new Random();
 
 
     public MyContactListener(World world) {
@@ -90,6 +93,25 @@ public class MyContactListener implements ContactListener {
         else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="coin") {
             bodyB.setActive(false);
         }
+
+        else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="coin") {
+            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+        }
+
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="ghost") {
+            bodyB.setUserData("hit");
+        }
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="ghost") {
+            bodyA.setUserData("hit");
+        }
+
+        else if (bodyB.getUserData()=="ghost" && bodyA.getUserData()=="ghost") {
+//            contact.setEnabled(false);
+            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+        }
+
 
     }
 

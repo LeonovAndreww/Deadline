@@ -18,7 +18,7 @@ public class Player extends Entity {
     private boolean isBattle = false;
     private Weapon weapon;
     private int health, maxHealth;
-    private long timeLastAttack;
+    private long timeLastAttack, timeLastDamaged;
     private ArrayList<Projectile> projectiles = new ArrayList<>();
     private final Sound sndPaperSwing, sndPaperBump;
 
@@ -48,12 +48,22 @@ public class Player extends Entity {
         }
     }
 
+    public void update(int damage) {
+        if (getBody().getUserData()=="hit") {
+            if (TimeUtils.millis() - timeLastDamaged > 3650) {
+                hit(damage);
+                timeLastDamaged = TimeUtils.millis();
+            }
+            getBody().setUserData("player");
+        }
+    }
+
     private void meleeAttack() {
         // Melee attack
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed(), getDirection(), TimeUtils.millis(), weapon.getDamage());
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed(), getDirection(), TimeUtils.millis(), weapon.getDamage());
         projectiles.add(projectile);
     }
     void setBattleState(boolean isBattle) {

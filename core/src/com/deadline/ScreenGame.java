@@ -22,9 +22,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 public class ScreenGame implements Screen {
     DdlnGame game;
+    Random random = new Random();
 
     SpriteBatch batch;
     OrthographicCamera camera;
@@ -58,6 +60,7 @@ public class ScreenGame implements Screen {
 
     Player player;
     Weapon paperWad;
+    Weapon ghostOrb;
 
     ArrayList<Ghost> ghosts = new ArrayList<>();
     ArrayList<Coin> coins = new ArrayList<>();
@@ -103,7 +106,6 @@ public class ScreenGame implements Screen {
 
         sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
 
-
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 
         int iter = 0;
@@ -123,7 +125,8 @@ public class ScreenGame implements Screen {
         imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
 
-        paperWad = new Weapon(imgPaperWad, false, 35, 1250, 950, 2);
+        paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 2);
+        ghostOrb = new Weapon(1250, 2500, 1);
 
         player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
 
@@ -149,6 +152,7 @@ public class ScreenGame implements Screen {
         player.changePhase();
         ghostsChangePhase();
         player.updateProjectiles();
+        player.update(1);
         ghostsUpdate();
         doorsUpdate();
         coinsUpdate();
@@ -171,7 +175,9 @@ public class ScreenGame implements Screen {
         ghostsBatch();
         doorPostBatch();
 
-//        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
+        txtCord = "HP "+player.getHealth()+"\nMoney "+wallet;
+
+        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
@@ -408,6 +414,7 @@ public class ScreenGame implements Screen {
         if (ghosts != null) {
             for (int i = 0; i < ghosts.size(); i++) {
                 Ghost ghost = ghosts.get(i);
+                if (ghost.isBattle) ghost.attack(player.getPosition());
                 if (ghost.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (ghost.getBody().getUserData() == "hit") {
@@ -424,10 +431,10 @@ public class ScreenGame implements Screen {
                     ghost.getBody().setActive(false);
                     world.destroyBody(ghost.getBody());
                     ghosts.remove(i);
-
-                    Coin coin = new Coin(world, ghost.getX(), ghost.getY(), 4.5f, 1);
-                    coins.add(coin);
-
+                    for (int j = 0; j < random.nextInt(2)+1; j++) {
+                        Coin coin = new Coin(world, ghost.getX()+2*j, ghost.getY()+2*j, 4.5f, 1);
+                        coins.add(coin);
+                    }
                     break;
                 }
             }
@@ -469,7 +476,7 @@ public class ScreenGame implements Screen {
             Coin coin = coins.get(i);
             if (!coin.getBody().isActive()) {
                 world.destroyBody(coin.getBody());
-                wallet+=coin.getValue();
+                wallet++;
                 coins.remove(i);
                 break;
             }
@@ -618,7 +625,7 @@ public class ScreenGame implements Screen {
 //                        float randomFloat = a + new Random().nextFloat() * (b - a);
                         float spawnX = MathUtils.random(room.getX() + THICKNESS, room.getX() + room.getWidth() - THICKNESS);
                         float spawnY = MathUtils.random(room.getY() + THICKNESS, room.getY() + room.getHeight() - THICKNESS);
-                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 5, 4, 350, null);
+                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 5, 4, 350, ghostOrb);
                         ghost.setRoomNum(i);
                         ghosts.add(ghost);
                     }

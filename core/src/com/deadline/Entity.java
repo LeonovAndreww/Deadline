@@ -1,5 +1,6 @@
 package com.deadline;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -67,9 +68,14 @@ public class Entity {
         return body;
     }
 
+    public Vector2 getPosition() {
+        return body.getPosition();
+    }
+
     public float getX() {
         return body.getPosition().x;
     }
+
     public float getY() {
         return body.getPosition().y;
     }
