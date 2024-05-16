@@ -16,7 +16,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -37,6 +36,7 @@ public class ScreenGame implements Screen {
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
     BitmapFont font, fontUi;
+    GlyphLayout glyphLayout;
 
     OnScreenJoystick joystick;
 
@@ -48,6 +48,7 @@ public class ScreenGame implements Screen {
     Texture imgHorDoorAtlas, imgVerDoorAtlas;
     Texture imgPlayerAtlas;
     Texture imgGhostAtlas;
+    Texture imgBlank;
     TextureRegion[] imgHorDoor = new TextureRegion[2];
     TextureRegion[] imgVerDoor = new TextureRegion[2];
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
@@ -81,6 +82,7 @@ public class ScreenGame implements Screen {
         touch = game.touch;
         font = game.font;
         fontUi = game.fontUi;
+        glyphLayout = DdlnGame.glyphLayout;
 
         world = new World(new Vector2(0, 0), true);
         MyContactListener contactListener = new MyContactListener(world);
@@ -103,6 +105,8 @@ public class ScreenGame implements Screen {
 
         imgPaperWad = new Texture("paperWad.png");
         imgRouble = new Texture("rouble.png");
+
+        imgBlank = new Texture("blank.png");
 
         sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
 
@@ -182,9 +186,16 @@ public class ScreenGame implements Screen {
         joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
 
+        if (player.getHealth() > 0) {
+            world.step(1 / 60f, 6, 2);
+        } else {
+            batch.draw(imgBlank, player.getX()-SCR_WIDTH, player.getY()-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
+            glyphLayout.setText(font, "I'm not ready to die yet");
+            font.draw(batch, "I'm not ready to die yet", player.getX() - glyphLayout.width/2, player.getY());
+        }
+
         batch.end();
 
-        world.step(1 / 60f, 6, 2);
     }
 
     @Override
