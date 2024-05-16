@@ -215,6 +215,7 @@ public class ScreenGame implements Screen {
         imgHorDoorAtlas.dispose();
         imgVerDoorAtlas.dispose();
         imgPlayerAtlas.dispose();
+        imgGhostAtlas.dispose();
         imgJstBase.dispose();
         imgJstKnob.dispose();
         imgPaperWad.dispose();
@@ -388,8 +389,10 @@ public class ScreenGame implements Screen {
 
     private void coinBatch() {
         for (int i = 0; i < coins.size(); i++) {
-            Coin coin = coins.get(i);
-            batch.draw(imgRouble, coin.getX()-coin.getRadius(), coin.getY()-coin.getRadius(), coin.getRadius()*2, coin.getRadius()*2);
+            if (coins.get(i).getBody().isActive()) {
+                Coin coin = coins.get(i);
+                batch.draw(imgRouble, coin.getX() - coin.getRadius(), coin.getY() - coin.getRadius(), coin.getRadius() * 2, coin.getRadius() * 2);
+            }
         }
     }
 
@@ -432,7 +435,7 @@ public class ScreenGame implements Screen {
                     world.destroyBody(ghost.getBody());
                     ghosts.remove(i);
                     for (int j = 0; j < random.nextInt(2)+1; j++) {
-                        Coin coin = new Coin(world, ghost.getX()+2*j, ghost.getY()+2*j, 4.5f, 1);
+                        Coin coin = new Coin(world, ghost.getX() + (random.nextInt(10)+5)*j, ghost.getY() + (random.nextInt(10)+5)*j, 4.5f, 1);
                         coins.add(coin);
                     }
                     break;
@@ -473,12 +476,14 @@ public class ScreenGame implements Screen {
 
     private void coinsUpdate() {
         for (int i = 0; i < coins.size(); i++) {
-            Coin coin = coins.get(i);
-            if (!coin.getBody().isActive()) {
-                world.destroyBody(coin.getBody());
-                wallet++;
-                coins.remove(i);
-                break;
+            if (coins.get(i) != null) {
+                Coin coin = coins.get(i);
+                if (coin.getBody().getUserData()=="got") {
+                    world.destroyBody(coin.getBody());
+                    wallet++;
+                    coins.remove(i);
+                    break;
+                }
             }
         }
     }

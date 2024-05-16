@@ -30,8 +30,6 @@ public class MyContactListener implements ContactListener {
 //
 //        Body bodyA = fixtureA.getBody();
 //        Body bodyB = fixtureB.getBody();
-//
-
     }
 
     @Override
@@ -87,16 +85,9 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="coin") {
-            bodyA.setActive(false);
-        }
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="coin") {
-            bodyB.setActive(false);
-        }
-
         else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="coin") {
-            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
-            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+//            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+//            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
         }
 
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="ghost") {
@@ -106,10 +97,21 @@ public class MyContactListener implements ContactListener {
             bodyA.setUserData("hit");
         }
 
-        else if (bodyB.getUserData()=="ghost" && bodyA.getUserData()=="ghost") {
-//            contact.setEnabled(false);
-            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
-            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+        else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin") && (bodyA.getUserData()=="ghost" || bodyA.getUserData()=="ghost")) {
+            bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
+            bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
+        }
+
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="coin") {
+            bodyA.setUserData("got");
+        }
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="coin") {
+            bodyB.setUserData("got");
+        }
+
+        else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin") && (bodyA.getUserData()=="ghost" || bodyA.getUserData()=="ghost")) {
+            bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
+            bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
         }
 
 
