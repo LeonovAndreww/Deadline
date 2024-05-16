@@ -34,7 +34,7 @@ public class DdlnGame extends Game {
 		screenMenu = new ScreenMenu(this);
 		screenGame = new ScreenGame(this);
 		//screenSetting = new ScreenSetting(this);
-		setScreen(screenGame);
+		setScreen(screenMenu);
 	}
 
 	@Override

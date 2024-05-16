@@ -11,6 +11,8 @@ public class MyButton {
     String text;
     private boolean isTextButton = false;
     private boolean isCircleButton = false;
+    public boolean isPressed = false;
+    public long timePressed = 0;
 
     public MyButton(float x, float y, float width, float height){
         this.x = x;

@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +72,7 @@ public class ScreenGame implements Screen {
     String txtCord = "Empty";
     boolean actJoystick = false;
     boolean actAttack = false;
+    long deathTime = 0;
     public int wallet = 0;
 
     static final int THICKNESS = 10;
@@ -132,7 +134,7 @@ public class ScreenGame implements Screen {
         paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 2);
         ghostOrb = new Weapon(1250, 2500, 1);
 
-        player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
+        player = new Player(world, 14, 18, 50, 50, 2, 6, 450, paperWad);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -192,6 +194,15 @@ public class ScreenGame implements Screen {
             batch.draw(imgBlank, player.getX()-SCR_WIDTH, player.getY()-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
             glyphLayout.setText(font, "I'm not ready to die yet");
             font.draw(batch, "I'm not ready to die yet", player.getX() - glyphLayout.width/2, player.getY());
+            if (deathTime == 0) {
+                deathTime = TimeUtils.millis();
+            }
+            else if (deathTime + 4000 < TimeUtils.millis()) {
+                touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+                camera.unproject(touch);
+                deathTime=0;
+                game.setScreen(game.screenMenu);
+            }
         }
 
         batch.end();

@@ -50,7 +50,7 @@ public class Player extends Entity {
 
     public void update(int damage) {
         if (getBody().getUserData()=="hit") {
-            if (TimeUtils.millis() - timeLastDamaged > 3650) {
+            if (TimeUtils.millis() - timeLastDamaged > 2650) {
                 hit(damage);
                 timeLastDamaged = TimeUtils.millis();
             }
