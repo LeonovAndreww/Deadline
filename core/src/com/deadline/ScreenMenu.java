@@ -51,7 +51,7 @@ public class ScreenMenu implements Screen {
 
     @Override
     public void show() {
-
+        resetMenu();
     }
 
 
@@ -75,13 +75,12 @@ public class ScreenMenu implements Screen {
 
         if (btnShutdown.isPressed) {
             if (TimeUtils.millis() > btnShutdown.timePressed+2150) {
-                btnShutdown.isPressed = false;
-                btnShutdown.timePressed = 0;
                 game.setScreen(game.screenGame);
             }
         }
 
         //  отрисовка
+        camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
@@ -115,5 +114,11 @@ public class ScreenMenu implements Screen {
     public void dispose() {
         imgBg.dispose();
         imgBtnShutdown.dispose();
+    }
+
+    public void resetMenu() {
+        btnShutdown.isPressed = false;
+        btnShutdown.timePressed = 0;
+        camera.setToOrtho(false, SCR_WIDTH, SCR_HEIGHT);
     }
 }

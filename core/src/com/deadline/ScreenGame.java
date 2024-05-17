@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -58,12 +59,11 @@ public class ScreenGame implements Screen {
 
     Sound sndPaperBump;
 
-    ArrayList<Room> rooms = new ArrayList<>();
-
     Player player;
     Weapon paperWad;
     Weapon ghostOrb;
 
+    ArrayList<Room> rooms = new ArrayList<>();
     ArrayList<Ghost> ghosts = new ArrayList<>();
     ArrayList<Coin> coins = new ArrayList<>();
 
@@ -72,6 +72,7 @@ public class ScreenGame implements Screen {
     String txtCord = "Empty";
     boolean actJoystick = false;
     boolean actAttack = false;
+    boolean toReset = false;
     long deathTime = 0;
     public int wallet = 0;
 
@@ -144,7 +145,8 @@ public class ScreenGame implements Screen {
 
     @Override
     public void show() {
-
+        resetGame();
+        System.out.println(world.isLocked());
     }
 
     @Override
@@ -198,8 +200,6 @@ public class ScreenGame implements Screen {
                 deathTime = TimeUtils.millis();
             }
             else if (deathTime + 4000 < TimeUtils.millis()) {
-                touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-                camera.unproject(touch);
                 deathTime=0;
                 game.setScreen(game.screenMenu);
             }
@@ -295,6 +295,34 @@ public class ScreenGame implements Screen {
             player.attack();
         }
     }
+
+    public void resetGame() {
+//        world = new World(new Vector2(0, 0), true);
+//        world.setContactListener(contactListener);
+        Array<Body> bodies = new Array<>();
+        world.getBodies(bodies);
+        for(int i = 0; i < bodies.size; i++)
+        {
+            if(!world.isLocked())
+                world.destroyBody(bodies.get(i));
+        }
+
+        ghosts.clear();
+        rooms.clear();
+        coins.clear();
+
+        wallet = 0;
+        txtCord = "Empty";
+        actJoystick = false;
+        actAttack = false;
+        deathTime = 0;
+        int iter = 0;
+        player = new Player(world, 14, 18, 50, 50, 2, 6, 450, paperWad);
+
+        generateMap(7);
+        generateRooms();
+    }
+
 
     private void playerBatch() {
         int phase = player.getPhase();
