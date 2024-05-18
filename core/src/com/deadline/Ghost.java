@@ -7,8 +7,7 @@
 
     public class Ghost extends Entity{
         private final World world;
-        private long timePhaseInterval;
-        public boolean isBattle;
+        protected long timePhaseInterval;
         private Weapon weapon;
         private int health, maxHealth;
         private long timeLastAttack, timeLastPhase;
@@ -51,10 +50,9 @@
         public void attack(Vector2 playerPos) {
             if (isBattle) {
                 if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
-                    getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(45.0f+random.nextInt(20)));
-                    //sndPaperSwing.play();
+                    getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(55+random.nextInt(35)));
+                    //sndPaperSwing.play(); // звук атаки призрака
                     timeLastAttack = TimeUtils.millis();
-                    System.out.println(playerPos);
                 }
             }
         }

@@ -48,7 +48,6 @@ public class DdlnGame extends Game {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 		parameter.size = 22;
-		parameter.borderWidth = 0.25f;
 		font = generator.generateFont(parameter);
 		parameter.size = 24;
 		parameter.borderWidth = 2;

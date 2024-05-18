@@ -15,7 +15,6 @@ import java.util.ArrayList;
 public class Player extends Entity {
     private static final float BASIC_SPEED = 50f, BATTLE_SPEED = 75f;
     private final World world;
-    private boolean isBattle = false;
     private Weapon weapon;
     private int health, maxHealth;
     private long timeLastAttack, timeLastDamaged;
@@ -48,7 +47,7 @@ public class Player extends Entity {
         }
     }
 
-    public void update(int damage) {
+    public void update(int damage) { // костыль
         if (getBody().getUserData()=="hit") {
             if (TimeUtils.millis() - timeLastDamaged > 2650) {
                 hit(damage);

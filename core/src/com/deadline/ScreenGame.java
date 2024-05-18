@@ -48,11 +48,14 @@ public class ScreenGame implements Screen {
     Texture imgPaperWad;
     Texture imgRouble;
     Texture imgHorDoorAtlas, imgVerDoorAtlas;
+    Texture imgHealthAtlas, imgWalletAtlas;
     Texture imgPlayerAtlas;
     Texture imgGhostAtlas;
     Texture imgBlank;
     TextureRegion[] imgHorDoor = new TextureRegion[2];
     TextureRegion[] imgVerDoor = new TextureRegion[2];
+    TextureRegion[] imgHealth = new TextureRegion[7];
+    TextureRegion[] imgWallet = new TextureRegion[4];
     TextureRegion[][] imgPlayerIdle = new TextureRegion[4][6];
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
     TextureRegion[] imgGhost = new TextureRegion[4];
@@ -73,6 +76,7 @@ public class ScreenGame implements Screen {
     boolean actJoystick = false;
     boolean actAttack = false;
     boolean toReset = false;
+    Vector2 position = new Vector2(0, 0);
     long deathTime = 0;
     public int wallet = 0;
 
@@ -90,6 +94,7 @@ public class ScreenGame implements Screen {
         world = new World(new Vector2(0, 0), true);
         MyContactListener contactListener = new MyContactListener(world);
         world.setContactListener(contactListener);
+        Vector2 position = new Vector2(0, 0);
 
         glyphLayout = new GlyphLayout();
 
@@ -103,6 +108,8 @@ public class ScreenGame implements Screen {
 
         imgHorDoorAtlas = new Texture("horizontalDoorAtlas.png");
         imgVerDoorAtlas = new Texture("verticalDoorAtlas.png");
+        imgHealthAtlas = new Texture("healthbarAtlas.png");
+        imgWalletAtlas = new Texture("walletAtlas.png");
         imgPlayerAtlas = new Texture("playerAtlas.png");
         imgGhostAtlas = new Texture("ghostAtlas.png");
 
@@ -126,6 +133,12 @@ public class ScreenGame implements Screen {
         for (int i = 0; i < imgGhost.length; i++) {
             imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
         }
+        for (int i = 0; i < imgHealth.length; i++) {
+            imgHealth[i] = new TextureRegion(imgHealthAtlas, 0,(imgHealth.length-1-i)*16,64, 16);
+        }
+        for (int i = 0; i < imgWallet.length; i++) {
+            imgWallet[i] = new TextureRegion(imgWalletAtlas, 0, (imgWallet.length-1-i)*16, 16, 16);
+        }
         imgHorDoor[0] = new TextureRegion(imgHorDoorAtlas, 0, 0, 64, 16);
         imgHorDoor[1] = new TextureRegion(imgHorDoorAtlas, 0, 16, 64, 16);
         imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
@@ -135,7 +148,7 @@ public class ScreenGame implements Screen {
         paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 2);
         ghostOrb = new Weapon(1250, 2500, 1);
 
-        player = new Player(world, 14, 18, 50, 50, 2, 6, 450, paperWad);
+        player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -151,6 +164,11 @@ public class ScreenGame implements Screen {
 
     @Override
     public void render(float delta) {
+
+        position.lerp(new Vector2(player.getX(), player.getY()), 0.1f); // 0.1f - это коэффициент сглаживания
+        camera.position.set(position, 0);
+        camera.update();
+
         // касания
 
         touchHandler();
@@ -164,16 +182,15 @@ public class ScreenGame implements Screen {
         ghostsUpdate();
         doorsUpdate();
         coinsUpdate();
-        btnAttack.update(player.getX() + SCR_WIDTH / 3, player.getY() - SCR_HEIGHT / 3);
+        btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
 
         // отрисовка
         ScreenUtils.clear(0, 0, 0, 0);
         debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
-        camera.position.set(player.getX(), player.getY(), 0);
         camera.update();
-        batch.begin();
 
+        batch.begin();
 
         wallBatch();
         projectileBatch();
@@ -182,20 +199,20 @@ public class ScreenGame implements Screen {
         playerBatch();
         ghostsBatch();
         doorPostBatch();
+        hudBatch();
 
-        txtCord = "HP "+player.getHealth()+"\nMoney "+wallet;
+//        txtCord = "HP "+player.getHealth()+"\nMoney "+wallet;
+//        font.draw(batch, txtCord, position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
 
-        font.draw(batch, txtCord, player.getX() - SCR_WIDTH / 2, player.getY() + SCR_HEIGHT / 2);
-
-        joystick.render(batch, imgJstBase, imgJstKnob, player.getX() - SCR_WIDTH / 2.75f, player.getY() - SCR_HEIGHT / 4);
+        joystick.render(batch, imgJstBase, imgJstKnob, position.x - SCR_WIDTH / 2.75f, position.y - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
 
         if (player.getHealth() > 0) {
             world.step(1 / 60f, 6, 2);
         } else {
-            batch.draw(imgBlank, player.getX()-SCR_WIDTH, player.getY()-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
+            batch.draw(imgBlank, position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
             glyphLayout.setText(font, "I'm not ready to die yet");
-            font.draw(batch, "I'm not ready to die yet", player.getX() - glyphLayout.width/2, player.getY());
+            font.draw(batch, "I'm not ready to die yet", position.x - glyphLayout.width/2, position.y);
             if (deathTime == 0) {
                 deathTime = TimeUtils.millis();
             }
@@ -317,7 +334,7 @@ public class ScreenGame implements Screen {
         actAttack = false;
         deathTime = 0;
         int iter = 0;
-        player = new Player(world, 14, 18, 50, 50, 2, 6, 450, paperWad);
+        player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
 
         generateMap(7);
         generateRooms();
@@ -444,6 +461,14 @@ public class ScreenGame implements Screen {
                 batch.draw(imgRouble, coin.getX() - coin.getRadius(), coin.getY() - coin.getRadius(), coin.getRadius() * 2, coin.getRadius() * 2);
             }
         }
+    }
+
+    private void hudBatch() {
+        batch.draw(imgHealth[player.getHealth()], position.x - SCR_WIDTH / 2+2, position.y  + SCR_HEIGHT / 2.5f - 4);
+        if (wallet==0) batch.draw(imgWallet[0], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
+        else if (wallet<5) batch.draw(imgWallet[1], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
+        else if (wallet<10) batch.draw(imgWallet[2], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
+        else batch.draw(imgWallet[3], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
     }
 
 //    private void ghostHitCheck() {

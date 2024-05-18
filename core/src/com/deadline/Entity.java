@@ -15,14 +15,15 @@ public class Entity {
     private int health, maxHealth;
     private char direction = 'd';
     private int phase, nPhases;
-    private long timeLastPhase, timePhaseInterval;
+    protected long timeLastPhase, timePhaseInterval, timeBasePhaseInterval;
     private boolean isAlive;
-    private boolean isBattle;
+    protected boolean isBattle;
 
-    public Entity(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval) {
+    public Entity(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timeBasePhaseInterval) {
         phase = 0;
         this.nPhases = nPhases;
-        this.timePhaseInterval = timePhaseInterval; // except running animation!
+        this.timeBasePhaseInterval = timeBasePhaseInterval; // except running animation!
+        timePhaseInterval = timeBasePhaseInterval;
         this.width = width;
         this.height = height;
         this.health = this.maxHealth = maxHealth;
@@ -49,8 +50,10 @@ public class Entity {
     }
 
     void changePhase(){
-        long interval = timePhaseInterval;
-        if(TimeUtils.millis() > timeLastPhase+interval) {
+        if (isBattle) timePhaseInterval = timeBasePhaseInterval-250;
+        else timePhaseInterval = timeBasePhaseInterval;
+
+        if(TimeUtils.millis() > timeLastPhase+timePhaseInterval) {
             if (++phase == nPhases) phase = 0;
             timeLastPhase = TimeUtils.millis();
         }
