@@ -23,6 +23,9 @@ public class DdlnGame extends Game {
 	ScreenMenu screenMenu;
 	ScreenGame screenGame;
 
+	static float ambientLight = 0.375f;
+	static int playerLightDistance = 135;
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();

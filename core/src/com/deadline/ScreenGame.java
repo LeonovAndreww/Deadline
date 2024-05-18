@@ -5,6 +5,7 @@ import static com.deadline.DdlnGame.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -24,6 +26,10 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+
+import box2dLight.Light;
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
 
 public class ScreenGame implements Screen {
     DdlnGame game;
@@ -37,14 +43,18 @@ public class ScreenGame implements Screen {
     MyContactListener contactListener;
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
+    RayHandler rayHandler;
+    PointLight playerLight;
+
     BitmapFont font, fontUi;
     GlyphLayout glyphLayout;
 
     OnScreenJoystick joystick;
 
-    Texture imgRoom;
+    Texture[] imgRoom = new Texture[2];
     Texture imgHorWall, imgVerWall;
     Texture imgJstBase, imgJstKnob;
+    Texture imgElevator;
     Texture imgPaperWad;
     Texture imgRouble;
     Texture imgHorDoorAtlas, imgVerDoorAtlas;
@@ -67,6 +77,7 @@ public class ScreenGame implements Screen {
     Weapon ghostOrb;
 
     ArrayList<Room> rooms = new ArrayList<>();
+    ArrayList<Body> elevators = new ArrayList<>();
     ArrayList<Ghost> ghosts = new ArrayList<>();
     ArrayList<Coin> coins = new ArrayList<>();
 
@@ -79,6 +90,7 @@ public class ScreenGame implements Screen {
     Vector2 position = new Vector2(0, 0);
     long deathTime = 0;
     public int wallet = 0;
+    public int level = 0;
 
     static final int THICKNESS = 10;
 
@@ -94,14 +106,19 @@ public class ScreenGame implements Screen {
         world = new World(new Vector2(0, 0), true);
         MyContactListener contactListener = new MyContactListener(world);
         world.setContactListener(contactListener);
+        rayHandler = new RayHandler(world);
+        rayHandler.setAmbientLight(ambientLight);
         Vector2 position = new Vector2(0, 0);
 
         glyphLayout = new GlyphLayout();
 
-        imgRoom = new Texture("room.png");
+        imgRoom[0] = new Texture("room0.png");
+        imgRoom[1] = new Texture("room1.png");
 
         imgHorWall = new Texture("horizontalWall.png");
         imgVerWall = new Texture("verticalWall.png");
+
+        imgElevator = new Texture("elevator.png");
 
         imgJstBase = new Texture("joystickBase.png");
         imgJstKnob = new Texture("joystickKnob.png");
@@ -149,6 +166,13 @@ public class ScreenGame implements Screen {
         ghostOrb = new Weapon(1250, 2500, 1);
 
         player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
+        playerLight =  new PointLight(rayHandler, 256, new Color(1,1,1,0.475f), playerLightDistance, player.getX(), player.getY());
+        playerLight.setSoftnessLength(25);
+
+        Filter filter = new Filter();
+        filter.categoryBits = 1;
+        filter.maskBits = 1;
+        playerLight.setContactFilter((short)1,(short)1,(short)1);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
@@ -158,13 +182,11 @@ public class ScreenGame implements Screen {
 
     @Override
     public void show() {
-        resetGame();
-        System.out.println(world.isLocked());
+        resetWorld();
     }
 
     @Override
     public void render(float delta) {
-
         position.lerp(new Vector2(player.getX(), player.getY()), 0.1f); // 0.1f - это коэффициент сглаживания
         camera.position.set(position, 0);
         camera.update();
@@ -182,16 +204,17 @@ public class ScreenGame implements Screen {
         ghostsUpdate();
         doorsUpdate();
         coinsUpdate();
+        levelUpdate();
         btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
 
         // отрисовка
         ScreenUtils.clear(0, 0, 0, 0);
         debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
+        rayHandler.setCombinedMatrix(camera.combined, camera.position.x, camera.position.y, camera.viewportWidth, camera.viewportHeight);
         camera.update();
 
         batch.begin();
-
         wallBatch();
         projectileBatch();
         coinBatch();
@@ -199,6 +222,7 @@ public class ScreenGame implements Screen {
         playerBatch();
         ghostsBatch();
         doorPostBatch();
+        elevatorBatch();
         hudBatch();
 
 //        txtCord = "HP "+player.getHealth()+"\nMoney "+wallet;
@@ -217,13 +241,15 @@ public class ScreenGame implements Screen {
                 deathTime = TimeUtils.millis();
             }
             else if (deathTime + 4000 < TimeUtils.millis()) {
-                deathTime=0;
+                resetProgress();
                 game.setScreen(game.screenMenu);
             }
         }
 
         batch.end();
 
+        playerLight.attachToBody(player.getBody());
+        rayHandler.updateAndRender();
     }
 
     @Override
@@ -248,7 +274,9 @@ public class ScreenGame implements Screen {
 
     @Override
     public void dispose() {
-        imgRoom.dispose();
+        rayHandler.dispose();
+        imgRoom[0].dispose();
+        imgRoom[1].dispose();
         imgHorWall.dispose();
         imgVerWall.dispose();
         imgHorDoorAtlas.dispose();
@@ -313,7 +341,13 @@ public class ScreenGame implements Screen {
         }
     }
 
-    public void resetGame() {
+    public void resetProgress() {
+        deathTime = 0;
+        wallet = 0;
+        level = 0;
+    }
+
+    public void resetWorld() {
 //        world = new World(new Vector2(0, 0), true);
 //        world.setContactListener(contactListener);
         Array<Body> bodies = new Array<>();
@@ -324,16 +358,14 @@ public class ScreenGame implements Screen {
                 world.destroyBody(bodies.get(i));
         }
 
-        ghosts.clear();
         rooms.clear();
+        elevators.clear();
+        ghosts.clear();
         coins.clear();
 
-        wallet = 0;
         txtCord = "Empty";
         actJoystick = false;
         actAttack = false;
-        deathTime = 0;
-        int iter = 0;
         player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
 
         generateMap(7);
@@ -391,7 +423,7 @@ public class ScreenGame implements Screen {
     private void wallBatch() {
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-            batch.draw(imgRoom, room.getX(), room.getY(), room.getWidth(), room.getHeight());
+            batch.draw(imgRoom[level], room.getX(), room.getY(), room.getWidth(), room.getHeight());
         }
     }
 
@@ -443,6 +475,13 @@ public class ScreenGame implements Screen {
                         batch.draw(imgHorWall, room.getX() + room.getWidth() * (2f / 3) - THICKNESS, wall.getPosition().y - 5, room.getWidth() / 3, THICKNESS);
                 }
             }
+        }
+    }
+
+    private void elevatorBatch(){
+        for (int i = 0; i < elevators.size(); i++) {
+            Body elevator = elevators.get(i);
+            batch.draw(imgElevator, elevator.getPosition().x-rooms.get(0).getHeight()/8, elevator.getPosition().y-rooms.get(0).getHeight()/8, rooms.get(0).getWidth()/4, rooms.get(0).getHeight()/4);
         }
     }
 
@@ -563,6 +602,13 @@ public class ScreenGame implements Screen {
         }
     }
 
+    public void levelUpdate() {
+        if (player.getBody().getUserData()=="moved") {
+            resetWorld();
+            level++;
+        }
+    }
+
     private void generateMap(int maxRooms) {
         float roomX = 0, roomY = 0;
         float roomWidth = 200, roomHeight = 200;
@@ -633,6 +679,7 @@ public class ScreenGame implements Screen {
                 preLastRoom.removeLeftWall();
             }
         }
+        elevators.add(rooms.get(rooms.size() - 1).setElevator());
     }
 
 

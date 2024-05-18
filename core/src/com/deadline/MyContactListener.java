@@ -114,7 +114,12 @@ public class MyContactListener implements ContactListener {
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
         }
 
-
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="elevator") {
+            bodyA.setUserData("moved");
+        }
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="elevator") {
+            bodyB.setUserData("moved");
+        }
     }
 
     @Override

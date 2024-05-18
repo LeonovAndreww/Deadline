@@ -114,7 +114,10 @@ public class Room {
 
         FixtureDef fixtureDef2 = new FixtureDef();
         fixtureDef2.shape = doorShape;
+        fixtureDef2.filter.maskBits = 1;
+        fixtureDef2.filter.categoryBits = 1;
 //        fixtureDef2.isSensor = true;
+        fixtureDef2.filter.groupIndex = 1;
 
         FixtureDef fixtureDef3 = new FixtureDef();
         fixtureDef3.shape = wallShape;
@@ -230,6 +233,25 @@ public class Room {
             hasRightWall = false;
             createVerDoor(this.x + this.width - 10, this.y, 10, this.height);
         }
+    }
+
+    public Body setElevator() {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(x + width / 2, y + height / 2);
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        Body body = world.createBody(bodyDef);
+
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(width/8, height/8);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+
+        body.createFixture(fixtureDef);
+        body.setUserData("elevator");
+
+        shape.dispose();
+        return body;
     }
 
     public ArrayList<Body> getDoorHorBodies() {
