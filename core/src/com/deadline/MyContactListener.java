@@ -66,11 +66,16 @@ public class MyContactListener implements ContactListener {
         }
 
         else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
-//            bodyB.setActive(false);
             bodyA.setUserData("hit");
         }
         else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
-//            bodyA.setActive(false);
+            bodyB.setUserData("hit");
+        }
+
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="zombie") {
+            bodyA.setUserData("hit");
+        }
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="zombie") {
             bodyB.setUserData("hit");
         }
 
@@ -97,9 +102,11 @@ public class MyContactListener implements ContactListener {
             bodyA.setUserData("hit");
         }
 
-        else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin") && (bodyA.getUserData()=="ghost" || bodyA.getUserData()=="ghost")) {
-            bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
-            bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="zombie") {
+            bodyB.setUserData("hit");
+        }
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="zombie") {
+            bodyA.setUserData("hit");
         }
 
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="coin") {
@@ -109,7 +116,7 @@ public class MyContactListener implements ContactListener {
             bodyB.setUserData("got");
         }
 
-        else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin") && (bodyA.getUserData()=="ghost" || bodyA.getUserData()=="ghost")) {
+        else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin" || bodyB.getUserData()=="zombie") && (bodyB.getUserData()=="zombie" || bodyA.getUserData()=="coin" || bodyA.getUserData()=="ghost")) {
             bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
         }

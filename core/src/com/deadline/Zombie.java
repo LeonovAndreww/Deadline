@@ -5,9 +5,10 @@
     import com.badlogic.gdx.math.Vector2;
     import com.badlogic.gdx.physics.box2d.World;
     import com.badlogic.gdx.utils.TimeUtils;
+
     import java.util.Random;
 
-    public class Ghost extends Entity{
+    public class Zombie extends Entity{
         private final World world;
         protected long timePhaseInterval;
         private Weapon weapon;
@@ -15,10 +16,10 @@
         private long timeLastAttack, timeLastPhase;
         private int phase, nPhases;
         private int room;
-        private final Sound sndAttack;
+//        private final Sound sndAttack;
         Random random = new Random();
 
-        public Ghost(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
+        public Zombie(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
             super(world, width, height, x, y, maxHealth, nPhases, timePhaseInterval);
             this.world = world;
             this.nPhases = nPhases;
@@ -26,9 +27,9 @@
             this.weapon = weapon;
             isBattle = false;
             this.phase = random.nextInt(4);
-            getBody().setUserData("ghost");
+            getBody().setUserData("zombie");
 
-            sndAttack = Gdx.audio.newSound(Gdx.files.internal("ghostAttack.mp3"));
+//            sndAttack = Gdx.audio.newSound(Gdx.files.internal("zombieAttack.mp3"));
         }
 
         @Override
@@ -45,22 +46,26 @@
 
         public void update() {
             if (isAlive()) {
-//                if (getBody().getUserData()=="hit") {
-//                    hit(damage);
-//                    getBody().setUserData("ghost");
-//                }
+                double angle = Math.atan2(getBody().getLinearVelocity().y, getBody().getLinearVelocity().x);
+                if (angle >= -Math.PI / 4 && angle < Math.PI / 4) {
+                    direction = 'u';
+                } else if (angle >= Math.PI / 4 && angle < 3 * Math.PI / 4) {
+                    direction = 'd';
+                } else if (angle < -Math.PI / 4 && angle >= -3 * Math.PI / 4) {
+                    direction = 'r'; // FIX DIRECTIONS
+                } else {
+                    direction = 'l';
+                }
+                System.out.println(direction);
             }
         }
 
         public void attack(Vector2 playerPos) {
             if (isBattle) {
-                if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
-                    getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(55+random.nextInt(35)));
-                    sndAttack.play();
-                    timeLastAttack = TimeUtils.millis();
+                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)));
+//                    sndAttack.play(); // if touched, not if attacked
                 }
             }
-        }
 
         public int getRoom() {
             return room;
@@ -80,6 +85,6 @@
         }
 
         public void dispose() {
-            sndAttack.dispose();
+//            sndAttack.dispose();
         }
     }
