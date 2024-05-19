@@ -90,7 +90,7 @@ public class ScreenGame implements Screen {
     Vector2 position = new Vector2(0, 0);
     long deathTime = 0;
     public int wallet = 0;
-    public int level = 7;
+    public int level = 0;
 
     static final int THICKNESS = 10;
 
