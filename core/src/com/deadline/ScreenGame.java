@@ -51,7 +51,7 @@ public class ScreenGame implements Screen {
 
     OnScreenJoystick joystick;
 
-    Texture[] imgRoom = new Texture[2];
+    Texture[] imgRoom = new Texture[9];
     Texture imgHorWall, imgVerWall;
     Texture imgJstBase, imgJstKnob;
     Texture imgElevator;
@@ -90,7 +90,7 @@ public class ScreenGame implements Screen {
     Vector2 position = new Vector2(0, 0);
     long deathTime = 0;
     public int wallet = 0;
-    public int level = 0;
+    public int level = 7;
 
     static final int THICKNESS = 10;
 
@@ -107,13 +107,20 @@ public class ScreenGame implements Screen {
         MyContactListener contactListener = new MyContactListener(world);
         world.setContactListener(contactListener);
         rayHandler = new RayHandler(world);
-        rayHandler.setAmbientLight(ambientLight);
+        rayHandler.setAmbientLight(ambientLight-0.025f*level);
         Vector2 position = new Vector2(0, 0);
 
         glyphLayout = new GlyphLayout();
 
         imgRoom[0] = new Texture("room0.png");
         imgRoom[1] = new Texture("room1.png");
+        imgRoom[2] = new Texture("room2.png");
+        imgRoom[3] = new Texture("room3.png");
+        imgRoom[4] = new Texture("room4.png");
+        imgRoom[5] = new Texture("room5.png");
+        imgRoom[6] = new Texture("room6.png");
+        imgRoom[7] = new Texture("room7.png");
+        imgRoom[8] = new Texture("room8.png");
 
         imgHorWall = new Texture("horizontalWall.png");
         imgVerWall = new Texture("verticalWall.png");
@@ -275,8 +282,6 @@ public class ScreenGame implements Screen {
     @Override
     public void dispose() {
         rayHandler.dispose();
-        imgRoom[0].dispose();
-        imgRoom[1].dispose();
         imgHorWall.dispose();
         imgVerWall.dispose();
         imgHorDoorAtlas.dispose();
@@ -289,6 +294,9 @@ public class ScreenGame implements Screen {
         imgRouble.dispose();
         player.dispose();
         paperWad.dispose();
+        for (Texture texture : imgRoom) {
+            texture.dispose();
+        }
         batch.dispose();
     }
 
@@ -421,9 +429,11 @@ public class ScreenGame implements Screen {
     }
 
     private void wallBatch() {
+        int lvl = level;
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-            batch.draw(imgRoom[level], room.getX(), room.getY(), room.getWidth(), room.getHeight());
+            if (level>imgRoom.length) lvl = 7;
+            batch.draw(imgRoom[lvl], room.getX(), room.getY(), room.getWidth(), room.getHeight());
         }
     }
 
