@@ -86,11 +86,10 @@ public class ScreenGame implements Screen {
     String txtCord = "Empty";
     boolean actJoystick = false;
     boolean actAttack = false;
-    boolean toReset = false;
     Vector2 position = new Vector2(0, 0);
     long deathTime = 0;
     public int wallet = 0;
-    public int level = 7;
+    public int level = 0;
 
     static final int THICKNESS = 10;
 
@@ -204,15 +203,18 @@ public class ScreenGame implements Screen {
 
         // события
 
-        player.changePhase();
-        ghostsChangePhase();
-        player.updateProjectiles();
-        player.update(1);
-        ghostsUpdate();
-        doorsUpdate();
-        coinsUpdate();
-        levelUpdate();
-        btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
+        if (deathTime==0) {
+            player.changePhase();
+            ghostsChangePhase();
+            player.updateProjectiles();
+            player.update(1);
+            player.step(actJoystick);
+            ghostsUpdate();
+            doorsUpdate();
+            coinsUpdate();
+            levelUpdate();
+            btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
+        }
 
         // отрисовка
         ScreenUtils.clear(0, 0, 0, 0);
@@ -294,6 +296,9 @@ public class ScreenGame implements Screen {
         imgRouble.dispose();
         player.dispose();
         paperWad.dispose();
+        for (int i = 0; i < ghosts.size(); i++) {
+            ghosts.get(i).dispose();
+        }
         for (Texture texture : imgRoom) {
             texture.dispose();
         }
@@ -374,7 +379,8 @@ public class ScreenGame implements Screen {
         txtCord = "Empty";
         actJoystick = false;
         actAttack = false;
-        player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
+        player = new Player(world, 14, 18, 50, 50, 6, 6, 350, paperWad);
+        rayHandler.setAmbientLight(ambientLight-0.025f*level);
 
         generateMap(7);
         generateRooms();
@@ -762,7 +768,7 @@ public class ScreenGame implements Screen {
 //                        float randomFloat = a + new Random().nextFloat() * (b - a);
                         float spawnX = MathUtils.random(room.getX() + THICKNESS, room.getX() + room.getWidth() - THICKNESS);
                         float spawnY = MathUtils.random(room.getY() + THICKNESS, room.getY() + room.getHeight() - THICKNESS);
-                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 5, 4, 350, ghostOrb);
+                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 5, 4, 250, ghostOrb);
                         ghost.setRoomNum(i);
                         ghosts.add(ghost);
                     }

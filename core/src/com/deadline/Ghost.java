@@ -1,5 +1,7 @@
     package com.deadline;
 
+    import com.badlogic.gdx.Gdx;
+    import com.badlogic.gdx.audio.Sound;
     import com.badlogic.gdx.math.Vector2;
     import com.badlogic.gdx.physics.box2d.World;
     import com.badlogic.gdx.utils.TimeUtils;
@@ -13,6 +15,7 @@
         private long timeLastAttack, timeLastPhase;
         private int phase, nPhases;
         private int room;
+        private final Sound sndAttack;
         Random random = new Random();
 
         public Ghost(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
@@ -24,6 +27,8 @@
             isBattle = false;
             this.phase = random.nextInt(4);
             getBody().setUserData("ghost");
+
+            sndAttack = Gdx.audio.newSound(Gdx.files.internal("ghostAttack.mp3"));
         }
 
         @Override
@@ -51,7 +56,7 @@
             if (isBattle) {
                 if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
                     getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(55+random.nextInt(35)));
-                    //sndPaperSwing.play(); // звук атаки призрака
+                    sndAttack.play();
                     timeLastAttack = TimeUtils.millis();
                 }
             }
@@ -72,5 +77,9 @@
         @Override
         public int getPhase() {
             return phase;
+        }
+
+        public void dispose() {
+            sndAttack.dispose();
         }
     }

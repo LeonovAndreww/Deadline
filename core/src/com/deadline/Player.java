@@ -17,19 +17,23 @@ public class Player extends Entity {
     private final World world;
     private Weapon weapon;
     private int health, maxHealth;
-    private long timeLastAttack, timeLastDamaged;
+    private long timeLastAttack, timeLastDamaged, timeLastStep;
     private ArrayList<Projectile> projectiles = new ArrayList<>();
     private final Sound sndPaperSwing, sndPaperBump;
+    private final Sound sndStep;
 
-    public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
-        super(world, width, height, x, y, maxHealth, nPhases, timePhaseInterval);
+    public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timeBasePhaseInterval, Weapon weapon) {
+        super(world, width, height, x, y, maxHealth, nPhases, timeBasePhaseInterval);
         getBody().setUserData("player");
+        this.timeBasePhaseInterval = timeBasePhaseInterval;
+        timePhaseInterval = timeBasePhaseInterval;
         this.weapon = weapon;
         this.health = health;
         this.maxHealth = maxHealth;
         this.world = world;
         sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("paperSwing.mp3"));
         sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
+        sndStep = Gdx.audio.newSound(Gdx.files.internal("step.mp3"));
         world.setContactListener(new MyContactListener(world));
     }
 
@@ -47,13 +51,31 @@ public class Player extends Entity {
         }
     }
 
-    public void update(int damage) { // костыль
+    public void update(int damage) { // безобидный костыль
         if (getBody().getUserData()=="hit") {
             if (TimeUtils.millis() - timeLastDamaged > 2650) {
                 hit(damage);
                 timeLastDamaged = TimeUtils.millis();
             }
             getBody().setUserData("player");
+        }
+    }
+
+    public void step(boolean joystickAct) {
+        if (joystickAct) {
+            timePhaseInterval = timeBasePhaseInterval-150;
+            if (TimeUtils.millis() - timeLastStep > timePhaseInterval*2) {
+                if (isBattle) {
+                    if (getPhase()%2==0) {
+                        sndStep.play(0.35f * DdlnGame.soundVolume);
+                        timeLastStep = TimeUtils.millis();
+                    }
+                }
+                else if(getPhase()==2 || getPhase()==5) {
+                    sndStep.play(0.4f * DdlnGame.soundVolume);
+                    timeLastStep = TimeUtils.millis();
+                }
+            }
         }
     }
 
@@ -111,5 +133,6 @@ public class Player extends Entity {
     public void dispose() {
         sndPaperSwing.dispose();
         sndPaperBump.dispose();
+        sndStep.dispose();
     }
 }

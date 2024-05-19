@@ -25,9 +25,12 @@ public class DdlnGame extends Game {
 
 	static float ambientLight = 0.375f;
 	static int playerLightDistance = 135;
+	static float musicVolume, soundVolume;
 
 	@Override
 	public void create () {
+		soundVolume = 1;
+		musicVolume = 1;
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, SCR_WIDTH, SCR_HEIGHT);

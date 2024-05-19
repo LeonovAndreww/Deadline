@@ -14,7 +14,7 @@ public class Entity {
     private float speed = 50f;
     private int health, maxHealth;
     private char direction = 'd';
-    private int phase, nPhases;
+    private int phase, nPhases, phaseDir;
     protected long timeLastPhase, timePhaseInterval, timeBasePhaseInterval;
     private boolean isAlive;
     protected boolean isBattle;
@@ -23,7 +23,7 @@ public class Entity {
         phase = 0;
         this.nPhases = nPhases;
         this.timeBasePhaseInterval = timeBasePhaseInterval; // except running animation!
-        timePhaseInterval = timeBasePhaseInterval;
+        this.timePhaseInterval = timeBasePhaseInterval;
         this.width = width;
         this.height = height;
         this.health = this.maxHealth = maxHealth;
@@ -49,7 +49,7 @@ public class Entity {
         shape.dispose();
     }
 
-    void changePhase(){
+    protected void changePhase(){
         if (isBattle) timePhaseInterval = timeBasePhaseInterval-250;
         else timePhaseInterval = timeBasePhaseInterval;
 
