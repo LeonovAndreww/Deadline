@@ -94,7 +94,7 @@ public class ScreenMenu implements Screen {
         batch.draw(imgBg, -45, 0);
         batch.draw(imgBtnShutdown, btnShutdown.x, btnShutdown.y, btnShutdown.width, btnShutdown.height);
         batch.draw(imgNote, 150, 45);
-        font.draw(batch, dialogue, 22, 22);
+        fontUi.draw(batch, dialogue, 22, 22);
 
         batch.end();
     }

@@ -56,10 +56,9 @@ public class DdlnGame extends Game {
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 		parameter.characters = FONT_CHARS;
 		parameter.size = 10;
-		parameter.color = Color.BLACK;
 		font = generator.generateFont(parameter);
-		parameter.size = 24;
-		parameter.borderWidth = 2;
+		parameter.size = 10;
+		parameter.color = Color.BLACK;
 		fontUi = generator.generateFont(parameter);
 		generator.dispose();
 	}

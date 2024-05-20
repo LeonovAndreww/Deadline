@@ -83,12 +83,12 @@ public class Player extends Entity {
             if (TimeUtils.millis() - timeLastStep > timePhaseInterval*2) {
                 if (isBattle) {
                     if (getPhase()%2==0) {
-                        sndStep.play(0.75f * soundVolume);
+                        sndStep.play(0.65f * soundVolume);
                         timeLastStep = TimeUtils.millis();
                     }
                 }
                 else if(getPhase()==2 || getPhase()==5) {
-                    sndStep.play(0.8f * soundVolume);
+                    sndStep.play(0.7f * soundVolume);
                     timeLastStep = TimeUtils.millis();
                 }
             }
