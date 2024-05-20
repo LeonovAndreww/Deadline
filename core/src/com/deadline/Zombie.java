@@ -1,7 +1,5 @@
     package com.deadline;
 
-    import com.badlogic.gdx.Gdx;
-    import com.badlogic.gdx.audio.Sound;
     import com.badlogic.gdx.math.Vector2;
     import com.badlogic.gdx.physics.box2d.World;
     import com.badlogic.gdx.utils.TimeUtils;
@@ -46,17 +44,13 @@
 
         public void update() {
             if (isAlive()) {
-                double angle = Math.atan2(getBody().getLinearVelocity().y, getBody().getLinearVelocity().x);
-                if (angle >= -Math.PI / 4 && angle < Math.PI / 4) {
-                    direction = 'u';
-                } else if (angle >= Math.PI / 4 && angle < 3 * Math.PI / 4) {
-                    direction = 'd';
-                } else if (angle < -Math.PI / 4 && angle >= -3 * Math.PI / 4) {
-                    direction = 'r'; // FIX DIRECTIONS
+                if (Math.abs(getBody().getLinearVelocity().x) > Math.abs(getBody().getLinearVelocity().y)) {
+                    if (getBody().getLinearVelocity().x > 0) setDirection('r');
+                    else setDirection('l');
                 } else {
-                    direction = 'l';
+                    if (getBody().getLinearVelocity().y > 0) setDirection('u');
+                    else setDirection('d');
                 }
-                System.out.println(direction);
             }
         }
 

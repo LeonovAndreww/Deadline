@@ -235,7 +235,7 @@ public class Room {
         }
     }
 
-    public Body setElevator() {
+    public Body setElevator(boolean isWorking) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.position.set(x + width / 2, y + height / 2);
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -248,7 +248,11 @@ public class Room {
         fixtureDef.shape = shape;
 
         body.createFixture(fixtureDef);
-        body.setUserData("elevator");
+        if (isWorking) {
+            body.setUserData("elevatorOn");
+        } else {
+            body.setUserData("elevatorOff");
+        }
 
         shape.dispose();
         return body;

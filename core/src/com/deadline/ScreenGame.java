@@ -17,17 +17,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-
-import box2dLight.Light;
 import box2dLight.PointLight;
 import box2dLight.RayHandler;
 
@@ -42,27 +38,35 @@ public class ScreenGame implements Screen {
     World world;
     MyContactListener contactListener;
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
+    Vector2 position = new Vector2(0, 0);
 
     RayHandler rayHandler;
     PointLight playerLight;
+    PointLight vendingPointLight;
 
     BitmapFont font, fontUi;
     GlyphLayout glyphLayout;
 
     OnScreenJoystick joystick;
 
+    Texture imgJstBase, imgJstKnob;
+    Texture imgButtonMenu;
+    Texture imgGameMenu;
+    Texture imgVendingUi;
+    Texture imgHeal, imgDamageUp, imgSpeedUp;
     Texture[] imgRoom = new Texture[9];
     Texture imgHorWall, imgVerWall;
-    Texture imgJstBase, imgJstKnob;
     Texture imgElevator;
     Texture imgPaperWad;
     Texture imgRouble;
+    Texture imgVendingMachine;
     Texture imgHorDoorAtlas, imgVerDoorAtlas;
     Texture imgHealthAtlas, imgWalletAtlas;
     Texture imgPlayerAtlas;
     Texture imgGhostAtlas;
     Texture imgZombieAtlas;
-    Texture imgBlank;
+    Texture imgObstacleAtlas;
+    Texture imgBlankAtlas;
     TextureRegion[] imgHorDoor = new TextureRegion[2];
     TextureRegion[] imgVerDoor = new TextureRegion[2];
     TextureRegion[] imgHealth = new TextureRegion[7];
@@ -71,11 +75,18 @@ public class ScreenGame implements Screen {
     TextureRegion[][] imgPlayerRun = new TextureRegion[4][6];
     TextureRegion[] imgGhost = new TextureRegion[4];
     TextureRegion[][] imgZombie = new TextureRegion[4][10];
+    TextureRegion[] imgObstacle = new TextureRegion[6];
+    TextureRegion[] imgBlank = new TextureRegion[3];
 
+    Sound sndClick;
     Sound sndPaperBump;
     Sound sndCoinUp;
+    Sound sndMonsterDeath;
+    Sound sndElevatorUse;
+    Sound sndPlayerDeath;
 
     Player player;
+    Vending vending;
 
     Weapon paperWad;
     Weapon ghostOrb;
@@ -85,18 +96,34 @@ public class ScreenGame implements Screen {
     ArrayList<Ghost> ghosts = new ArrayList<>();
     ArrayList<Zombie> zombies = new ArrayList<>();
     ArrayList<Coin> coins = new ArrayList<>();
+    ArrayList<Obstacle> obstacles = new ArrayList<>();
 
     MyButton btnAttack;
+    MyButton btnMenu, btnMenuClose, btnMenuResume, btnMenuMain;
+    MyButton btnVendingClose, btnVendingBuyHeal, btnVendingBuyDamageUp, btnVendingBuySpeedUp;
 
-    String txtCord = "Empty";
-    boolean actJoystick = false;
-    boolean actAttack = false;
-    Vector2 position = new Vector2(0, 0);
+    boolean actJoystick;
+    boolean actAttack;
+    boolean actMenu;
+    boolean actVending;
+
+    boolean isPlayerDeathSoundOn;
+
     long deathTime = 0;
+    long elevatorUseTime = 0;
+    long vendingCloseTime = 0;
+
+    float menuX, menuY, menuWidth, menuHeight;
+    float vendingX, vendingY, vendingWidth, vendingHeight;
+
     public int wallet = 0;
     public int level = 0;
 
+    public int healCost = 0, damageUpCost = 0, speedUpCost = 0;
+
     static final int THICKNESS = 10;
+
+    String txtCord = "Empty";
 
     public ScreenGame(DdlnGame game) {
         this.game = game;
@@ -107,14 +134,40 @@ public class ScreenGame implements Screen {
         fontUi = game.fontUi;
         glyphLayout = DdlnGame.glyphLayout;
 
+        actJoystick = false;
+        actAttack = false;
+        actMenu = false;
+
+        menuX = menuY = menuWidth = menuHeight = 0;
+        vendingX = vendingY = vendingWidth = vendingHeight = 0;
+
+        healCost = 5;
+        damageUpCost = 10;
+        speedUpCost = 8;
+
+        isPlayerDeathSoundOn = false;
+
         world = new World(new Vector2(0, 0), true);
-        MyContactListener contactListener = new MyContactListener(world);
+        MyContactListener contactListener = new MyContactListener();
         world.setContactListener(contactListener);
         rayHandler = new RayHandler(world);
         rayHandler.setAmbientLight(ambientLight-0.025f*level);
         Vector2 position = new Vector2(0, 0);
 
         glyphLayout = new GlyphLayout();
+
+        imgJstBase = new Texture("joystickBase.png");
+        imgJstKnob = new Texture("joystickKnob.png");
+
+        imgButtonMenu = new Texture("menuButton.png");
+        imgGameMenu = new Texture("gameMenu.png");
+
+        imgVendingMachine = new Texture("vendingMachine.png");
+        imgVendingUi = new Texture("vendingUi.png");
+
+        imgHeal = new Texture("heal.png");
+        imgDamageUp = new Texture("damageUp.png");
+        imgSpeedUp = new Texture("speedUp.png");
 
         imgRoom[0] = new Texture("room0.png");
         imgRoom[1] = new Texture("room1.png");
@@ -131,9 +184,6 @@ public class ScreenGame implements Screen {
 
         imgElevator = new Texture("elevator.png");
 
-        imgJstBase = new Texture("joystickBase.png");
-        imgJstKnob = new Texture("joystickKnob.png");
-
         imgHorDoorAtlas = new Texture("horizontalDoorAtlas.png");
         imgVerDoorAtlas = new Texture("verticalDoorAtlas.png");
         imgHealthAtlas = new Texture("healthbarAtlas.png");
@@ -141,16 +191,31 @@ public class ScreenGame implements Screen {
         imgPlayerAtlas = new Texture("playerAtlas.png");
         imgGhostAtlas = new Texture("ghostAtlas.png");
         imgZombieAtlas = new Texture("zombieAtlas.png");
+        imgObstacleAtlas = new Texture("obstacleAtlas.png");
 
         imgPaperWad = new Texture("paperWad.png");
         imgRouble = new Texture("rouble.png");
 
-        imgBlank = new Texture("blank.png");
+        imgBlankAtlas = new Texture("blankAtlas.png");
 
+        sndClick = Gdx.audio.newSound(Gdx.files.internal("click.mp3"));
         sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
         sndCoinUp = Gdx.audio.newSound(Gdx.files.internal("coinUp.mp3"));
+        sndMonsterDeath = Gdx.audio.newSound(Gdx.files.internal("monsterDeath.mp3"));
+        sndElevatorUse = Gdx.audio.newSound(Gdx.files.internal("elevatorUse.mp3"));
+        sndPlayerDeath = Gdx.audio.newSound(Gdx.files.internal("playerDeath.mp3"));
 
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
+
+        btnMenu = new MyButton(0, 0, 15, 15);
+        btnMenuClose = new MyButton(0, 0,12, 12);
+        btnMenuMain = new MyButton(0, 0,80, 22);
+        btnMenuResume = new MyButton(0, 0,80, 22);
+
+        btnVendingClose = new MyButton(0, 0, 15,15);
+        btnVendingBuyHeal = new MyButton(0, 0, 26, 26);
+        btnVendingBuyDamageUp = new MyButton(0, 0, 26, 26);
+        btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
 
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
@@ -160,42 +225,53 @@ public class ScreenGame implements Screen {
                 iter++;
             }
         }
+
         for (int i = 0; i < imgGhost.length; i++) {
             imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
         }
+
         for (int i = 0; i < imgZombie.length; i++) {
             for (int j = 0; j < imgZombie[0].length; j++) {
                 imgZombie[i][j] = new TextureRegion(imgZombieAtlas, j*32, i*32, 32, 32);
             }
         }
+
+        for (int i = 0; i < imgObstacle.length; i++) {
+            imgObstacle[i] = new TextureRegion(imgObstacleAtlas, i * 21, 0, 21, 32); // buggy
+
+        }
+
         for (int i = 0; i < imgHealth.length; i++) {
             imgHealth[i] = new TextureRegion(imgHealthAtlas, 0,(imgHealth.length-1-i)*16,64, 16);
         }
+
         for (int i = 0; i < imgWallet.length; i++) {
             imgWallet[i] = new TextureRegion(imgWalletAtlas, 0, (imgWallet.length-1-i)*16, 16, 16);
         }
+
+        for (int i = 0; i < imgBlank.length; i++) {
+            imgBlank[i] = new TextureRegion(imgBlankAtlas, i, 0, 1, 1);
+        }
+
         imgHorDoor[0] = new TextureRegion(imgHorDoorAtlas, 0, 0, 64, 16);
         imgHorDoor[1] = new TextureRegion(imgHorDoorAtlas, 0, 16, 64, 16);
         imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
         imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
-
         paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 2);
         ghostOrb = new Weapon(1250, 2500, 1);
 
-        player = new Player(world, 14, 18, 50, 50, 6, 6, 450, paperWad);
-        playerLight =  new PointLight(rayHandler, 256, new Color(1,1,1,0.475f), playerLightDistance, player.getX(), player.getY());
+        player = new Player(world, 14, 18, 75, 75, 6, 6, 450, paperWad);
+        playerLight =  new PointLight(rayHandler, 512, new Color(1,1,1,0.475f), playerLightDistance, player.getX(), player.getY());
         playerLight.setSoftnessLength(25);
-
-        Filter filter = new Filter();
-        filter.categoryBits = 1;
-        filter.maskBits = 1;
-        playerLight.setContactFilter((short)1,(short)1,(short)1);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
         generateMap(7);
         generateRooms();
+        vending = new Vending(world, 32, 24, rooms.get(0).getX()+rooms.get(0).getWidth()-35, rooms.get(0).getY()+rooms.get(0).getHeight()-35);
+        vendingPointLight = new PointLight(rayHandler, 512, new Color(0.1f, 0.5f, 0.85f, 0.695f), 95, vending.getX()+vending.getWidth()/3, vending.getY()+20);
+        vendingPointLight.setSoftnessLength(50);
     }
 
     @Override
@@ -209,6 +285,16 @@ public class ScreenGame implements Screen {
         camera.position.set(position, 0);
         camera.update();
 
+        menuX = position.x-SCR_WIDTH/4;
+        menuY = position.y-SCR_HEIGHT/3;
+        menuWidth = SCR_WIDTH/2;
+        menuHeight = SCR_HEIGHT*0.8f;
+
+        vendingX = position.x-SCR_WIDTH/4;
+        vendingY = position.y-SCR_HEIGHT/4;
+        vendingWidth = SCR_WIDTH/2;
+        vendingHeight = SCR_HEIGHT/2f;
+
         // касания
 
         touchHandler();
@@ -220,17 +306,29 @@ public class ScreenGame implements Screen {
             ghostsChangePhase();
             zombiesChangePhase();
             player.updateProjectiles();
-            player.update(1);
+            player.hit();
             player.step(actJoystick);
             ghostsUpdate();
             zombiesUpdate();
             doorsUpdate();
             coinsUpdate();
             levelUpdate();
+            vendingUpdate();
+
             btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
+
+            btnMenu.update(position.x + SCR_WIDTH/2 - 17.5f, position.y + SCR_HEIGHT/2 - 17.5f);
+            btnMenuClose.update(menuX+menuWidth-12, menuY+menuHeight-12);
+            btnMenuMain.update(menuX+13, menuY+105);
+            btnMenuResume.update(menuX+13, menuY+5);
+
+            btnVendingClose.update(vendingX+vendingWidth-12, vendingY+vendingHeight-12);
+            btnVendingBuyHeal.update(vendingX+9, vendingY+20);
+            btnVendingBuyDamageUp.update(vendingX+47, vendingY+20);
+            btnVendingBuySpeedUp.update(vendingX+85, vendingY+20);
         }
 
-        // отрисовка
+        // draw
         ScreenUtils.clear(0, 0, 0, 0);
         debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
@@ -238,37 +336,46 @@ public class ScreenGame implements Screen {
         camera.update();
 
         batch.begin();
+
         wallBatch();
         projectileBatch();
-        coinBatch();
         doorPreBatch();
-        playerBatch();
-        ghostsBatch();
+        vendingBatch();
+        coinBatch();
         zombiesBatch();
+        playerBatch();
+        obstaclesBatch();
+        ghostsBatch();
         doorPostBatch();
-        elevatorBatch();
+        elevatorsBatch();
         hudBatch();
+        vendingUiBatch();
+        elevatorBlankBatch();
+        gameMenuBatch();
 
-//        txtCord = "HP "+player.getHealth()+"\nMoney "+wallet;
-//        font.draw(batch, txtCord, position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
+//        font.draw(batch, level+"", position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, position.x - SCR_WIDTH / 2.75f, position.y - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
+        batch.draw(imgButtonMenu, btnMenu.x, btnMenu.y, btnMenu.width, btnMenu.height);
 
-        if (player.getHealth() > 0) {
+        if (player.getHealth() > 0 && !actMenu) {
             world.step(1 / 60f, 6, 2);
-        } else {
-            batch.draw(imgBlank, position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
+        } else if (player.getHealth() <= 0){
+            batch.draw(imgBlank[1], position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
             glyphLayout.setText(font, "I'm not ready to die yet");
             font.draw(batch, "I'm not ready to die yet", position.x - glyphLayout.width/2, position.y);
             if (deathTime == 0) {
                 deathTime = TimeUtils.millis();
-            }
-            else if (deathTime + 4000 < TimeUtils.millis()) {
+            } else if (deathTime + 1000 < TimeUtils.millis() && !isPlayerDeathSoundOn) {
+                sndPlayerDeath.play(0.85f * soundVolume);
+                isPlayerDeathSoundOn = true;
+            } else if (deathTime + 4000 < TimeUtils.millis()) {
                 resetProgress();
                 game.setScreen(game.screenMenu);
             }
         }
+
 
         batch.end();
 
@@ -299,21 +406,34 @@ public class ScreenGame implements Screen {
     @Override
     public void dispose() {
         rayHandler.dispose();
+        imgJstBase.dispose();
+        imgJstKnob.dispose();
+        imgGameMenu.dispose();
+        imgButtonMenu.dispose();
+        imgVendingUi.dispose();
+        imgHeal.dispose();
+        imgDamageUp.dispose();
+        imgSpeedUp.dispose();
+        imgVendingMachine.dispose();
         imgHorWall.dispose();
         imgVerWall.dispose();
         imgHorDoorAtlas.dispose();
         imgVerDoorAtlas.dispose();
+        imgElevator.dispose();
         imgPlayerAtlas.dispose();
         imgGhostAtlas.dispose();
         imgZombieAtlas.dispose();
-        imgJstBase.dispose();
-        imgJstKnob.dispose();
+        imgObstacleAtlas.dispose();
         imgPaperWad.dispose();
         imgRouble.dispose();
         player.dispose();
         paperWad.dispose();
+        sndClick.dispose();
         sndCoinUp.dispose();
         sndPaperBump.dispose();
+        sndMonsterDeath.dispose();
+        sndElevatorUse.dispose();
+        sndPlayerDeath.dispose();
         for (int i = 0; i < ghosts.size(); i++) {
             ghosts.get(i).dispose();
         }
@@ -346,8 +466,49 @@ public class ScreenGame implements Screen {
                     if (btnAttack.hit(touches.get(i).x, touches.get(i).y)) {
                         actAttack = true;
                     }
+                    if (btnMenu.hit(touches.get(i).x, touches.get(i).y)) {
+                        if (!actMenu) {
+                            actMenu = true;
+                            sndClick.play(0.9f*soundVolume);
+                        }
+//                        actMenu = !actMenu;
+                    }
+                }
+                if (actMenu) {
+                    if (btnMenuClose.hit(touches.get(i).x, touches.get(i).y) || btnMenuResume.hit(touches.get(i).x, touches.get(i).y)) {
+                        sndClick.play(0.9f*soundVolume);
+                        actMenu = false;
+                    }
+                    if (btnMenuMain.hit(touches.get(i).x, touches.get(i).y)) {
+                        sndClick.play(0.9f*soundVolume);
+                        resetProgress();
+                        game.setScreen(game.screenMenu);
+                    }
+                }
+
+                if (actVending) {
+                    if (btnVendingClose.hit(touches.get(i).x, touches.get(i).y)) {
+                        sndClick.play();
+                        actVending = false;
+                        vendingCloseTime = TimeUtils.millis();
+                    }
+                    else if (btnVendingBuyHeal.hit(touches.get(i).x, touches.get(i).y)) {
+                        sndClick.play();
+
+                    }
+                    else if (btnVendingBuyDamageUp.hit(touches.get(i).x, touches.get(i).y)) {
+                        sndClick.play();
+                    }
+                    else if (btnVendingBuySpeedUp.hit(touches.get(i).x, touches.get(i).y)) {
+                        sndClick.play();
+                    }
                 }
             }
+        }
+
+        if (elevatorUseTime!=0 || actMenu || actVending) {
+            actJoystick = false;
+            actAttack = false;
         }
 
         if (actJoystick) {
@@ -397,15 +558,22 @@ public class ScreenGame implements Screen {
         ghosts.clear();
         zombies.clear();
         coins.clear();
+        obstacles.clear();
 
         txtCord = "Empty";
         actJoystick = false;
         actAttack = false;
-        player = new Player(world, 14, 18, 50, 50, 6, 6, 350, paperWad);
+        actMenu = false;
+        isPlayerDeathSoundOn = false;
+        elevatorUseTime = 0;
+        vendingCloseTime = 0;
+        menuX = menuY = menuWidth = menuHeight = 0;
+        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad);
         rayHandler.setAmbientLight(ambientLight-0.025f*level);
 
         generateMap(7);
         generateRooms();
+        vending = new Vending(world, 32, 24, rooms.get(0).getX()+rooms.get(0).getWidth()-35, rooms.get(0).getY()+rooms.get(0).getHeight()-35);
     }
 
 
@@ -459,7 +627,7 @@ public class ScreenGame implements Screen {
                 float y = zombie.getY() - imgZombie[0][0].getRegionHeight() / 2.25f; // centralized image y
                 switch (zombie.getDirection()) {
                     case 'r': {
-                        batch.draw(imgZombie[0][phase], x, y);
+                        batch.draw(imgZombie[2][phase], x, y);
                     }
                     break;
                     case 'u': {
@@ -467,15 +635,26 @@ public class ScreenGame implements Screen {
                     }
                     break;
                     case 'l': {
-                        batch.draw(imgZombie[2][phase], x, y);
+                        batch.draw(imgZombie[3][phase], x, y);
                     }
                     break;
                     default: {
-                        batch.draw(imgZombie[3][phase], x, y);
+                        batch.draw(imgZombie[0][phase], x, y);
                     }
                 }
             }
         }
+    }
+
+    private void obstaclesBatch() {
+        for (int i = 0; i < obstacles.size(); i++) {
+            Obstacle obstacle = obstacles.get(i);
+            batch.draw(imgObstacle[obstacle.getImgNumber()], obstacle.getX(), obstacle.getY(), obstacle.getWidth()*1.115f, obstacle.getHeight()*1.75f);
+        }
+    }
+
+    private void vendingBatch() {
+        batch.draw(imgVendingMachine, vending.getX(), vending.getY(), 24, 36);
     }
 
     private void ghostsChangePhase() {
@@ -550,10 +729,15 @@ public class ScreenGame implements Screen {
         }
     }
 
-    private void elevatorBatch(){
+    private void elevatorsBatch(){
         for (int i = 0; i < elevators.size(); i++) {
             Body elevator = elevators.get(i);
-            batch.draw(imgElevator, elevator.getPosition().x-rooms.get(0).getHeight()/8, elevator.getPosition().y-rooms.get(0).getHeight()/8, rooms.get(0).getWidth()/4, rooms.get(0).getHeight()/4);
+            if (elevator.getUserData()=="elevatorOn") { // on off states
+                batch.draw(imgElevator, elevator.getPosition().x-rooms.get(0).getHeight()/8, elevator.getPosition().y-rooms.get(0).getHeight()/8, rooms.get(0).getWidth()/4, rooms.get(0).getHeight()/4);
+            }
+            else {
+                batch.draw(imgElevator, elevator.getPosition().x-rooms.get(0).getHeight()/8, elevator.getPosition().y-rooms.get(0).getHeight()/8, rooms.get(0).getWidth()/4, rooms.get(0).getHeight()/4);
+            }
         }
     }
 
@@ -575,11 +759,43 @@ public class ScreenGame implements Screen {
     }
 
     private void hudBatch() {
+        if (player.getHealth()>player.getMaxHealth()) player.setHealth(player.getMaxHealth());
+        if (player.getHealth()<0) player.setHealth(0);
+
         batch.draw(imgHealth[player.getHealth()], position.x - SCR_WIDTH / 2+2, position.y  + SCR_HEIGHT / 2.5f - 4);
         if (wallet==0) batch.draw(imgWallet[0], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
         else if (wallet<5) batch.draw(imgWallet[1], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
         else if (wallet<10) batch.draw(imgWallet[2], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
         else batch.draw(imgWallet[3], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
+    }
+
+    private void vendingUiBatch() {
+        if (actVending) {
+            batch.draw(imgBlank[1], position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
+            batch.draw(imgVendingUi, vendingX, vendingY, vendingWidth, vendingHeight);
+            batch.draw(imgHeal, btnVendingBuyHeal.x, btnVendingBuyHeal.y, btnVendingBuyHeal.width, btnVendingBuyHeal.height);
+            batch.draw(imgDamageUp, btnVendingBuyDamageUp.x, btnVendingBuyDamageUp.y, btnVendingBuyDamageUp.width, btnVendingBuyDamageUp.height);
+            batch.draw(imgSpeedUp, btnVendingBuySpeedUp.x, btnVendingBuySpeedUp.y, btnVendingBuySpeedUp.width, btnVendingBuySpeedUp.height);
+        }
+    }
+
+    private void gameMenuBatch() {
+        if (actMenu) {
+            batch.draw(imgBlank[1], position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
+            batch.draw(imgGameMenu, menuX, menuY, menuWidth, menuHeight);
+        }
+    }
+
+    private void elevatorBlankBatch() {
+        if (elevatorUseTime != 0) {
+            if (elevatorUseTime < TimeUtils.millis() - 2500) {
+                batch.draw(imgBlank[2], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+            } else if (elevatorUseTime < TimeUtils.millis() - 1250) {
+                batch.draw(imgBlank[1], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+            } else if (elevatorUseTime < TimeUtils.millis() - 500) {
+                batch.draw(imgBlank[0], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+            }
+        }
     }
 
 //    private void ghostHitCheck() {
@@ -620,6 +836,7 @@ public class ScreenGame implements Screen {
                     ghost.getBody().setActive(false);
                     world.destroyBody(ghost.getBody());
                     ghosts.remove(i);
+                    sndMonsterDeath.play(0.25f*soundVolume);
                     for (int j = 0; j < random.nextInt(2)+1; j++) {
                         Coin coin = new Coin(world, ghost.getX() + (random.nextInt(10)+5)*j, ghost.getY() + (random.nextInt(10)+5)*j, 4.5f, 1);
                         coins.add(coin);
@@ -654,6 +871,7 @@ public class ScreenGame implements Screen {
                     zombie.getBody().setActive(false);
                     world.destroyBody(zombie.getBody());
                     zombies.remove(i);
+                    sndMonsterDeath.play(0.25f*soundVolume);
                     for (int j = 0; j < random.nextInt(2)+1; j++) {
                         Coin coin = new Coin(world, zombie.getX() + (random.nextInt(10)+5)*j, zombie.getY() + (random.nextInt(10)+5)*j, 4.5f, 1);
                         coins.add(coin);
@@ -721,8 +939,22 @@ public class ScreenGame implements Screen {
 
     public void levelUpdate() {
         if (player.getBody().getUserData()=="moved") {
-            resetWorld();
-            level++;
+            if (elevatorUseTime==0) {
+                elevatorUseTime = TimeUtils.millis();
+                sndElevatorUse.play(0.5f*soundVolume);
+            }
+            if (elevatorUseTime < TimeUtils.millis() - 2750) {
+                resetWorld();
+                level++;
+            }
+        }
+    }
+
+    public void vendingUpdate() {
+        if (player.getBody().getUserData()=="shopping" && !actVending && vendingCloseTime + 4250 < TimeUtils.millis()) {
+            actVending = true;
+            player.getBody().setUserData("player");
+            // sndPowerUp.play(0.75f*soundVolume);
         }
     }
 
@@ -796,7 +1028,10 @@ public class ScreenGame implements Screen {
                 preLastRoom.removeLeftWall();
             }
         }
-        elevators.add(rooms.get(rooms.size() - 1).setElevator());
+        elevators.add(rooms.get(rooms.size() - 1).setElevator(true));
+        if (level!=0) {
+            elevators.add(rooms.get(0).setElevator(false));
+        }
     }
 
 
@@ -865,18 +1100,39 @@ public class ScreenGame implements Screen {
                 case 'q':
                     continue;
                 case 'd':
-                    float spawnX = MathUtils.random(room.getX() + THICKNESS, room.getX() + room.getWidth() - THICKNESS);
-                    float spawnY = MathUtils.random(room.getY() + THICKNESS, room.getY() + room.getHeight() - THICKNESS);
-                    for (int j = 0; j < MathUtils.random(2) + 1 - level/3; j++) {
-//                        float randomFloat = a + new Random().nextFloat() * (b - a);
-                        Ghost ghost = new Ghost(world, 20, 24, spawnX, spawnY, 5, 4, 250, ghostOrb);
+                    float spawnX;
+                    float spawnY;
+                    int size;
+                    for (int j = 0; j < MathUtils.random(5-level/2)+1; j++) {
+                        size = MathUtils.random(5);
+                        spawnX = MathUtils.random(room.getX() + THICKNESS*2, room.getX() + room.getWidth() - THICKNESS*2);
+                        spawnY = MathUtils.random(room.getY() + THICKNESS*2, room.getY() + room.getHeight() - THICKNESS*2);
+
+                        Ghost ghost = new Ghost(world, 20+size, 24+size, spawnX, spawnY, 3, 4, 250, ghostOrb);
                         ghost.setRoomNum(i);
                         ghosts.add(ghost);
                     }
-                    for (int j = 0; j < MathUtils.random(3)+level/2; j++) {
-                        Zombie zombie = new Zombie(world, 20, 24, spawnX, spawnY, 5, 4, 175, ghostOrb);
+
+                    for (int j = 0; j < MathUtils.random(level)-1; j++) {
+                        spawnX = MathUtils.random(room.getX() + THICKNESS*2, room.getX() + room.getWidth() - THICKNESS*2);
+                        spawnY = MathUtils.random(room.getY() + THICKNESS*2, room.getY() + room.getHeight() - THICKNESS*2);
+                        size = MathUtils.random(5);
+
+                        Zombie zombie = new Zombie(world, 12.5f+size, 21+size, spawnX, spawnY, 5, 10, 175, ghostOrb);
                         zombie.setRoomNum(i);
                         zombies.add(zombie);
+                        System.out.println();
+                    }
+
+                    for (int j = 0; j < MathUtils.random(2)+1; j++) {
+                        spawnX = MathUtils.random(room.getX() + THICKNESS*2, room.getX() + room.getWidth() - THICKNESS*2);
+                        spawnY = MathUtils.random(room.getY() + THICKNESS*2, room.getY() + room.getHeight() - THICKNESS*2);
+                        size = MathUtils.random(5)+10;
+
+                        Obstacle obstacle = new Obstacle(world, size, size, spawnX, spawnY);
+                        obstacle.setRoomNum(i);
+                        obstacles.add(obstacle);
+                        obstacle.setImgNumber(random.nextInt(imgObstacle.length));
                     }
             }
         }

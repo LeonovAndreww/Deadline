@@ -24,9 +24,11 @@ public class ScreenMenu implements Screen {
 
     Texture imgBg;
     Texture imgBtnShutdown;
+    Texture imgNote;
 
     Sound sndClick;
     Sound sndShutdown;
+    Sound sndStartup;
 
     MyButton btnShutdown;
 
@@ -42,9 +44,11 @@ public class ScreenMenu implements Screen {
 
         imgBg = new Texture("menu.png");
         imgBtnShutdown = new Texture("shutdown.png");
+        imgNote = new Texture("note.png");
 
         sndClick = Gdx.audio.newSound(Gdx.files.internal("click.mp3"));
         sndShutdown = Gdx.audio.newSound(Gdx.files.internal("shutdown.mp3"));
+        sndStartup = Gdx.audio.newSound(Gdx.files.internal("startup.mp3"));
 
         btnShutdown = new MyButton(5, 10, 8);
     }
@@ -52,6 +56,7 @@ public class ScreenMenu implements Screen {
     @Override
     public void show() {
         resetMenu();
+        sndStartup.play();
     }
 
 
@@ -86,6 +91,7 @@ public class ScreenMenu implements Screen {
 
         batch.draw(imgBg, -45, 0);
         batch.draw(imgBtnShutdown, btnShutdown.x, btnShutdown.y, btnShutdown.width, btnShutdown.height);
+        batch.draw(imgNote, 150, 45);
 
         batch.end();
     }
@@ -114,6 +120,7 @@ public class ScreenMenu implements Screen {
     public void dispose() {
         imgBg.dispose();
         imgBtnShutdown.dispose();
+        imgNote.dispose();
     }
 
     public void resetMenu() {

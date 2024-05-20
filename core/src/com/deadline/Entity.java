@@ -12,7 +12,7 @@ public class Entity {
     private Body body;
     private float width, height;
     private float speed = 50f;
-    private int health, maxHealth;
+    protected int health, maxHealth;
     protected char direction = 'd';
     private int phase, nPhases, phaseDir;
     protected long timeLastPhase, timePhaseInterval, timeBasePhaseInterval;

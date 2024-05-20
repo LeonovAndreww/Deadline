@@ -1,27 +1,16 @@
 package com.deadline;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.utils.TimeUtils;
-
 import java.util.Random;
 
 public class MyContactListener implements ContactListener {
-    private final World world;
     Random random = new Random();
-
-
-    public MyContactListener(World world) {
-        this.world = world;
-    }
 
     @Override
     public void beginContact(Contact contact) {
@@ -96,17 +85,17 @@ public class MyContactListener implements ContactListener {
         }
 
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="ghost") {
-            bodyB.setUserData("hit");
+            bodyB.setUserData("hit1");
         }
         else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="ghost") {
-            bodyA.setUserData("hit");
+            bodyA.setUserData("hit1");
         }
 
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="zombie") {
-            bodyB.setUserData("hit");
+            bodyB.setUserData("hit2");
         }
         else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="zombie") {
-            bodyA.setUserData("hit");
+            bodyA.setUserData("hit2");
         }
 
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="coin") {
@@ -121,11 +110,25 @@ public class MyContactListener implements ContactListener {
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
         }
 
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="elevator") {
+        else if (bodyB.getUserData()=="obstacle" && bodyA.getUserData()=="ghost") {
+            contact.setEnabled(false);
+        }
+        else if (bodyA.getUserData()=="obstacle" && bodyB.getUserData()=="ghost") {
+            contact.setEnabled(false);
+        }
+
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="elevatorOn") {
             bodyA.setUserData("moved");
         }
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="elevator") {
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="elevatorOn") {
             bodyB.setUserData("moved");
+        }
+
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="vending") {
+            bodyA.setUserData("shopping");
+        }
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="vending") {
+            bodyB.setUserData("shopping");
         }
     }
 

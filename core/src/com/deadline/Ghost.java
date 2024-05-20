@@ -1,5 +1,7 @@
     package com.deadline;
 
+    import static com.deadline.DdlnGame.soundVolume;
+
     import com.badlogic.gdx.Gdx;
     import com.badlogic.gdx.audio.Sound;
     import com.badlogic.gdx.math.Vector2;
@@ -26,6 +28,7 @@
             this.weapon = weapon;
             isBattle = false;
             this.phase = random.nextInt(4);
+            getBody().setLinearDamping(0.75f);
             getBody().setUserData("ghost");
 
             sndAttack = Gdx.audio.newSound(Gdx.files.internal("ghostAttack.mp3"));
@@ -56,7 +59,7 @@
             if (isBattle) {
                 if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
                     getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(55+random.nextInt(35)));
-                    sndAttack.play();
+                    sndAttack.play(0.75f * soundVolume);
                     timeLastAttack = TimeUtils.millis();
                 }
             }
