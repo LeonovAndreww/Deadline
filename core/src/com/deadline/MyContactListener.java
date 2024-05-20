@@ -130,6 +130,12 @@ public class MyContactListener implements ContactListener {
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="vending") {
             bodyB.setUserData("shopping");
         }
+        else if (bodyA.getUserData()=="shopping" && bodyB.getUserData()!="vending") {
+            bodyA.setUserData("player");
+        }
+        else if (bodyB.getUserData()=="shopping" && bodyA.getUserData()!="vending") {
+            bodyB.setUserData("player");
+        }
     }
 
     @Override

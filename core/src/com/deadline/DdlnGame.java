@@ -2,6 +2,7 @@ package com.deadline;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -26,6 +27,7 @@ public class DdlnGame extends Game {
 	static float ambientLight = 0.375f;
 	static int playerLightDistance = 135;
 	static float musicVolume, soundVolume;
+	final String FONT_CHARS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][_!$%#@|\\/?-+=()*&.;:,{}\"´`'<>";
 
 	@Override
 	public void create () {
@@ -39,7 +41,6 @@ public class DdlnGame extends Game {
 
 		screenMenu = new ScreenMenu(this);
 		screenGame = new ScreenGame(this);
-		//screenSetting = new ScreenSetting(this);
 		setScreen(screenMenu);
 	}
 
@@ -53,7 +54,9 @@ public class DdlnGame extends Game {
 	private void fontGenerate() {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = 22;
+		parameter.characters = FONT_CHARS;
+		parameter.size = 10;
+		parameter.color = Color.BLACK;
 		font = generator.generateFont(parameter);
 		parameter.size = 24;
 		parameter.borderWidth = 2;

@@ -79,6 +79,8 @@ public class ScreenGame implements Screen {
     TextureRegion[] imgBlank = new TextureRegion[3];
 
     Sound sndClick;
+    Sound sndError;
+    Sound sndPowerUp;
     Sound sndPaperBump;
     Sound sndCoinUp;
     Sound sndMonsterDeath;
@@ -112,6 +114,9 @@ public class ScreenGame implements Screen {
     long deathTime = 0;
     long elevatorUseTime = 0;
     long vendingCloseTime = 0;
+    long buyHealTime = 0;
+    long buyDamageUpTime = 0;
+    long buySpeedUpTime = 0;
 
     float menuX, menuY, menuWidth, menuHeight;
     float vendingX, vendingY, vendingWidth, vendingHeight;
@@ -119,7 +124,7 @@ public class ScreenGame implements Screen {
     public int wallet = 0;
     public int level = 0;
 
-    public int healCost = 0, damageUpCost = 0, speedUpCost = 0;
+    public int healCost = 5, damageUpCost = 10, speedUpCost = 8;
 
     static final int THICKNESS = 10;
 
@@ -140,10 +145,6 @@ public class ScreenGame implements Screen {
 
         menuX = menuY = menuWidth = menuHeight = 0;
         vendingX = vendingY = vendingWidth = vendingHeight = 0;
-
-        healCost = 5;
-        damageUpCost = 10;
-        speedUpCost = 8;
 
         isPlayerDeathSoundOn = false;
 
@@ -199,6 +200,8 @@ public class ScreenGame implements Screen {
         imgBlankAtlas = new Texture("blankAtlas.png");
 
         sndClick = Gdx.audio.newSound(Gdx.files.internal("click.mp3"));
+        sndError = Gdx.audio.newSound(Gdx.files.internal("error.mp3"));
+        sndPowerUp = Gdx.audio.newSound(Gdx.files.internal("powerUp.mp3"));
         sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
         sndCoinUp = Gdx.audio.newSound(Gdx.files.internal("coinUp.mp3"));
         sndMonsterDeath = Gdx.audio.newSound(Gdx.files.internal("monsterDeath.mp3"));
@@ -258,7 +261,7 @@ public class ScreenGame implements Screen {
         imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
         imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
-        paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 2);
+        paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 1);
         ghostOrb = new Weapon(1250, 2500, 1);
 
         player = new Player(world, 14, 18, 75, 75, 6, 6, 450, paperWad);
@@ -319,7 +322,7 @@ public class ScreenGame implements Screen {
 
             btnMenu.update(position.x + SCR_WIDTH/2 - 17.5f, position.y + SCR_HEIGHT/2 - 17.5f);
             btnMenuClose.update(menuX+menuWidth-12, menuY+menuHeight-12);
-            btnMenuMain.update(menuX+13, menuY+105);
+            btnMenuMain.update(menuX+13, menuY+52.5f);
             btnMenuResume.update(menuX+13, menuY+5);
 
             btnVendingClose.update(vendingX+vendingWidth-12, vendingY+vendingHeight-12);
@@ -381,6 +384,7 @@ public class ScreenGame implements Screen {
 
         playerLight.attachToBody(player.getBody());
         rayHandler.updateAndRender();
+
     }
 
     @Override
@@ -429,6 +433,7 @@ public class ScreenGame implements Screen {
         player.dispose();
         paperWad.dispose();
         sndClick.dispose();
+        sndError.dispose();
         sndCoinUp.dispose();
         sndPaperBump.dispose();
         sndMonsterDeath.dispose();
@@ -462,6 +467,9 @@ public class ScreenGame implements Screen {
                 if (touches.get(i).x < player.getX()) {
                     actJoystick = true;
                     joystick.updateKnob(touches.get(i));
+                    if (player.getBody().getUserData() == "shopping") { // reset  shopping
+                        player.getBody().setUserData("player");
+                    }
                 } else if (touches.get(i).x > player.getX()) {
                     if (btnAttack.hit(touches.get(i).x, touches.get(i).y)) {
                         actAttack = true;
@@ -488,19 +496,56 @@ public class ScreenGame implements Screen {
 
                 if (actVending) {
                     if (btnVendingClose.hit(touches.get(i).x, touches.get(i).y)) {
-                        sndClick.play();
+                        sndClick.play(0.9f*soundVolume);
                         actVending = false;
+                        player.getBody().setUserData("player");
                         vendingCloseTime = TimeUtils.millis();
                     }
                     else if (btnVendingBuyHeal.hit(touches.get(i).x, touches.get(i).y)) {
-                        sndClick.play();
+                        if (TimeUtils.millis() > buyHealTime + 1000) {
+                            if (player.getHealth() < player.getMaxHealth() && wallet >= healCost) {
+                                sndClick.play(0.9f * soundVolume);
+                                wallet-=healCost;
+                                healCost += 1;
+                                player.setHealth(player.getMaxHealth());
+                                buyHealTime = TimeUtils.millis();
+                                sndPowerUp.play(0.65f * soundVolume);
+                            } else {
+                                sndError.play(0.75f * soundVolume);
+                                buyHealTime = TimeUtils.millis();
+                            }
+                        }
 
                     }
                     else if (btnVendingBuyDamageUp.hit(touches.get(i).x, touches.get(i).y)) {
-                        sndClick.play();
+                        if (TimeUtils.millis() > buyDamageUpTime + 1000) {
+                            if (wallet >= damageUpCost) {
+                                sndClick.play(0.9f * soundVolume);
+                                wallet-=damageUpCost;
+                                damageUpCost += 2;
+                                player.setDamageUp(player.getDamageUp()+1);
+                                buyDamageUpTime = TimeUtils.millis();
+                                sndPowerUp.play(0.65f * soundVolume);
+                            } else {
+                                sndError.play(0.75f * soundVolume);
+                                buyDamageUpTime = TimeUtils.millis();
+                            }
+                        }
                     }
                     else if (btnVendingBuySpeedUp.hit(touches.get(i).x, touches.get(i).y)) {
-                        sndClick.play();
+                        if (TimeUtils.millis() > buySpeedUpTime + 1000) {
+                            if (wallet >= speedUpCost) {
+                                sndClick.play(0.9f * soundVolume);
+                                wallet-=speedUpCost;
+                                speedUpCost += 2;
+                                player.setSpeedUp(player.getSpeedUp()+2);
+                                buySpeedUpTime = TimeUtils.millis();
+                                sndPowerUp.play(0.65f * soundVolume);
+                            } else {
+                                sndError.play(0.75f * soundVolume);
+                                buySpeedUpTime = TimeUtils.millis();
+                            }
+                        }
                     }
                 }
             }
@@ -774,8 +819,12 @@ public class ScreenGame implements Screen {
             batch.draw(imgBlank[1], position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
             batch.draw(imgVendingUi, vendingX, vendingY, vendingWidth, vendingHeight);
             batch.draw(imgHeal, btnVendingBuyHeal.x, btnVendingBuyHeal.y, btnVendingBuyHeal.width, btnVendingBuyHeal.height);
+            font.draw(batch, healCost+"", btnVendingBuyHeal.x+3, btnVendingBuyHeal.y+33);
             batch.draw(imgDamageUp, btnVendingBuyDamageUp.x, btnVendingBuyDamageUp.y, btnVendingBuyDamageUp.width, btnVendingBuyDamageUp.height);
+            font.draw(batch, damageUpCost+"", btnVendingBuyDamageUp.x+3, btnVendingBuyDamageUp.y+33);
             batch.draw(imgSpeedUp, btnVendingBuySpeedUp.x, btnVendingBuySpeedUp.y, btnVendingBuySpeedUp.width, btnVendingBuySpeedUp.height);
+            font.draw(batch, speedUpCost+"", btnVendingBuySpeedUp.x+3, btnVendingBuySpeedUp.y+33);
+            font.draw(batch, wallet+"", btnVendingBuyDamageUp.x+3, btnVendingBuyDamageUp.y-9);
         }
     }
 
@@ -823,7 +872,7 @@ public class ScreenGame implements Screen {
                 if (ghost.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (ghost.getBody().getUserData() == "hit") {
-                            ghosts.get(i).hit(player.getWeapon().getDamage());
+                            ghosts.get(i).hit(player.getWeapon().getDamage()+player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
@@ -858,7 +907,7 @@ public class ScreenGame implements Screen {
                 if (zombie.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (zombie.getBody().getUserData() == "hit") {
-                            zombies.get(i).hit(player.getWeapon().getDamage());
+                            zombies.get(i).hit(player.getWeapon().getDamage()+player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
@@ -954,7 +1003,7 @@ public class ScreenGame implements Screen {
         if (player.getBody().getUserData()=="shopping" && !actVending && vendingCloseTime + 4250 < TimeUtils.millis()) {
             actVending = true;
             player.getBody().setUserData("player");
-            // sndPowerUp.play(0.75f*soundVolume);
+            vendingCloseTime = TimeUtils.millis();
         }
     }
 

@@ -83,12 +83,12 @@ public class Player extends Entity {
             if (TimeUtils.millis() - timeLastStep > timePhaseInterval*2) {
                 if (isBattle) {
                     if (getPhase()%2==0) {
-                        sndStep.play(0.35f * soundVolume);
+                        sndStep.play(0.75f * soundVolume);
                         timeLastStep = TimeUtils.millis();
                     }
                 }
                 else if(getPhase()==2 || getPhase()==5) {
-                    sndStep.play(0.4f * soundVolume);
+                    sndStep.play(0.8f * soundVolume);
                     timeLastStep = TimeUtils.millis();
                 }
             }
@@ -100,13 +100,13 @@ public class Player extends Entity {
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed(), getDirection(), TimeUtils.millis(), weapon.getDamage());
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage());
         projectiles.add(projectile);
     }
     void setBattleState(boolean isBattle) {
         this.isBattle = isBattle;
-        if (this.isBattle) super.setSpeed(BATTLE_SPEED);
-        else super.setSpeed(BASIC_SPEED);
+        if (this.isBattle) super.setSpeed(BATTLE_SPEED+speedUp*2);
+        else super.setSpeed(BASIC_SPEED+speedUp*2);
     }
 
     public Weapon getWeapon() {
