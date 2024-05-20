@@ -105,6 +105,13 @@ public class MyContactListener implements ContactListener {
             bodyB.setUserData("got");
         }
 
+        else if (bodyB.getUserData()=="coin" && bodyA.getUserData()=="ghost") {
+            contact.setEnabled(false);
+        }
+        else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="ghost") {
+            contact.setEnabled(false);
+        }
+
         else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin" || bodyB.getUserData()=="zombie") && (bodyB.getUserData()=="zombie" || bodyA.getUserData()=="coin" || bodyA.getUserData()=="ghost")) {
             bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
