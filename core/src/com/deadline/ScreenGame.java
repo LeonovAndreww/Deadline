@@ -366,8 +366,8 @@ public class ScreenGame implements Screen {
             world.step(1 / 60f, 6, 2);
         } else if (player.getHealth() <= 0){
             batch.draw(imgBlank[1], position.x-SCR_WIDTH, position.y-SCR_HEIGHT, Gdx.graphics.getWidth()*2, Gdx.graphics.getHeight()*2);
-            glyphLayout.setText(font, "I'm not ready to die yet");
-            font.draw(batch, "I'm not ready to die yet", position.x - glyphLayout.width/2, position.y);
+            glyphLayout.setText(fontUi, "I'm not ready to die yet");
+            fontUi.draw(batch, "I'm not ready to die yet", position.x - glyphLayout.width/2, position.y);
             if (deathTime == 0) {
                 deathTime = TimeUtils.millis();
             } else if (deathTime + 1000 < TimeUtils.millis() && !isPlayerDeathSoundOn) {
@@ -718,7 +718,7 @@ public class ScreenGame implements Screen {
         int lvl = level;
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-            if (level>imgRoom.length) lvl = 7;
+            if (level>imgRoom.length) lvl = level%imgRoom.length;
             batch.draw(imgRoom[lvl], room.getX(), room.getY(), room.getWidth(), room.getHeight());
         }
     }
