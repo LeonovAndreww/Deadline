@@ -18,6 +18,7 @@ public class Room {
     private ArrayList<Character> doors = new ArrayList<>();
     private ArrayList<Body> doorHorBodies = new ArrayList<>();
     private ArrayList<Body> doorVerBodies = new ArrayList<>();
+//    private ArrayList<Character>
 
     boolean built;
 
@@ -30,7 +31,8 @@ public class Room {
         this.type = type;
         built = false;
 
-        // door check
+//         door check
+
         if ((doorDir.contains('u') && (isRoom(this.x, this.y + this.height, rooms) || rooms.isEmpty())) || getRoomDir(this.x, this.y + this.height, rooms).contains('d'))
             this.doors.add('u');
         if ((doorDir.contains('d') && (isRoom(this.x, this.y - this.height, rooms) || rooms.isEmpty())) || getRoomDir(this.x, this.y - this.height, rooms).contains('u'))
@@ -183,8 +185,56 @@ public class Room {
         shape.dispose();
     }
 
+    public void removeTopWall() {
+        if (hasTopWall) {
+            doors.add('u');
+            world.destroyBody(topWall);
+            hasTopWall = false;
+            createHorDoor(this.x, this.y + this.height - 10, this.width, 10);
+        }
+    }
+
+    public void removeBottomWall() {
+        if (hasBottomWall) {
+            doors.add('d');
+            world.destroyBody(bottomWall);
+            hasBottomWall = false;
+            createHorDoor(this.x, this.y, this.width, 10);
+        }
+    }
+
+    public void removeLeftWall() {
+        if (hasLeftWall) {
+            doors.add('l');
+            world.destroyBody(leftWall);
+            hasLeftWall = false;
+            createVerDoor(this.x, this.y, 10, this.height);
+        }
+    }
+
+    public void removeRightWall() {
+        if (hasRightWall) {
+            doors.add('r');
+            world.destroyBody(rightWall);
+            hasRightWall = false;
+            createVerDoor(this.x + this.width - 10, this.y, 10, this.height);
+        }
+    }
+
     public ArrayList<Character> getDoors() {
-        return doors;
+        if (!doors.isEmpty()) return doors;
+        else {
+            System.out.println("getDoors костыль активирован!");
+            return new ArrayList<>('d');
+        }
+    }
+
+    public void setDoors(ArrayList<Character> doors) {
+        this.doors = doors;
+    }
+
+    public void addDoor(char door) {
+        doors.add(door);
     }
 
     public float getX() {
@@ -201,61 +251,6 @@ public class Room {
 
     public float getHeight() {
         return height;
-    }
-
-    public void removeTopWall() {
-        if (hasTopWall) {
-            world.destroyBody(topWall);
-            hasTopWall = false;
-            createHorDoor(this.x, this.y + this.height - 10, this.width, 10);
-        }
-    }
-
-    public void removeBottomWall() {
-        if (hasBottomWall) {
-            world.destroyBody(bottomWall);
-            hasBottomWall = false;
-            createHorDoor(this.x, this.y, this.width, 10);
-        }
-    }
-
-    public void removeLeftWall() {
-        if (hasLeftWall) {
-            world.destroyBody(leftWall);
-            hasLeftWall = false;
-            createVerDoor(this.x, this.y, 10, this.height);
-        }
-    }
-
-    public void removeRightWall() {
-        if (hasRightWall) {
-            world.destroyBody(rightWall);
-            hasRightWall = false;
-            createVerDoor(this.x + this.width - 10, this.y, 10, this.height);
-        }
-    }
-
-    public Body setElevator(boolean isWorking) {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(x + width / 2, y + height / 2);
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        Body body = world.createBody(bodyDef);
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width/8, height/8);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-
-        body.createFixture(fixtureDef);
-        if (isWorking) {
-            body.setUserData("elevatorOn");
-        } else {
-            body.setUserData("elevatorOff");
-        }
-
-        shape.dispose();
-        return body;
     }
 
     public ArrayList<Body> getDoorHorBodies() {

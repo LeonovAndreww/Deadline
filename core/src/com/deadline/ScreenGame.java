@@ -2,6 +2,8 @@ package com.deadline;
 
 import static com.deadline.DdlnGame.*;
 
+import static sun.jvm.hotspot.debugger.win32.coff.DebugVC50X86RegisterEnums.TAG;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
@@ -56,7 +58,6 @@ public class ScreenGame implements Screen {
     Texture imgHeal, imgDamageUp, imgSpeedUp;
     Texture[] imgRoom = new Texture[9];
     Texture imgHorWall, imgVerWall;
-    Texture imgElevator;
     Texture imgPaperWad;
     Texture imgRouble;
     Texture imgVendingMachine;
@@ -66,6 +67,7 @@ public class ScreenGame implements Screen {
     Texture imgGhostAtlas;
     Texture imgZombieAtlas;
     Texture imgObstacleAtlas;
+    Texture imgElevatorAtlas;
     Texture imgBlankAtlas;
     TextureRegion[] imgHorDoor = new TextureRegion[2];
     TextureRegion[] imgVerDoor = new TextureRegion[2];
@@ -76,6 +78,7 @@ public class ScreenGame implements Screen {
     TextureRegion[] imgGhost = new TextureRegion[4];
     TextureRegion[][] imgZombie = new TextureRegion[4][10];
     TextureRegion[] imgObstacle = new TextureRegion[6];
+    TextureRegion[] imgElevator = new TextureRegion[2];
     TextureRegion[] imgBlank = new TextureRegion[3];
 
     Sound sndClick;
@@ -94,7 +97,7 @@ public class ScreenGame implements Screen {
     Weapon ghostOrb;
 
     ArrayList<Room> rooms = new ArrayList<>();
-    ArrayList<Body> elevators = new ArrayList<>();
+    ArrayList<Elevator> elevators = new ArrayList<>();
     ArrayList<Ghost> ghosts = new ArrayList<>();
     ArrayList<Zombie> zombies = new ArrayList<>();
     ArrayList<Coin> coins = new ArrayList<>();
@@ -126,8 +129,6 @@ public class ScreenGame implements Screen {
 
     public int healCost = 5, damageUpCost = 10, speedUpCost = 8;
 
-    static final int THICKNESS = 10;
-
     String txtCord = "Empty";
 
     public ScreenGame(DdlnGame game) {
@@ -153,7 +154,7 @@ public class ScreenGame implements Screen {
         world.setContactListener(contactListener);
         rayHandler = new RayHandler(world);
         rayHandler.setAmbientLight(ambientLight-0.025f*level);
-        Vector2 position = new Vector2(0, 0);
+//        Vector2 position = new Vector2(0, 0);
 
         glyphLayout = new GlyphLayout();
 
@@ -183,8 +184,6 @@ public class ScreenGame implements Screen {
         imgHorWall = new Texture("horizontalWall.png");
         imgVerWall = new Texture("verticalWall.png");
 
-        imgElevator = new Texture("elevator.png");
-
         imgHorDoorAtlas = new Texture("horizontalDoorAtlas.png");
         imgVerDoorAtlas = new Texture("verticalDoorAtlas.png");
         imgHealthAtlas = new Texture("healthbarAtlas.png");
@@ -193,11 +192,55 @@ public class ScreenGame implements Screen {
         imgGhostAtlas = new Texture("ghostAtlas.png");
         imgZombieAtlas = new Texture("zombieAtlas.png");
         imgObstacleAtlas = new Texture("obstacleAtlas.png");
+        imgElevatorAtlas = new Texture("elevatorAtlas.png");
+        imgBlankAtlas = new Texture("blankAtlas.png");
 
         imgPaperWad = new Texture("paperWad.png");
         imgRouble = new Texture("rouble.png");
 
-        imgBlankAtlas = new Texture("blankAtlas.png");
+        int iter = 0;
+        for (int i = 0; i < imgPlayerIdle.length; i++) {
+            for (int j = 0; j < imgPlayerIdle[0].length; j++) {
+                imgPlayerIdle[i][j] = new TextureRegion(imgPlayerAtlas, iter * 16, 0, 16, 32);
+                imgPlayerRun[i][j] = new TextureRegion(imgPlayerAtlas, iter * 16, 32, 16, 32);
+                iter++;
+            }
+        }
+
+        for (int i = 0; i < imgGhost.length; i++) {
+            imgGhost[i] = new TextureRegion(imgGhostAtlas, i*32, 0, 32, 32);
+        }
+
+        for (int i = 0; i < imgZombie.length; i++) {
+            for (int j = 0; j < imgZombie[0].length; j++) {
+                imgZombie[i][j] = new TextureRegion(imgZombieAtlas, j*32, i*32, 32, 32);
+            }
+        }
+
+        for (int i = 0; i < imgObstacle.length; i++) {
+            imgObstacle[i] = new TextureRegion(imgObstacleAtlas, i*21, 0, 21, 32);
+        }
+
+        for (int i = 0; i < imgElevator.length; i++) {
+            imgElevator[i] = new TextureRegion(imgElevatorAtlas, 0, i*12, 64, 12);
+        }
+
+        for (int i = 0; i < imgHealth.length; i++) {
+            imgHealth[i] = new TextureRegion(imgHealthAtlas, 0,(imgHealth.length-1-i)*16,64, 16);
+        }
+
+        for (int i = 0; i < imgWallet.length; i++) {
+            imgWallet[i] = new TextureRegion(imgWalletAtlas, 0, (imgWallet.length-1-i)*16, 16, 16);
+        }
+
+        for (int i = 0; i < imgBlank.length; i++) {
+            imgBlank[i] = new TextureRegion(imgBlankAtlas, i, 0, 1, 1);
+        }
+
+        imgHorDoor[0] = new TextureRegion(imgHorDoorAtlas, 0, 0, 64, 16);
+        imgHorDoor[1] = new TextureRegion(imgHorDoorAtlas, 0, 16, 64, 16);
+        imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
+        imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
         sndClick = Gdx.audio.newSound(Gdx.files.internal("click.mp3"));
         sndError = Gdx.audio.newSound(Gdx.files.internal("error.mp3"));
@@ -220,47 +263,6 @@ public class ScreenGame implements Screen {
         btnVendingBuyDamageUp = new MyButton(0, 0, 26, 26);
         btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
 
-        int iter = 0;
-        for (int i = 0; i < imgPlayerIdle.length; i++) {
-            for (int j = 0; j < imgPlayerIdle[0].length; j++) {
-                imgPlayerIdle[i][j] = new TextureRegion(imgPlayerAtlas, iter * 16, 0, 16, 32);
-                imgPlayerRun[i][j] = new TextureRegion(imgPlayerAtlas, iter * 16, 32, 16, 32);
-                iter++;
-            }
-        }
-
-        for (int i = 0; i < imgGhost.length; i++) {
-            imgGhost[i] = new TextureRegion(imgGhostAtlas, i * 32, 0, 32, 32);
-        }
-
-        for (int i = 0; i < imgZombie.length; i++) {
-            for (int j = 0; j < imgZombie[0].length; j++) {
-                imgZombie[i][j] = new TextureRegion(imgZombieAtlas, j*32, i*32, 32, 32);
-            }
-        }
-
-        for (int i = 0; i < imgObstacle.length; i++) {
-            imgObstacle[i] = new TextureRegion(imgObstacleAtlas, i * 21, 0, 21, 32); // buggy
-
-        }
-
-        for (int i = 0; i < imgHealth.length; i++) {
-            imgHealth[i] = new TextureRegion(imgHealthAtlas, 0,(imgHealth.length-1-i)*16,64, 16);
-        }
-
-        for (int i = 0; i < imgWallet.length; i++) {
-            imgWallet[i] = new TextureRegion(imgWalletAtlas, 0, (imgWallet.length-1-i)*16, 16, 16);
-        }
-
-        for (int i = 0; i < imgBlank.length; i++) {
-            imgBlank[i] = new TextureRegion(imgBlankAtlas, i, 0, 1, 1);
-        }
-
-        imgHorDoor[0] = new TextureRegion(imgHorDoorAtlas, 0, 0, 64, 16);
-        imgHorDoor[1] = new TextureRegion(imgHorDoorAtlas, 0, 16, 64, 16);
-        imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
-        imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
-
         paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 1);
         ghostOrb = new Weapon(1250, 2500, 1);
 
@@ -272,6 +274,7 @@ public class ScreenGame implements Screen {
 
         generateMap(7);
         generateRooms();
+        generateElevators();
         vending = new Vending(world, 32, 24, rooms.get(0).getX()+rooms.get(0).getWidth()-35, rooms.get(0).getY()+rooms.get(0).getHeight()-35);
         vendingPointLight = new PointLight(rayHandler, 512, new Color(0.1f, 0.5f, 0.85f, 0.695f), 95, vending.getX()+vending.getWidth()/3, vending.getY()+20);
         vendingPointLight.setSoftnessLength(50);
@@ -329,6 +332,7 @@ public class ScreenGame implements Screen {
             btnVendingBuyHeal.update(vendingX+9, vendingY+20);
             btnVendingBuyDamageUp.update(vendingX+47, vendingY+20);
             btnVendingBuySpeedUp.update(vendingX+85, vendingY+20);
+
         }
 
         // draw
@@ -423,7 +427,7 @@ public class ScreenGame implements Screen {
         imgVerWall.dispose();
         imgHorDoorAtlas.dispose();
         imgVerDoorAtlas.dispose();
-        imgElevator.dispose();
+        imgElevatorAtlas.dispose();
         imgPlayerAtlas.dispose();
         imgGhostAtlas.dispose();
         imgZombieAtlas.dispose();
@@ -584,7 +588,7 @@ public class ScreenGame implements Screen {
     public void resetProgress() {
         deathTime = 0;
         wallet = 0;
-        level = 0;
+        level = 1;
     }
 
     public void resetWorld() {
@@ -618,6 +622,7 @@ public class ScreenGame implements Screen {
 
         generateMap(7);
         generateRooms();
+        generateElevators();
         vending = new Vending(world, 32, 24, rooms.get(0).getX()+rooms.get(0).getWidth()-35, rooms.get(0).getY()+rooms.get(0).getHeight()-35);
     }
 
@@ -776,12 +781,33 @@ public class ScreenGame implements Screen {
 
     private void elevatorsBatch(){
         for (int i = 0; i < elevators.size(); i++) {
-            Body elevator = elevators.get(i);
-            if (elevator.getUserData()=="elevatorOn") { // on off states
-                batch.draw(imgElevator, elevator.getPosition().x-rooms.get(0).getHeight()/8, elevator.getPosition().y-rooms.get(0).getHeight()/8, rooms.get(0).getWidth()/4, rooms.get(0).getHeight()/4);
+            Elevator elevator = elevators.get(i);
+            float scale = 2;
+            float originX = elevator.getWidth() * scale / 2;
+            float originY = elevator.getHeight() * scale / 2;
+            if (elevator.getBody().getUserData()=="elevatorOn") {
+                batch.draw(imgElevator[0],
+                        elevator.getX() - originX,
+                        elevator.getY() - originY,
+                        originX,
+                        originY,
+                        elevator.getWidth() * scale,
+                        elevator.getHeight() * scale,
+                        1,
+                        1,
+                        elevator.getRotation());
             }
             else {
-                batch.draw(imgElevator, elevator.getPosition().x-rooms.get(0).getHeight()/8, elevator.getPosition().y-rooms.get(0).getHeight()/8, rooms.get(0).getWidth()/4, rooms.get(0).getHeight()/4);
+                batch.draw(imgElevator[1],
+                        elevator.getX() - originX,
+                        elevator.getY() - originY,
+                        originX,
+                        originY,
+                        elevator.getWidth() * scale,
+                        elevator.getHeight() * scale,
+                        1,
+                        1,
+                        elevator.getRotation());
             }
         }
     }
@@ -877,7 +903,7 @@ public class ScreenGame implements Screen {
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
                             ghost.getBody().setUserData("ghost");
-                            sndPaperBump.play();
+                            sndPaperBump.play(0.65f*soundVolume);
                         }
                     }
                 }
@@ -912,7 +938,7 @@ public class ScreenGame implements Screen {
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
                             zombie.getBody().setUserData("zombie");
-                            sndPaperBump.play();
+                            sndPaperBump.play(0.65f*soundVolume);
                         }
                     }
                 }
@@ -978,7 +1004,7 @@ public class ScreenGame implements Screen {
                 if (coin.getBody().getUserData()=="got") {
                     world.destroyBody(coin.getBody());
                     wallet++;
-                    sndCoinUp.play(0.75f*soundVolume);
+                    sndCoinUp.play(0.65f*soundVolume);
                     coins.remove(i);
                     break;
                 }
@@ -990,7 +1016,7 @@ public class ScreenGame implements Screen {
         if (player.getBody().getUserData()=="moved") {
             if (elevatorUseTime==0) {
                 elevatorUseTime = TimeUtils.millis();
-                sndElevatorUse.play(0.5f*soundVolume);
+                sndElevatorUse.play(0.55f*soundVolume);
             }
             if (elevatorUseTime < TimeUtils.millis() - 2750) {
                 resetWorld();
@@ -1041,45 +1067,48 @@ public class ScreenGame implements Screen {
                 }
             }
 
-            ArrayList<Room> tempRooms = new ArrayList<>(rooms);
-            Room room = new Room(world, roomX, roomY, roomWidth, roomHeight, doors, tempRooms, roomType);
+            ArrayList<Room> tempRooms = new ArrayList<>();
+            Room room = new Room(world, roomX, roomY, roomWidth, roomHeight, doors, rooms, roomType);
             setDoors();
             rooms.add(room);
+            room.setDoors(doors);
             doors.clear();
         }
-
-        ArrayList<Character> lastDir = rooms.get(rooms.size() - 1).getDoors();
 
         Room lastRoom = rooms.get(rooms.size() - 1);
         Room preLastRoom = rooms.get(rooms.size() - 2);
 
-        if (lastDir.contains('u')) {
+        if (lastRoom.getX()==preLastRoom.getX() && lastRoom.getY()+lastRoom.getHeight()==preLastRoom.getX()) {
             if (lastRoom.getY() + roomHeight == preLastRoom.getY()) {
+                lastRoom.addDoor('u');
                 lastRoom.removeTopWall();
+                preLastRoom.addDoor('d');
                 preLastRoom.removeBottomWall();
             }
         }
-        if (lastDir.contains('d')) {
+        else if (lastRoom.getX()==preLastRoom.getX() && lastRoom.getY()-lastRoom.getHeight()==preLastRoom.getY()) {
             if (lastRoom.getY() - roomHeight == preLastRoom.getY()) {
+                lastRoom.addDoor('d');
                 lastRoom.removeBottomWall();
+                preLastRoom.addDoor('u');
                 preLastRoom.removeTopWall();
             }
         }
-        if (lastDir.contains('l')) {
+        else if (lastRoom.getY()==preLastRoom.getY() && lastRoom.getX()-lastRoom.getWidth()==preLastRoom.getX()) {
             if (lastRoom.getX() - roomWidth == preLastRoom.getX()) {
+                lastRoom.addDoor('l');
                 lastRoom.removeLeftWall();
+                preLastRoom.addDoor('r');
                 preLastRoom.removeRightWall();
             }
         }
-        if (lastDir.contains('r')) {
+       else  if (lastRoom.getY()==preLastRoom.getY() && lastRoom.getX()+lastRoom.getWidth()==preLastRoom.getX()) {
             if (lastRoom.getX() + roomWidth == preLastRoom.getX()) {
+                lastRoom.addDoor('r');
                 lastRoom.removeRightWall();
+                preLastRoom.addDoor('l');
                 preLastRoom.removeLeftWall();
             }
-        }
-        elevators.add(rooms.get(rooms.size() - 1).setElevator(true));
-        if (level!=0) {
-            elevators.add(rooms.get(0).setElevator(false));
         }
     }
 
@@ -1089,7 +1118,6 @@ public class ScreenGame implements Screen {
         float testX, testY;
 
         for (int i = 0; i < rooms.size(); i++) {
-//            rooms.get(i).setRooms(rooms);
             testX = rooms.get(i).getX();
             testY = rooms.get(i).getY();
 
@@ -1129,7 +1157,7 @@ public class ScreenGame implements Screen {
     }
 
     private boolean hasFreeCell(float x, float y) {
-        float roomX, roomY; // init
+        float roomX, roomY;
 
         for (int i = 0; i < rooms.size(); i++) {
             roomX = rooms.get(i).getX();
@@ -1170,7 +1198,6 @@ public class ScreenGame implements Screen {
                         Zombie zombie = new Zombie(world, 12.5f+size, 21+size, spawnX, spawnY, 5, 10, 175, ghostOrb);
                         zombie.setRoomNum(i);
                         zombies.add(zombie);
-                        System.out.println();
                     }
 
                     for (int j = 0; j < MathUtils.random(2)+1; j++) {
@@ -1186,6 +1213,17 @@ public class ScreenGame implements Screen {
             }
         }
     }
+
+    private void generateElevators() {
+            Elevator elevatorLast = new Elevator(world, rooms.get(rooms.size() - 1).getX(), rooms.get(rooms.size() - 1).getY(), rooms.get(rooms.size() - 1).getWidth(), rooms.get(rooms.size() - 1).getHeight(), new ArrayList<Character>('d'), true);
+            elevators.add(elevatorLast);
+            if (level != 0) {
+                Room room = rooms.get(0);
+                Elevator elevator = new Elevator(world, room.getX(), room.getY(), room.getWidth(), room.getHeight(), room.getDoors(), false);
+                elevators.add(elevator); // to one str
+            }
+        }
+
 
     public int getPlayerRoom() {
         for (int i = 0; i < rooms.size(); i++) {
