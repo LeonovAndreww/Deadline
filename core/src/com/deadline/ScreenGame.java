@@ -347,6 +347,7 @@ public class ScreenGame implements Screen {
         wallBatch();
         projectileBatch();
         doorPreBatch();
+        elevatorsBatch();
         vendingBatch();
         coinBatch();
         zombiesBatch();
@@ -354,7 +355,6 @@ public class ScreenGame implements Screen {
         obstaclesBatch();
         ghostsBatch();
         doorPostBatch();
-        elevatorsBatch();
         hudBatch();
         vendingUiBatch();
         elevatorBlankBatch();
@@ -526,7 +526,7 @@ public class ScreenGame implements Screen {
                             if (wallet >= damageUpCost) {
                                 sndClick.play(0.9f * soundVolume);
                                 wallet-=damageUpCost;
-                                damageUpCost += 2;
+                                damageUpCost *= 1.25f;
                                 player.setDamageUp(player.getDamageUp()+1);
                                 buyDamageUpTime = TimeUtils.millis();
                                 sndPowerUp.play(0.65f * soundVolume);
@@ -541,7 +541,7 @@ public class ScreenGame implements Screen {
                             if (wallet >= speedUpCost) {
                                 sndClick.play(0.9f * soundVolume);
                                 wallet-=speedUpCost;
-                                speedUpCost += 2;
+                                speedUpCost *= 1.4f;
                                 player.setSpeedUp(player.getSpeedUp()+2);
                                 buySpeedUpTime = TimeUtils.millis();
                                 sndPowerUp.play(0.65f * soundVolume);
@@ -588,7 +588,7 @@ public class ScreenGame implements Screen {
     public void resetProgress() {
         deathTime = 0;
         wallet = 0;
-        level = 1;
+        level = 0;
     }
 
     public void resetWorld() {
@@ -617,8 +617,13 @@ public class ScreenGame implements Screen {
         elevatorUseTime = 0;
         vendingCloseTime = 0;
         menuX = menuY = menuWidth = menuHeight = 0;
-        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad);
         rayHandler.setAmbientLight(ambientLight-0.025f*level);
+
+        int tempDamageUp = player.getDamageUp();
+        int tempSpeedUp = player.getSpeedUp();
+        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad);
+        player.setDamageUp(tempDamageUp);
+        player.setSpeedUp(tempSpeedUp);
 
         generateMap(7);
         generateRooms();
@@ -1078,7 +1083,7 @@ public class ScreenGame implements Screen {
         Room lastRoom = rooms.get(rooms.size() - 1);
         Room preLastRoom = rooms.get(rooms.size() - 2);
 
-        if (lastRoom.getX()==preLastRoom.getX() && lastRoom.getY()+lastRoom.getHeight()==preLastRoom.getX()) {
+        if (lastRoom.getX()==preLastRoom.getX() && lastRoom.getY()+lastRoom.getHeight()==preLastRoom.getY()) {
             if (lastRoom.getY() + roomHeight == preLastRoom.getY()) {
                 lastRoom.addDoor('u');
                 lastRoom.removeTopWall();
@@ -1215,7 +1220,7 @@ public class ScreenGame implements Screen {
     }
 
     private void generateElevators() {
-            Elevator elevatorLast = new Elevator(world, rooms.get(rooms.size() - 1).getX(), rooms.get(rooms.size() - 1).getY(), rooms.get(rooms.size() - 1).getWidth(), rooms.get(rooms.size() - 1).getHeight(), new ArrayList<Character>('d'), true);
+            Elevator elevatorLast = new Elevator(world, rooms.get(rooms.size() - 1).getX(), rooms.get(rooms.size() - 1).getY(), rooms.get(rooms.size() - 1).getWidth(), rooms.get(rooms.size() - 1).getHeight(), rooms.get(rooms.size() - 1).getDoors(), true);
             elevators.add(elevatorLast);
             if (level != 0) {
                 Room room = rooms.get(0);

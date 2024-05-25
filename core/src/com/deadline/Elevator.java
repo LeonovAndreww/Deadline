@@ -43,7 +43,22 @@ public class Elevator {
 
         PolygonShape shape = new PolygonShape();
 
-        if (doors.contains('u')) {
+          if (doors.contains('l')) {
+            x += THICKNESS/2f;
+            y += tempHeight/2f;
+            width /= 30;
+            height /= 3.75f;
+            shape.setAsBox(width, height);
+            rotation = 270;
+        } else if (doors.contains('r')) {
+            x += tempWidth-THICKNESS/2F;
+            y += tempHeight/2;
+            width /= 30;
+            height /= 3.75f;
+            shape.setAsBox(width, height);
+            rotation = 90;
+        }
+        else if (doors.contains('u')) {
             x += tempWidth/2;
             y += tempHeight-THICKNESS/2f;
             width /= 3.75f;
@@ -57,21 +72,7 @@ public class Elevator {
             height /= 30;
             shape.setAsBox(width, height);
             rotation = 0;
-        } else if (doors.contains('l')) {
-            x += THICKNESS/2f;
-            y += tempHeight/2f;
-            width /= 30;
-            height /= 3.75f;
-            shape.setAsBox(width, height);
-            rotation = 90;
-        } else if (doors.contains('r')) {
-            x += tempWidth-THICKNESS/2F;
-            y += tempHeight/2;
-            width /= 30;
-            height /= 3.75f;
-            shape.setAsBox(width, height);
-            rotation = 270;
-        } else {
+        }else {
             shape.setAsBox(width / 8, height / 8);
             rotation = 0;
             System.out.println("Invalid elevator direction!");
@@ -119,6 +120,9 @@ public class Elevator {
     }
 
     public float getWidth() {
+        if (rotation==90 || rotation == 270) {
+            return height;
+        }
         return width;
     }
 
@@ -127,6 +131,9 @@ public class Elevator {
     }
 
     public float getHeight() {
+        if (rotation==90 || rotation == 270) {
+            return width;
+        }
         return height;
     }
 
