@@ -4,14 +4,16 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Weapon {
     private Texture texture;
+    private String name;
     private float speed;
     private final long duration;
     private final float reloadTime;
     private final int damage;
     private boolean isMelee;
 
-    public Weapon(Texture texture, float speed, long duration, float reloadTime, int damage) {
+    public Weapon(Texture texture, String name, float speed, long duration, float reloadTime, int damage) {
         this.texture = texture;
+        this.name = name;
         this.speed = speed;
         this.duration = duration;
         this.reloadTime = reloadTime;
@@ -27,6 +29,14 @@ public class Weapon {
 
     public Texture getTexture() {
         return texture;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isMelee() {

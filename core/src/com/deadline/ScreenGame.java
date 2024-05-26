@@ -263,7 +263,7 @@ public class ScreenGame implements Screen {
         btnVendingBuyDamageUp = new MyButton(0, 0, 26, 26);
         btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
 
-        paperWad = new Weapon(imgPaperWad, 35, 1250, 950, 1);
+        paperWad = new Weapon(imgPaperWad, "Paper wad", 35, 1250, 950, 1);
         ghostOrb = new Weapon(1250, 2500, 1);
 
         player = new Player(world, 14, 18, 75, 75, 6, 6, 450, paperWad);
@@ -364,6 +364,7 @@ public class ScreenGame implements Screen {
 
         joystick.render(batch, imgJstBase, imgJstKnob, position.x - SCR_WIDTH / 2.75f, position.y - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
+        batch.draw(player.getWeapon().getTexture(), btnAttack.x+player.getWeapon().getTexture().getWidth()/1.5f, btnAttack.y+player.getWeapon().getTexture().getHeight()/1.5f, btnAttack.width/2, btnAttack.height/2);
         batch.draw(imgButtonMenu, btnMenu.x, btnMenu.y, btnMenu.width, btnMenu.height);
 
         if (player.getHealth() > 0 && !actMenu) {
@@ -917,7 +918,7 @@ public class ScreenGame implements Screen {
                     world.destroyBody(ghost.getBody());
                     ghosts.remove(i);
                     sndMonsterDeath.play(0.25f*soundVolume);
-                    for (int j = 0; j < random.nextInt(2)+1; j++) {
+                    for (int j = 0; j < random.nextInt(1)+level/3; j++) {
                         Coin coin = new Coin(world, ghost.getX() + (random.nextInt(10)+5)*j, ghost.getY() + (random.nextInt(10)+5)*j, 4.5f, 1);
                         coins.add(coin);
                     }
@@ -952,7 +953,7 @@ public class ScreenGame implements Screen {
                     world.destroyBody(zombie.getBody());
                     zombies.remove(i);
                     sndMonsterDeath.play(0.25f*soundVolume);
-                    for (int j = 0; j < random.nextInt(2)+1; j++) {
+                    for (int j = 0; j < random.nextInt(2)+level/3; j++) {
                         Coin coin = new Coin(world, zombie.getX() + (random.nextInt(10)+5)*j, zombie.getY() + (random.nextInt(10)+5)*j, 4.5f, 1);
                         coins.add(coin);
                     }
@@ -1200,7 +1201,7 @@ public class ScreenGame implements Screen {
                         spawnY = MathUtils.random(room.getY() + THICKNESS*2, room.getY() + room.getHeight() - THICKNESS*2);
                         size = MathUtils.random(5);
 
-                        Zombie zombie = new Zombie(world, 12.5f+size, 21+size, spawnX, spawnY, 5, 10, 175, ghostOrb);
+                        Zombie zombie = new Zombie(world, 12.5f+size, 21+size, spawnX, spawnY, 6, 10, 175, ghostOrb);
                         zombie.setRoomNum(i);
                         zombies.add(zombie);
                     }
