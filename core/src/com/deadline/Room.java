@@ -10,17 +10,18 @@ import java.util.ArrayList;
 
 public class Room {
     World world;
-    private float x, y;
-    private float width, height;
-    private char type;
+    private final float x, y;
+    private final float width, height;
+    private final char type;
     public Body topWall, bottomWall, leftWall, rightWall;
     private boolean hasTopWall, hasBottomWall, hasLeftWall, hasRightWall;
     private ArrayList<Character> doors = new ArrayList<>();
     private ArrayList<Body> doorHorBodies = new ArrayList<>();
     private ArrayList<Body> doorVerBodies = new ArrayList<>();
+    private boolean isDiscovered;
+    private boolean isActive;
 //    private ArrayList<Character>
 
-    boolean built;
 
     public Room(World world, float x, float y, float width, float height, ArrayList<Character> doorDir, ArrayList<Room> rooms, char type) {
         this.world = world;
@@ -29,7 +30,7 @@ public class Room {
         this.width = width;
         this.height = height;
         this.type = type;
-        built = false;
+        this.isDiscovered = false;
 
 //         door check
 
@@ -66,7 +67,7 @@ public class Room {
             if (rooms.get(i).x == x && rooms.get(i).y == y) return rooms.get(i).doors;
         }
         ArrayList<Character> nullDir = new ArrayList<>();
-//        nullDir.add('n');
+        nullDir.add('n');
         return nullDir;
     }
 
@@ -224,7 +225,7 @@ public class Room {
     public ArrayList<Character> getDoors() {
         if (!doors.isEmpty()) return doors;
         else {
-            System.out.println("getDoors костыль активирован!");
+            System.out.println("getDoors костыль активирован!\nЭто не предвещает ничего хорошего...");
             return new ArrayList<>('d');
         }
     }
@@ -251,6 +252,22 @@ public class Room {
 
     public float getHeight() {
         return height;
+    }
+
+    public boolean isDiscovered() {
+        return isDiscovered;
+    }
+
+    public void setDiscovered(boolean discovered) {
+        isDiscovered = discovered;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     public ArrayList<Body> getDoorHorBodies() {

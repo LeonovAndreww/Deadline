@@ -55,6 +55,7 @@ public class ScreenGame implements Screen {
     Texture imgButtonMenu;
     Texture imgGameMenu;
     Texture imgVendingUi;
+    Texture imgMinimapBackground, imgMinimapRoom;
     Texture imgHeal, imgDamageUp, imgSpeedUp;
     Texture[] imgRoom = new Texture[9];
     Texture imgHorWall, imgVerWall;
@@ -166,6 +167,9 @@ public class ScreenGame implements Screen {
 
         imgVendingMachine = new Texture("vendingMachine.png");
         imgVendingUi = new Texture("vendingUi.png");
+
+        imgMinimapBackground = new Texture("minimap_background.png");
+        imgMinimapRoom = new Texture("minimap_room.png");
 
         imgHeal = new Texture("heal.png");
         imgDamageUp = new Texture("damageUp.png");
@@ -836,6 +840,14 @@ public class ScreenGame implements Screen {
     }
 
     private void hudBatch() {
+        float roomSize = 8;
+        float mapSize = imgMinimapBackground.getWidth()*(3/4f);
+        float mapX, mapY;
+//        float shiftX, shiftY;
+//        shiftX = shiftY = 0;
+        mapX = position.x + SCR_WIDTH/2 - mapSize;
+        mapY = position.y + SCR_HEIGHT/2 - mapSize - (imgButtonMenu.getHeight()+4);
+
         if (player.getHealth()>player.getMaxHealth()) player.setHealth(player.getMaxHealth());
         if (player.getHealth()<0) player.setHealth(0);
 
@@ -844,6 +856,24 @@ public class ScreenGame implements Screen {
         else if (wallet<5) batch.draw(imgWallet[1], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
         else if (wallet<10) batch.draw(imgWallet[2], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
         else batch.draw(imgWallet[3], position.x - SCR_WIDTH / 2 + 2, position.y  + SCR_HEIGHT / 2.5f - 22);
+
+//        batch.draw(imgMinimapBackground, mapX, mapY, mapSize, mapSize);
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+
+            float roomX = mapX + mapSize/2;
+            float roomY = mapY + mapSize/2;
+
+            roomX += ((int)room.getX()/room.getWidth())*roomSize -  roomSize/2f;
+            roomY += ((int)room.getY()/room.getHeight())*roomSize -  roomSize/2f;
+
+//            if (roomX<0) shiftX+=roomSize/2f;
+//            else if (roomX>0) shiftX-=roomSize/2f;
+//            if (roomY<0) shiftY+=roomSize/2f;
+//            else if (roomY>0) shiftY-=roomSize/2f;
+
+            batch.draw(imgMinimapRoom, roomX, roomY, roomSize, roomSize);
+        }
     }
 
     private void vendingUiBatch() {
@@ -1235,8 +1265,11 @@ public class ScreenGame implements Screen {
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
             if (player.getX() > room.getX() + THICKNESS && player.getX() < room.getX() + room.getWidth() - THICKNESS && player.getY() > room.getY() + THICKNESS && player.getY() < room.getY() + room.getHeight() - THICKNESS) {
+                room.setDiscovered(true);
+                room.setActive(true);
                 return i;
             }
+            else room.setActive(false);
         }
         return 0;
     }
