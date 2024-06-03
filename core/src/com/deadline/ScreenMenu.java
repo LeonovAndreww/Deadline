@@ -44,13 +44,13 @@ public class ScreenMenu implements Screen {
 
         glyphLayout = new GlyphLayout();
 
-        imgBg = new Texture("menu.png");
-        imgBtnShutdown = new Texture("shutdown.png");
-        imgNote = new Texture("note.png");
+        imgBg = new Texture("textures/menu.png");
+        imgBtnShutdown = new Texture("textures/shutdown.png");
+        imgNote = new Texture("textures/note.png");
 
-        sndClick = Gdx.audio.newSound(Gdx.files.internal("click.mp3"));
-        sndShutdown = Gdx.audio.newSound(Gdx.files.internal("shutdown.mp3"));
-        sndStartup = Gdx.audio.newSound(Gdx.files.internal("startup.mp3"));
+        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.mp3"));
+        sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.mp3"));
+        sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.mp3"));
 
         btnShutdown = new MyButton(5, 10, 8);
     }

@@ -6,6 +6,7 @@ import static sun.jvm.hotspot.debugger.win32.coff.DebugVC50X86RegisterEnums.TAG;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -93,6 +94,8 @@ public class ScreenGame implements Screen {
     Sound sndElevatorUse;
     Sound sndPlayerDeath;
 
+    Music[] musBackground = new Music[4];
+
     Player player;
     Vending vending;
 
@@ -129,6 +132,7 @@ public class ScreenGame implements Screen {
 
     public int wallet = 0;
     public int level = 0;
+    public int musicNumber = 0;
 
     public int healCost = 5, damageUpCost = 10, speedUpCost = 8;
 
@@ -151,6 +155,7 @@ public class ScreenGame implements Screen {
         vendingX = vendingY = vendingWidth = vendingHeight = 0;
 
         isPlayerDeathSoundOn = false;
+        isMusicOn = false;
 
         world = new World(new Vector2(0, 0), true);
         MyContactListener contactListener = new MyContactListener();
@@ -161,48 +166,48 @@ public class ScreenGame implements Screen {
 
         glyphLayout = new GlyphLayout();
 
-        imgJstBase = new Texture("joystickBase.png");
-        imgJstKnob = new Texture("joystickKnob.png");
+        imgJstBase = new Texture("textures/joystickBase.png");
+        imgJstKnob = new Texture("textures/joystickKnob.png");
 
-        imgButtonMenu = new Texture("menuButton.png");
-        imgGameMenu = new Texture("gameMenu.png");
+        imgButtonMenu = new Texture("textures/menuButton.png");
+        imgGameMenu = new Texture("textures/gameMenu.png");
 
-        imgVendingMachine = new Texture("vendingMachine.png");
-        imgVendingUi = new Texture("vendingUi.png");
+        imgVendingMachine = new Texture("textures/vendingMachine.png");
+        imgVendingUi = new Texture("textures/vendingUi.png");
 
-        imgMinimapBackground = new Texture("minimapBackground.png");
+        imgMinimapBackground = new Texture("textures/minimapBackground.png");
 
-        imgHeal = new Texture("heal.png");
-        imgDamageUp = new Texture("damageUp.png");
-        imgSpeedUp = new Texture("speedUp.png");
+        imgHeal = new Texture("textures/heal.png");
+        imgDamageUp = new Texture("textures/damageUp.png");
+        imgSpeedUp = new Texture("textures/speedUp.png");
 
-        imgRoom[0] = new Texture("room0.png");
-        imgRoom[1] = new Texture("room1.png");
-        imgRoom[2] = new Texture("room2.png");
-        imgRoom[3] = new Texture("room3.png");
-        imgRoom[4] = new Texture("room4.png");
-        imgRoom[5] = new Texture("room5.png");
-        imgRoom[6] = new Texture("room6.png");
-        imgRoom[7] = new Texture("room7.png");
-        imgRoom[8] = new Texture("room8.png");
+        imgRoom[0] = new Texture("textures/room0.png");
+        imgRoom[1] = new Texture("textures/room1.png");
+        imgRoom[2] = new Texture("textures/room2.png");
+        imgRoom[3] = new Texture("textures/room3.png");
+        imgRoom[4] = new Texture("textures/room4.png");
+        imgRoom[5] = new Texture("textures/room5.png");
+        imgRoom[6] = new Texture("textures/room6.png");
+        imgRoom[7] = new Texture("textures/room7.png");
+        imgRoom[8] = new Texture("textures/room8.png"); // потом это в текстур-регион переделать! Ибо выглядит страшно
 
-        imgHorWall = new Texture("horizontalWall.png");
-        imgVerWall = new Texture("verticalWall.png");
+        imgHorWall = new Texture("textures/horizontalWall.png");
+        imgVerWall = new Texture("textures/verticalWall.png");
 
-        imgHorDoorAtlas = new Texture("horizontalDoorAtlas.png");
-        imgVerDoorAtlas = new Texture("verticalDoorAtlas.png");
-        imgHealthAtlas = new Texture("healthbarAtlas.png");
-        imgWalletAtlas = new Texture("walletAtlas.png");
-        imgPlayerAtlas = new Texture("playerAtlas.png");
-        imgGhostAtlas = new Texture("ghostAtlas.png");
-        imgZombieAtlas = new Texture("zombieAtlas.png");
-        imgObstacleAtlas = new Texture("obstacleAtlas.png");
-        imgElevatorAtlas = new Texture("elevatorAtlas.png");
-        imgMinimapRoomAtlas = new Texture("minimapRoomAtlas.png");
-        imgBlankAtlas = new Texture("blankAtlas.png");
+        imgHorDoorAtlas = new Texture("textures/horizontalDoorAtlas.png");
+        imgVerDoorAtlas = new Texture("textures/verticalDoorAtlas.png");
+        imgHealthAtlas = new Texture("textures/healthbarAtlas.png");
+        imgWalletAtlas = new Texture("textures/walletAtlas.png");
+        imgPlayerAtlas = new Texture("textures/playerAtlas.png");
+        imgGhostAtlas = new Texture("textures/ghostAtlas.png");
+        imgZombieAtlas = new Texture("textures/zombieAtlas.png");
+        imgObstacleAtlas = new Texture("textures/obstacleAtlas.png");
+        imgElevatorAtlas = new Texture("textures/elevatorAtlas.png");
+        imgMinimapRoomAtlas = new Texture("textures/minimapRoomAtlas.png");
+        imgBlankAtlas = new Texture("textures/blankAtlas.png");
 
-        imgPaperWad = new Texture("paperWad.png");
-        imgRouble = new Texture("rouble.png");
+        imgPaperWad = new Texture("textures/paperWad.png");
+        imgRouble = new Texture("textures/rouble.png");
 
         int iter = 0;
         for (int i = 0; i < imgPlayerIdle.length; i++) {
@@ -254,14 +259,19 @@ public class ScreenGame implements Screen {
         imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
         imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
-        sndClick = Gdx.audio.newSound(Gdx.files.internal("click.mp3"));
-        sndError = Gdx.audio.newSound(Gdx.files.internal("error.mp3"));
-        sndPowerUp = Gdx.audio.newSound(Gdx.files.internal("powerUp.mp3"));
-        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("paperBump.mp3"));
-        sndCoinUp = Gdx.audio.newSound(Gdx.files.internal("coinUp.mp3"));
-        sndMonsterDeath = Gdx.audio.newSound(Gdx.files.internal("monsterDeath.mp3"));
-        sndElevatorUse = Gdx.audio.newSound(Gdx.files.internal("elevatorUse.mp3"));
-        sndPlayerDeath = Gdx.audio.newSound(Gdx.files.internal("playerDeath.mp3"));
+        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.mp3"));
+        sndError = Gdx.audio.newSound(Gdx.files.internal("sounds/error.mp3"));
+        sndPowerUp = Gdx.audio.newSound(Gdx.files.internal("sounds/powerUp.mp3"));
+        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.mp3"));
+        sndCoinUp = Gdx.audio.newSound(Gdx.files.internal("sounds/coinUp.mp3"));
+        sndMonsterDeath = Gdx.audio.newSound(Gdx.files.internal("sounds/monsterDeath.mp3"));
+        sndElevatorUse = Gdx.audio.newSound(Gdx.files.internal("sounds/elevatorUse.mp3"));
+        sndPlayerDeath = Gdx.audio.newSound(Gdx.files.internal("sounds/playerDeath.mp3"));
+
+        musBackground[0] = Gdx.audio.newMusic(Gdx.files.internal("music/Bye-bye - qklmv.mp3"));
+        musBackground[1] = Gdx.audio.newMusic(Gdx.files.internal("music/Dangerous - qklmv.mp3"));
+        musBackground[2] = Gdx.audio.newMusic(Gdx.files.internal("music/Faded - qklmv.mp3"));
+        musBackground[3] = Gdx.audio.newMusic(Gdx.files.internal("music/Opulence - qklmv.mp3"));
 
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 
@@ -283,6 +293,10 @@ public class ScreenGame implements Screen {
         playerLight.setSoftnessLength(25);
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
+
+//        musicNumber = random.nextInt(musBackground.length);
+//        musBackground[musicNumber].setVolume(0.75f*musicVolume);
+//        musBackground[musicNumber].play();
 
         generateMap(7);
         generateRooms();
@@ -602,6 +616,7 @@ public class ScreenGame implements Screen {
         deathTime = 0;
         wallet = 0;
         level = 0;
+        musBackground[musicNumber].stop();
     }
 
     public void resetWorld() {
@@ -627,6 +642,7 @@ public class ScreenGame implements Screen {
         actAttack = false;
         actMenu = false;
         isPlayerDeathSoundOn = false;
+        isMusicOn = false;
         elevatorUseTime = 0;
         vendingCloseTime = 0;
         menuX = menuY = menuWidth = menuHeight = 0;
@@ -638,7 +654,13 @@ public class ScreenGame implements Screen {
         player.setDamageUp(tempDamageUp);
         player.setSpeedUp(tempSpeedUp);
 
-        if (level>rooms.size()) {
+        musBackground[musicNumber].stop();
+        musicNumber = random.nextInt(musBackground.length);
+        musBackground[musicNumber].setVolume(0.35f*musicVolume);
+        musBackground[musicNumber].setLooping(true);
+        musBackground[musicNumber].play();
+
+        if (level>imgRoom.length) {
             // Game end screen will be here some sunny day
             level = 0;
         }
@@ -1036,20 +1058,32 @@ public class ScreenGame implements Screen {
 
         for (int i = 1; i < room.getDoorVerBodies().size(); i += 3) {
             if (ghostNum > 0 || zombieNum > 0) {
-                room.getDoorVerBodies().get(i).setUserData("closeDoor");
-                player.setBattleState(true);
+                if (!player.isBattle) {
+                    room.getDoorVerBodies().get(i).setUserData("closeDoor");
+                    player.setBattleState(true);
+                    musBackground[musicNumber].setVolume(0.5f * musicVolume);
+                }
             } else {
-                room.getDoorVerBodies().get(i).setUserData("openDoor");
-                player.setBattleState(false);
+                if (player.isBattle) {
+                    room.getDoorVerBodies().get(i).setUserData("openDoor");
+                    musBackground[musicNumber].setVolume(0.35f * musicVolume);
+                    player.setBattleState(false);
+                }
             }
         }
         for (int i = 1; i < room.getDoorHorBodies().size(); i += 3) {
             if (ghostNum > 0 || zombieNum > 0) {
-                room.getDoorHorBodies().get(i).setUserData("closeDoor");
-                player.setBattleState(true);
+                if (!player.isBattle) {
+                    room.getDoorVerBodies().get(i).setUserData("closeDoor");
+                    player.setBattleState(true);
+                    musBackground[musicNumber].setVolume(0.5f * musicVolume);
+                }
             } else {
-                room.getDoorHorBodies().get(i).setUserData("openDoor");
-                player.setBattleState(false);
+                if (player.isBattle) {
+                    room.getDoorVerBodies().get(i).setUserData("openDoor");
+                    musBackground[musicNumber].setVolume(0.35f * musicVolume);
+                    player.setBattleState(false);
+                }
             }
         }
     }
@@ -1073,7 +1107,8 @@ public class ScreenGame implements Screen {
         if (player.getBody().getUserData()=="moved") {
             if (elevatorUseTime==0) {
                 elevatorUseTime = TimeUtils.millis();
-                sndElevatorUse.play(0.7f*soundVolume);
+                musBackground[musicNumber].setVolume(0.35f);
+                sndElevatorUse.play(0.9f*soundVolume);
             }
             if (elevatorUseTime < TimeUtils.millis() - 2750) {
                 resetWorld();

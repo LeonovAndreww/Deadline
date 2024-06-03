@@ -14,7 +14,7 @@ public class Entity {
     private float speed = 50f;
     protected int health, maxHealth;
     protected char direction = 'd';
-    private int phase, nPhases, phaseDir;
+    private int phase, nPhases;
     protected long timeLastPhase, timePhaseInterval, timeBasePhaseInterval;
     private boolean isAlive;
     protected boolean isBattle;

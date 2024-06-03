@@ -20,8 +20,6 @@ public class Room {
     private ArrayList<Body> doorVerBodies = new ArrayList<>();
     private boolean isDiscovered;
     private boolean isActive;
-//    private ArrayList<Character>
-
 
     public Room(World world, float x, float y, float width, float height, ArrayList<Character> doorDir, ArrayList<Room> rooms, char type) {
         this.world = world;

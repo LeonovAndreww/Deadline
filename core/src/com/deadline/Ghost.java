@@ -13,7 +13,6 @@
         private final World world;
         protected long timePhaseInterval;
         private Weapon weapon;
-        private int health, maxHealth;
         private long timeLastAttack, timeLastPhase;
         private int phase, nPhases;
         private int room;
@@ -31,7 +30,7 @@
             getBody().setLinearDamping(0.75f);
             getBody().setUserData("ghost");
 
-            sndAttack = Gdx.audio.newSound(Gdx.files.internal("ghostAttack.mp3"));
+            sndAttack = Gdx.audio.newSound(Gdx.files.internal("sounds/ghostAttack.mp3"));
         }
 
         @Override

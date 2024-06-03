@@ -10,7 +10,6 @@
         private final World world;
         protected long timePhaseInterval;
         private Weapon weapon;
-        private int health, maxHealth;
         private long timeLastAttack, timeLastPhase;
         private int phase, nPhases;
         private int room;

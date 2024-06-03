@@ -25,15 +25,20 @@ public class DdlnGame extends Game {
 	ScreenMenu screenMenu;
 	ScreenGame screenGame;
 
+	final String FONT_CHARS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][_!$%#@|\\/?-+=()*&.;:,{}\"´`'<>";
+
 	static float ambientLight = 0.375f;
 	static int playerLightDistance = 135;
 	static float musicVolume, soundVolume;
-	final String FONT_CHARS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][_!$%#@|\\/?-+=()*&.;:,{}\"´`'<>";
+	static boolean isMusicOn, isSoundOn;
 
 	@Override
 	public void create () {
 		soundVolume = 1;
 		musicVolume = 1;
+		isMusicOn = true;
+		isSoundOn = true;
+
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, SCR_WIDTH, SCR_HEIGHT);
@@ -53,7 +58,7 @@ public class DdlnGame extends Game {
 	}
 
 	private void fontGenerate() {
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/font.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 		parameter.characters = FONT_CHARS;
 		parameter.size = 10;
