@@ -29,10 +29,10 @@ public class MyContactListener implements ContactListener {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        if (bodyA.getUserData()=="projectile" && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor")) {
+        if (bodyA.getUserData()=="projectile" && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle")) {
             bodyA.setActive(false);
         }
-        else if (bodyB.getUserData()=="projectile" && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor")) {
+        else if (bodyB.getUserData()=="projectile" && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle")) {
             bodyB.setActive(false);
         }
         else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="openDoor") {
@@ -49,17 +49,17 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
+        else if ((bodyB.getUserData()=="projectile" || bodyB.getUserData()=="meleeRegionTrue") && bodyA.getUserData()=="ghost") {
             bodyA.setUserData("hit");
         }
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
+        else if ((bodyA.getUserData()=="projectile" || bodyA.getUserData()=="meleeRegionTrue") && bodyB.getUserData()=="ghost") {
             bodyB.setUserData("hit");
         }
 
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="zombie") {
+        else if ((bodyB.getUserData()=="projectile" || bodyB.getUserData()=="meleeRegionTrue") && bodyA.getUserData()=="zombie") {
             bodyA.setUserData("hit");
         }
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="zombie") {
+        else if ((bodyA.getUserData()=="projectile" || bodyA.getUserData()=="meleeRegionTrue") && bodyB.getUserData()=="zombie") {
             bodyB.setUserData("hit");
         }
 

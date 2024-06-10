@@ -18,6 +18,7 @@ public class Player extends Entity {
     private int health, maxHealth;
     private boolean isAlive;
     private long timeLastAttack, timeLastDamaged, timeLastStep;
+    MeleeRegion meleeRegion;
     private ArrayList<Projectile> projectiles = new ArrayList<>();
 
     private final Sound sndPaperSwing, sndPaperBump;
@@ -50,8 +51,15 @@ public class Player extends Entity {
             } else {
                 rangedAttack();
             }
-            sndPaperSwing.play();
+            sndPaperSwing.play(); // сделать зависимость звука от орудия
             timeLastAttack = TimeUtils.millis();
+        }
+        else {
+            if (weapon.isMelee()) {
+                if (meleeRegion!=null) {
+                    meleeRegion.getBody().setUserData("meleeRegionFalse");
+                }
+            }
         }
     }
 
@@ -94,13 +102,20 @@ public class Player extends Entity {
     }
 
     private void meleeAttack() {
-        // Melee attack (когда-нибудь)
+        if (meleeRegion==null) {
+            meleeRegion = new MeleeRegion(world, getX() - getWidth() / 4, getY(), getWidth()/2, getHeight()/2, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+        }
+        else {
+            meleeRegion.update(direction);
+        }
+        meleeRegion.getBody().setUserData("meleeRegionTrue");
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage());
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
         projectiles.add(projectile);
     }
+
     void setBattleState(boolean isBattle) {
         this.isBattle = isBattle;
         if (this.isBattle) super.setSpeed(BATTLE_SPEED+speedUp*2);
@@ -109,6 +124,10 @@ public class Player extends Entity {
 
     public Weapon getWeapon() {
         return weapon;
+    }
+
+    public void setWeapon(Weapon weapon) {
+        this.weapon = weapon;
     }
 
     public ArrayList<Projectile> getProjectiles() {

@@ -61,6 +61,7 @@ public class ScreenGame implements Screen {
     Texture[] imgRoom = new Texture[9];
     Texture imgHorWall, imgVerWall;
     Texture imgPaperWad;
+    Texture imgCutter;
     Texture imgRouble;
     Texture imgVendingMachine;
     Texture imgHorDoorAtlas, imgVerDoorAtlas;
@@ -101,6 +102,7 @@ public class ScreenGame implements Screen {
 
     Weapon paperWad;
     Weapon ghostOrb;
+    Weapon cutter;
 
     ArrayList<Room> rooms = new ArrayList<>();
     ArrayList<Elevator> elevators = new ArrayList<>();
@@ -133,6 +135,8 @@ public class ScreenGame implements Screen {
     public int wallet = 0;
     public int level = 0;
     public int musicNumber = 0;
+
+    public float tempSoundVolume;
 
     public int healCost = 5, damageUpCost = 10, speedUpCost = 8;
 
@@ -207,6 +211,7 @@ public class ScreenGame implements Screen {
         imgBlankAtlas = new Texture("textures/blankAtlas.png");
 
         imgPaperWad = new Texture("textures/paperWad.png");
+        imgCutter = new Texture("textures/cutter.png");
         imgRouble = new Texture("textures/rouble.png");
 
         int iter = 0;
@@ -286,9 +291,10 @@ public class ScreenGame implements Screen {
         btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
 
         paperWad = new Weapon(imgPaperWad, "Paper wad", 35, 1250, 950, 1);
-        ghostOrb = new Weapon(1250, 2500, 1);
+        ghostOrb = new Weapon("Ghost orb", 1250, 2500, 1);
+        cutter = new Weapon(imgCutter, "Cutter", 650, 750, 1);
 
-        player = new Player(world, 14, 18, 75, 75, 6, 6, 450, paperWad);
+        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad);
         playerLight =  new PointLight(rayHandler, 512, new Color(1,1,1,0.475f), playerLightDistance, player.getX(), player.getY());
         playerLight.setSoftnessLength(25);
 
@@ -298,7 +304,7 @@ public class ScreenGame implements Screen {
 //        musBackground[musicNumber].setVolume(0.75f*musicVolume);
 //        musBackground[musicNumber].play();
 
-        generateMap(7);
+        generateMap(random.nextInt(level/3+1)+6);
         generateRooms();
         generateElevators();
         vending = new Vending(world, 32, 24, rooms.get(0).getX()+rooms.get(0).getWidth()-35, rooms.get(0).getY()+rooms.get(0).getHeight()-35);
@@ -346,6 +352,7 @@ public class ScreenGame implements Screen {
             coinsUpdate();
             levelUpdate();
             vendingUpdate();
+           // cutter.update
 
             btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
 
@@ -386,7 +393,8 @@ public class ScreenGame implements Screen {
         elevatorBlankBatch();
         gameMenuBatch();
 
-//        font.draw(batch, level+"", position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
+//        fontUi.draw(batch, "Floor:" + (imgRoom.length-level), position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
+        fontUi.draw(batch, musBackground[musicNumber].getVolume()+"", position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
 
         joystick.render(batch, imgJstBase, imgJstKnob, position.x - SCR_WIDTH / 2.75f, position.y - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
@@ -509,6 +517,8 @@ public class ScreenGame implements Screen {
                         if (!actMenu) {
                             actMenu = true;
                             sndClick.play(0.9f*soundVolume);
+                            tempSoundVolume = soundVolume;
+                            soundVolume = 0;
                         }
 //                        actMenu = !actMenu;
                     }
@@ -517,6 +527,7 @@ public class ScreenGame implements Screen {
                     if (btnMenuClose.hit(touches.get(i).x, touches.get(i).y) || btnMenuResume.hit(touches.get(i).x, touches.get(i).y)) {
                         sndClick.play(0.9f*soundVolume);
                         actMenu = false;
+                        soundVolume = tempSoundVolume;
                     }
                     if (btnMenuMain.hit(touches.get(i).x, touches.get(i).y)) {
                         sndClick.play(0.9f*soundVolume);
@@ -664,7 +675,7 @@ public class ScreenGame implements Screen {
             // Game end screen will be here some sunny day
             level = 0;
         }
-        generateMap(7);
+        generateMap(random.nextInt(level/3+1)+6);
         generateRooms();
         generateElevators();
         vending = new Vending(world, 32, 24, rooms.get(0).getX()+rooms.get(0).getWidth()-35, rooms.get(0).getY()+rooms.get(0).getHeight()-35);
@@ -859,8 +870,11 @@ public class ScreenGame implements Screen {
     private void projectileBatch() {
         for (int i = 0; i < player.getProjectiles().size(); i++) {
             Projectile projectile = player.getProjectiles().get(i);
-            if (projectile.getBody().isActive())
-                batch.draw(imgPaperWad, projectile.getX() - projectile.getRadius() * 2, projectile.getY() - projectile.getRadius() * 2);
+            if (projectile.getBody().isActive()) {
+                if (projectile.getBody().getUserData() == "projectile") {
+                    batch.draw(imgPaperWad, projectile.getX() - projectile.getRadius() * 2, projectile.getY() - projectile.getRadius() * 2);
+                }
+            }
         }
     }
 
@@ -879,8 +893,8 @@ public class ScreenGame implements Screen {
         float mapX, mapY;
 //        float shiftX, shiftY;
 //        shiftX = shiftY = 0;
-        mapX = position.x + SCR_WIDTH/2 - mapSize;
-        mapY = position.y + SCR_HEIGHT/2 - mapSize - (imgButtonMenu.getHeight()+4);
+        mapX = position.x + SCR_WIDTH/2 - mapSize - 8;
+        mapY = position.y + SCR_HEIGHT/2 - mapSize - (imgButtonMenu.getHeight()+8);
 
         if (player.getHealth()>player.getMaxHealth()) player.setHealth(player.getMaxHealth());
         if (player.getHealth()<0) player.setHealth(0);
@@ -977,7 +991,7 @@ public class ScreenGame implements Screen {
                 if (ghost.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (ghost.getBody().getUserData() == "hit") {
-                            ghosts.get(i).hit(player.getWeapon().getDamage()+player.getDamageUp());
+                            ghosts.get(i).hit(player.getWeapon().getDamage());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
@@ -1012,7 +1026,7 @@ public class ScreenGame implements Screen {
                 if (zombie.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (zombie.getBody().getUserData() == "hit") {
-                            zombies.get(i).hit(player.getWeapon().getDamage()+player.getDamageUp());
+                            zombies.get(i).hit(player.getWeapon().getDamage());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
@@ -1058,32 +1072,24 @@ public class ScreenGame implements Screen {
 
         for (int i = 1; i < room.getDoorVerBodies().size(); i += 3) {
             if (ghostNum > 0 || zombieNum > 0) {
-                if (!player.isBattle) {
                     room.getDoorVerBodies().get(i).setUserData("closeDoor");
                     player.setBattleState(true);
                     musBackground[musicNumber].setVolume(0.5f * musicVolume);
-                }
             } else {
-                if (player.isBattle) {
                     room.getDoorVerBodies().get(i).setUserData("openDoor");
                     musBackground[musicNumber].setVolume(0.35f * musicVolume);
                     player.setBattleState(false);
-                }
             }
         }
         for (int i = 1; i < room.getDoorHorBodies().size(); i += 3) {
             if (ghostNum > 0 || zombieNum > 0) {
-                if (!player.isBattle) {
-                    room.getDoorVerBodies().get(i).setUserData("closeDoor");
+                    room.getDoorHorBodies().get(i).setUserData("closeDoor");
                     player.setBattleState(true);
                     musBackground[musicNumber].setVolume(0.5f * musicVolume);
-                }
             } else {
-                if (player.isBattle) {
-                    room.getDoorVerBodies().get(i).setUserData("openDoor");
+                    room.getDoorHorBodies().get(i).setUserData("openDoor");
                     musBackground[musicNumber].setVolume(0.35f * musicVolume);
                     player.setBattleState(false);
-                }
             }
         }
     }

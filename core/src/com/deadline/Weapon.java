@@ -21,7 +21,15 @@ public class Weapon {
         isMelee = false;
     }
 
-    public Weapon (long duration, float reloadTime, int damage) {
+    public Weapon (Texture texture, String name, long duration, float reloadTime, int damage) {
+        this.texture = texture;
+        this.name = name;
+        this.duration = duration;
+        this.reloadTime = reloadTime;
+        this.damage = damage;
+    }
+
+    public Weapon (String name, long duration, float reloadTime, int damage) {
         this.duration = duration;
         this.reloadTime = reloadTime;
         this.damage = damage;
