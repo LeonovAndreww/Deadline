@@ -18,7 +18,7 @@ public class Player extends Entity {
     private int health, maxHealth;
     private boolean isAlive;
     private long timeLastAttack, timeLastDamaged, timeLastStep;
-    MeleeRegion meleeRegion;
+//    private MeleeRegion meleeRegion;
     private ArrayList<Projectile> projectiles = new ArrayList<>();
 
     private final Sound sndPaperSwing, sndPaperBump;
@@ -54,14 +54,17 @@ public class Player extends Entity {
             sndPaperSwing.play(); // сделать зависимость звука от орудия
             timeLastAttack = TimeUtils.millis();
         }
-        else {
-            if (weapon.isMelee()) {
-                if (meleeRegion!=null) {
-                    meleeRegion.getBody().setUserData("meleeRegionFalse");
-                }
-            }
-        }
     }
+
+//    public void updateMeleeRegion() {
+//        if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()/2){
+//            if (weapon.isMelee()) {
+//                if (meleeRegion!=null) {
+//                    meleeRegion.getBody().setUserData("meleeRegionFalse");
+//                }
+//            }
+//        }
+//    }
 
     public void hit() {
         String hit = this.getBody().getUserData().toString();
@@ -102,24 +105,24 @@ public class Player extends Entity {
     }
 
     private void meleeAttack() {
-        if (meleeRegion==null) {
-            meleeRegion = new MeleeRegion(world, getX() - getWidth() / 4, getY(), getWidth()/2, getHeight()/2, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
-        }
-        else {
-            meleeRegion.update(direction);
-        }
-        meleeRegion.getBody().setUserData("meleeRegionTrue");
+//        if (meleeRegion==null) {
+//            meleeRegion = new MeleeRegion(world, getX() - getWidth() / 4, getY(), getWidth()/2, getHeight()/2, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+//        }
+//        else {
+//            meleeRegion.update(direction, getX(), getY());
+//        }
+//        meleeRegion.getBody().setUserData("meleeRegionTrue");
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*4, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
         projectiles.add(projectile);
     }
 
     void setBattleState(boolean isBattle) {
         this.isBattle = isBattle;
-        if (this.isBattle) super.setSpeed(BATTLE_SPEED+speedUp*2);
-        else super.setSpeed(BASIC_SPEED+speedUp*2);
+        if (this.isBattle) super.setSpeed(BATTLE_SPEED+speedUp*4);
+        else super.setSpeed(BASIC_SPEED+speedUp*4);
     }
 
     public Weapon getWeapon() {
@@ -189,4 +192,8 @@ public class Player extends Entity {
     public void setSpeedUp(int speedUp) {
         this.speedUp = speedUp;
     }
+
+//    public MeleeRegion getMeleeRegion() {
+//        return meleeRegion;
+//    }
 }

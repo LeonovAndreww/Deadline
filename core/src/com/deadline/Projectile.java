@@ -16,6 +16,7 @@ public class Projectile {
     private long createTime;
     private final int damage;
     private float radius;
+    private float rotation;
 
     public Projectile(World world, float x, float y, float radius, float speed, char direction, long createTime, int damage) {
         this.speed = speed;
@@ -24,24 +25,33 @@ public class Projectile {
         this.radius = radius;
 
         float vx = 0, vy = 0;
+        float sx = 0, sy = 0;
         switch (direction) {
             case 'u':
                 vy = 2;
+                sy = 2;
+                rotation = 45;
                 break;
             case 'd':
                 vy = -2;
+                sy = -2;
+                rotation = 225;
                 break;
             case 'l':
                 vx = -2;
+                sx = -2;
+                rotation = 135;
                 break;
             case 'r':
                 vx = 2;
+                sx = 4;
+                rotation = -45;
                 break;
         }
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(x, y);
+        bodyDef.position.set(x+sx, y+sy);
         bodyDef.linearDamping = 0; // No damping
         bodyDef.angularDamping = 0; // No damping
         bodyDef.gravityScale = 0; // No gravity
@@ -51,7 +61,7 @@ public class Projectile {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f; // Set the density to a non-zero value
         fixtureDef.friction = 0; // No friction
-        fixtureDef.restitution = 0; // No restitution
+        fixtureDef.restitution = 0.25f; // No restitution
 
         CircleShape circleShape = new CircleShape();
         circleShape.setRadius(radius);
@@ -89,6 +99,10 @@ public class Projectile {
 
     public float getRadius() {
         return radius;
+    }
+
+    public float getRotation() {
+        return rotation;
     }
 
     public int getDamage() {

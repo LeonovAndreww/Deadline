@@ -49,10 +49,10 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-        else if ((bodyB.getUserData()=="projectile" || bodyB.getUserData()=="meleeRegionTrue") && bodyA.getUserData()=="ghost") {
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
             bodyA.setUserData("hit");
         }
-        else if ((bodyA.getUserData()=="projectile" || bodyA.getUserData()=="meleeRegionTrue") && bodyB.getUserData()=="ghost") {
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
             bodyB.setUserData("hit");
         }
 
