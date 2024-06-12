@@ -7,11 +7,11 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class Obstacle {
-    private World world;
-    private Body body;
-    private int room;
-    private float x, y;
-    private float width, height;
+    protected World world;
+    protected Body body;
+    protected int room;
+    protected float x, y;
+    protected float width, height;
     private int imgNumber;
 
     public Obstacle(World world, float width, float height, float x, float y) {

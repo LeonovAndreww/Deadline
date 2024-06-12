@@ -32,7 +32,7 @@ public class ScreenMenu implements Screen {
 
     MyButton btnShutdown;
 
-    String dialogue = "<-- Пора выключать компьютер и топать домой";
+    String dialogue = "<-- Пора выключать компьютер и идти наконец домой";
 
     public ScreenMenu(DdlnGame game){
         this.game = game;

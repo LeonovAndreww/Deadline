@@ -57,10 +57,6 @@ public class Weapon {
         return textureRegion;
     }
 
-    public Texture getTextureRough() {
-        if (textureRegion==null) return texture;
-        else return textureRegion.getTexture();
-    }
 
     public String getName() {
         return name;

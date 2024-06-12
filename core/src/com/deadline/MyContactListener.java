@@ -100,6 +100,13 @@ public class MyContactListener implements ContactListener {
             bodyB.setUserData("got");
         }
 
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="chestClosed") {
+            bodyA.setUserData("chestOpen");
+        }
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="chestClosed") {
+            bodyB.setUserData("chestOpen");
+        }
+
         else if (bodyB.getUserData()=="coin" && bodyA.getUserData()=="ghost") {
             contact.setEnabled(false);
         }
