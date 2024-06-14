@@ -32,7 +32,7 @@ public class ScreenMenu implements Screen {
 
     MyButton btnShutdown;
 
-    String dialogue = "<-- Пора выключать компьютер и идти наконец домой";
+    String dialogue = "<-- Пора выключать компьютер и идти домой";
 
     public ScreenMenu(DdlnGame game){
         this.game = game;
@@ -124,6 +124,7 @@ public class ScreenMenu implements Screen {
         imgBg.dispose();
         imgBtnShutdown.dispose();
         imgNote.dispose();
+        batch.dispose();
     }
 
     public void resetMenu() {

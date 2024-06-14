@@ -24,6 +24,7 @@ public class DdlnGame extends Game {
 
 	ScreenMenu screenMenu;
 	ScreenGame screenGame;
+	ScreenEnding screenEnding;
 
 	final String FONT_CHARS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][_!$%#@|\\/?-+=()*&.;:,{}\"´`'<>";
 
@@ -47,6 +48,7 @@ public class DdlnGame extends Game {
 
 		screenMenu = new ScreenMenu(this);
 		screenGame = new ScreenGame(this);
+		screenEnding = new ScreenEnding(this);
 		setScreen(screenMenu);
 	}
 

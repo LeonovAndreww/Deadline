@@ -2,8 +2,6 @@ package com.deadline;
 
 import static com.deadline.DdlnGame.*;
 
-import static sun.jvm.hotspot.debugger.win32.coff.DebugVC50X86RegisterEnums.TAG;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
@@ -41,7 +39,6 @@ public class ScreenGame implements Screen {
     Vector3 touch;
 
     World world;
-    MyContactListener contactListener;
     Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
     Vector2 position = new Vector2(0, 0);
 
@@ -192,6 +189,8 @@ public class ScreenGame implements Screen {
         imgVendingUi = new Texture("textures/vendingUi.png");
 
         imgMinimapBackground = new Texture("textures/minimapBackground.png");
+
+
 
         imgHeal = new Texture("textures/heal.png");
         imgDamageUp = new Texture("textures/damageUp.png");
@@ -595,7 +594,7 @@ public class ScreenGame implements Screen {
                                 buyHealTime = TimeUtils.millis();
                                 sndPowerUp.play(0.65f * soundVolume);
                             } else {
-                                sndError.play(0.75f * soundVolume);
+                                sndError.play(0.85f * soundVolume);
                                 buyHealTime = TimeUtils.millis();
                             }
                         }
@@ -610,7 +609,7 @@ public class ScreenGame implements Screen {
                                 buyDamageUpTime = TimeUtils.millis();
                                 sndPowerUp.play(0.65f * soundVolume);
                             } else {
-                                sndError.play(0.75f * soundVolume);
+                                sndError.play(0.85f * soundVolume);
                                 buyDamageUpTime = TimeUtils.millis();
                             }
                         }
@@ -624,7 +623,7 @@ public class ScreenGame implements Screen {
                                 buySpeedUpTime = TimeUtils.millis();
                                 sndPowerUp.play(0.65f * soundVolume);
                             } else {
-                                sndError.play(0.75f * soundVolume);
+                                sndError.play(0.85f * soundVolume);
                                 buySpeedUpTime = TimeUtils.millis();
                             }
                         }
@@ -667,7 +666,12 @@ public class ScreenGame implements Screen {
         deathTime = 0;
         wallet = 0;
         level = 0;
+        player.setSpeedUp(0);
+        player.setDamageUp(0);
         player.setHealth(player.getMaxHealth());
+        healCost = 5;
+        damageUpCost = 10;
+        speedUpCost = 8;
         musBackground[musicNumber].stop();
     }
 
@@ -831,7 +835,7 @@ public class ScreenGame implements Screen {
         int lvl = level;
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-            if (level > imgRoom.length) lvl = level % imgRoom.length;
+            if (level >= imgRoom.length) lvl = level % imgRoom.length;
             batch.draw(imgRoom[lvl], room.getX(), room.getY(), room.getWidth(), room.getHeight());
         }
     }
@@ -1074,7 +1078,7 @@ public class ScreenGame implements Screen {
                 if (ghost.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (ghost.getBody().getUserData() == "hit") {
-                            ghosts.get(i).hit(player.getWeapon().getDamage());
+                            ghosts.get(i).hit(player.getWeapon().getDamage()+player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
@@ -1109,7 +1113,7 @@ public class ScreenGame implements Screen {
                 if (zombie.isAlive()) {
                     if (!player.getProjectiles().isEmpty()) {
                         if (zombie.getBody().getUserData() == "hit") {
-                            zombies.get(i).hit(player.getWeapon().getDamage());
+                            zombies.get(i).hit(player.getWeapon().getDamage()+player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
                             world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
@@ -1241,6 +1245,9 @@ public class ScreenGame implements Screen {
             if (elevatorUseTime < TimeUtils.millis() - 2750) {
                 resetWorld();
                 level++;
+                if (level==imgRoom.length) {
+                    game.setScreen(game.screenEnding);
+                }
             }
         }
     }
