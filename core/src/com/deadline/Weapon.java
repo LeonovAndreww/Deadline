@@ -57,7 +57,6 @@ public class Weapon {
         return textureRegion;
     }
 
-
     public String getName() {
         return name;
     }

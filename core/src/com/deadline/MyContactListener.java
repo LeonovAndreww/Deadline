@@ -29,10 +29,10 @@ public class MyContactListener implements ContactListener {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        if (bodyA.getUserData()=="projectile" && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle")) {
+        if ((bodyA.getUserData()=="projectile" || bodyA.getUserData()=="projectileWarden") && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle")) {
             bodyA.setActive(false);
         }
-        else if (bodyB.getUserData()=="projectile" && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle")) {
+        else if ((bodyB.getUserData()=="projectile" || bodyB.getUserData()=="projectileWarden") && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle")) {
             bodyB.setActive(false);
         }
         else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="openDoor") {
@@ -56,14 +56,28 @@ public class MyContactListener implements ContactListener {
             bodyB.setUserData("hit");
         }
 
-        else if ((bodyB.getUserData()=="projectile" || bodyB.getUserData()=="meleeRegionTrue") && bodyA.getUserData()=="zombie") {
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="zombie") {
             bodyA.setUserData("hit");
         }
-        else if ((bodyA.getUserData()=="projectile" || bodyA.getUserData()=="meleeRegionTrue") && bodyB.getUserData()=="zombie") {
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="zombie") {
+            bodyB.setUserData("hit");
+        }
+
+        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="warden") {
+            bodyA.setUserData("hit");
+        }
+        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="warden") {
             bodyB.setUserData("hit");
         }
 
         else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="projectile") {
+            contact.setEnabled(false);
+        }
+
+        else if (bodyB.getUserData()=="projectileWarden" && (bodyA.getUserData()=="projectile" || bodyA.getUserData()=="zombie" || bodyA.getUserData()=="ghost")) {
+            contact.setEnabled(false);
+        }
+        else if (bodyA.getUserData()=="projectileWarden" && (bodyB.getUserData()=="projectile" || bodyB.getUserData()=="zombie" || bodyB.getUserData()=="ghost")) {
             contact.setEnabled(false);
         }
 
@@ -74,10 +88,10 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
-        else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="coin") {
-//            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
-//            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
-        }
+//        else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="coin") {
+////            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+////            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
+//        }
 
         else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="ghost") {
             bodyB.setUserData("hit1");
@@ -90,6 +104,13 @@ public class MyContactListener implements ContactListener {
             bodyB.setUserData("hit2");
         }
         else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="zombie") {
+            bodyA.setUserData("hit2");
+        }
+
+        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="projectileWarden") {
+            bodyB.setUserData("hit2");
+        }
+        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="projectileWarden") {
             bodyA.setUserData("hit2");
         }
 
@@ -119,10 +140,10 @@ public class MyContactListener implements ContactListener {
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
         }
 
-        else if (bodyB.getUserData()=="obstacle" && bodyA.getUserData()=="ghost") {
+        else if (bodyB.getUserData()=="obstacle" && (bodyA.getUserData()=="ghost" || bodyA.getUserData()=="warden")) {
             contact.setEnabled(false);
         }
-        else if (bodyA.getUserData()=="obstacle" && bodyB.getUserData()=="ghost") {
+        else if (bodyA.getUserData()=="obstacle" && (bodyB.getUserData()=="ghost" || bodyB.getUserData()=="warden")) {
             contact.setEnabled(false);
         }
 
