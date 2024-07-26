@@ -70,7 +70,13 @@ public class Warden extends Entity {
                     projectiles.add(projectile);
                 }
 //                getBody().setLinearVelocity(getBody().getLinearVelocity().x+random.nextInt(20)-10, getBody().getLinearVelocity().y+random.nextInt(20)-10);
-                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)).x+random.nextInt(30)-15, playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)).y+random.nextInt(30)-15);
+
+                Vector2 directionToPlayer = playerPos.sub(getPosition()).nor();
+                float randomSpeed = 15 + random.nextInt(35);
+                float randomXOffset = random.nextInt(30) - 15;
+                float randomYOffset = random.nextInt(30) - 15;
+                getBody().setLinearVelocity(directionToPlayer.scl(randomSpeed).add(randomXOffset, randomYOffset));
+//                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)).x+random.nextInt(30)-15, playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)).y+random.nextInt(30)-15);
                 timeLastAttack = TimeUtils.millis();
                 sndPaperSwing.play(0.3f*soundVolume);
             }
@@ -84,7 +90,7 @@ public class Warden extends Entity {
                 projectiles.get(i).resetCreateTime();
                 world.destroyBody(projectiles.get(i).getBody());
                 projectiles.remove(i);
-                sndPaperBump.play(0.25f*soundVolume);
+//                sndPaperBump.play(0.25f*soundVolume);
                 break;
 //                i--;
             } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() <= TimeUtils.millis()){
@@ -92,7 +98,7 @@ public class Warden extends Entity {
                 projectiles.get(i).getBody().setActive(false);
                 world.destroyBody(projectiles.get(i).getBody());
                 projectiles.remove(i);
-                sndPaperBump.play(0.25f*soundVolume);
+//                sndPaperBump.play(0.25f*soundVolume);
                 break;
             }
         }

@@ -36,7 +36,7 @@ public class DdlnGame extends Game {
 	@Override
 	public void create () {
 		soundVolume = 1;
-		musicVolume = 1;
+		musicVolume = 0.15f;
 		isMusicOn = true;
 		isSoundOn = true;
 

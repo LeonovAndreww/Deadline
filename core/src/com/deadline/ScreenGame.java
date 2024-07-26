@@ -17,7 +17,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+//import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -39,7 +39,7 @@ public class ScreenGame implements Screen {
     Vector3 touch;
 
     World world;
-    Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
+//    Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
     Vector2 position = new Vector2(0, 0);
 
     RayHandler rayHandler;
@@ -70,7 +70,7 @@ public class ScreenGame implements Screen {
     Texture imgGhostAtlas;
     Texture imgZombieAtlas;
     Texture imgWardenAtlas;
-    Texture imgObstacleAtlas;
+    Texture imgStaticObstacleAtlas, imgAnimatedObstacleAtlas;
     Texture imgChestAtlas;
     Texture imgElevatorAtlas;
     Texture imgMinimapRoomAtlas;
@@ -85,7 +85,8 @@ public class ScreenGame implements Screen {
     TextureRegion[] imgGhost = new TextureRegion[4];
     TextureRegion[][] imgZombie = new TextureRegion[4][10];
     TextureRegion[] imgWarden = new TextureRegion[8];
-    TextureRegion[] imgObstacle = new TextureRegion[6];
+    TextureRegion[] imgStaticObstacle = new TextureRegion[6];
+    TextureRegion[][] imgAnimatedObstacle = new TextureRegion[1][2];
     TextureRegion[] imgChest = new TextureRegion[6];
     TextureRegion[] imgElevator = new TextureRegion[2];
     TextureRegion[][] imgMinimapRoom = new TextureRegion[2][3];
@@ -176,7 +177,6 @@ public class ScreenGame implements Screen {
         world.setContactListener(contactListener);
         rayHandler = new RayHandler(world);
         rayHandler.setAmbientLight(ambientLight - 0.025f * level);
-//        Vector2 position = new Vector2(0, 0);
 
         glyphLayout = new GlyphLayout();
 
@@ -190,8 +190,6 @@ public class ScreenGame implements Screen {
         imgVendingUi = new Texture("textures/vendingUi.png");
 
         imgMinimapBackground = new Texture("textures/minimapBackground.png");
-
-
 
         imgHeal = new Texture("textures/heal.png");
         imgDamageUp = new Texture("textures/damageUp.png");
@@ -219,7 +217,8 @@ public class ScreenGame implements Screen {
         imgGhostAtlas = new Texture("textures/ghostAtlas.png");
         imgZombieAtlas = new Texture("textures/zombieAtlas.png");
         imgWardenAtlas = new Texture("textures/wardenAtlas.png");
-        imgObstacleAtlas = new Texture("textures/obstacleAtlas.png");
+        imgStaticObstacleAtlas = new Texture("textures/staticObstacleAtlas.png");
+        imgAnimatedObstacleAtlas = new Texture("textures/animatedObstacleAtlas.png");
         imgChestAtlas = new Texture("textures/chestAtlas.png");
         imgElevatorAtlas = new Texture("textures/elevatorAtlas.png");
         imgMinimapRoomAtlas = new Texture("textures/minimapRoomAtlas.png");
@@ -252,8 +251,14 @@ public class ScreenGame implements Screen {
             imgWarden[i] = new TextureRegion(imgWardenAtlas, i * 41, 0, 41, 32);
         }
 
-        for (int i = 0; i < imgObstacle.length; i++) {
-            imgObstacle[i] = new TextureRegion(imgObstacleAtlas, i * 21, 0, 21, 32);
+        for (int i = 0; i < imgStaticObstacle.length; i++) {
+            imgStaticObstacle[i] = new TextureRegion(imgStaticObstacleAtlas, i * 16, 0, 16, 32);
+        }
+
+        for (int i = 0; i < imgAnimatedObstacle.length; i++) {
+            for (int j = 0; j < imgAnimatedObstacle[0].length; j++) {
+                imgAnimatedObstacle[i][j] = new TextureRegion(imgAnimatedObstacleAtlas, j * 21, i * 32, 21, 32);
+            }
         }
 
         for (int i = 0; i < imgChest.length; i++) {
@@ -374,6 +379,7 @@ public class ScreenGame implements Screen {
             ghostsChangePhase();
             zombiesChangePhase();
             wardensChangePhase();
+            animatedObstaclesChangePhase();
             player.hit();
             player.step(actJoystick);
             player.updateProjectiles();
@@ -405,7 +411,7 @@ public class ScreenGame implements Screen {
 
         // draw
         ScreenUtils.clear(0, 0, 0, 0);
-        debugRenderer.render(world, camera.combined);
+//        debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
         rayHandler.setCombinedMatrix(camera.combined, camera.position.x, camera.position.y, camera.viewportWidth, camera.viewportHeight);
         camera.update();
@@ -517,7 +523,8 @@ public class ScreenGame implements Screen {
         imgGhostAtlas.dispose();
         imgZombieAtlas.dispose();
         imgWardenAtlas.dispose();
-        imgObstacleAtlas.dispose();
+        imgStaticObstacleAtlas.dispose();
+        imgAnimatedObstacleAtlas.dispose();
         imgChestAtlas.dispose();
         imgPaperWad.dispose();
         imgPoisonBall.dispose();
@@ -832,7 +839,11 @@ public class ScreenGame implements Screen {
     private void obstaclesBatch() {
         for (int i = 0; i < obstacles.size(); i++) {
             Obstacle obstacle = obstacles.get(i);
-            batch.draw(imgObstacle[obstacle.getImgNumber()], obstacle.getX(), obstacle.getY(), obstacle.getWidth() * 1.115f, obstacle.getHeight() * 1.75f);
+            batch.draw(imgStaticObstacle[obstacle.getImgNumber()], obstacle.getX(), obstacle.getY(), obstacle.getWidth() * 1.115f, obstacle.getHeight() * 1.75f);
+        }
+        for (int i = 0; i < animatedObstacles.size(); i++) {
+            AnimatedObstacle animatedObstacle = animatedObstacles.get(i);
+            batch.draw(imgAnimatedObstacle[animatedObstacle.getImgNumber()][animatedObstacle.getPhase()], animatedObstacle.getX(), animatedObstacle.getY(), animatedObstacle.getWidth() * 1.115f, animatedObstacle.getHeight() * 1.75f);
         }
     }
 
@@ -862,6 +873,12 @@ public class ScreenGame implements Screen {
     private void wardensChangePhase() {
         for (int i = 0; i < wardens.size(); i++) {
             wardens.get(i).changePhase();
+        }
+    }
+
+    private void animatedObstaclesChangePhase() {
+        for (int i = 0; i < animatedObstacles.size(); i++) {
+            animatedObstacles.get(i).changePhase();
         }
     }
 
@@ -1299,19 +1316,27 @@ public class ScreenGame implements Screen {
             int lootNum = 0;
             for (int i = 0; i < chests.size(); i++) {
                 Chest chest = chests.get(i);
-                chest.updateChest();
+                chest.updateChest(player.isBattle);
                 if (chest.dropLoot()) {
                     lootNum = random.nextInt(3);
                     sndChestOpen.play(0.55f * soundVolume);
                     switch (lootNum) {
                         case 0: {
-                            for (int j = 0; j < random.nextInt(3); j++) {
+                            for (int j = 0; j < random.nextInt(3)+1; j++) {
                                 Coin coin = new Coin(world, chest.getX() + (random.nextInt(10) - 5), chest.getY() + (random.nextInt(10) - 5), 4.5f, 1);
                                 coins.add(coin);
                             }
                         }
                         case 1: {
-                            player.setWeapon(cutter);
+                            if (player.getWeapon() == cutter)  {
+                                for (int j = 0; j < random.nextInt(3)+1; j++) {
+                                    Coin coin = new Coin(world, chest.getX() + (random.nextInt(10) - 5), chest.getY() + (random.nextInt(10) - 5), 4.5f, 1);
+                                    coins.add(coin);
+                                }
+                            }
+                            else {
+                                player.setWeapon(cutter);
+                            }
                             break;
                         }
                         default: {
@@ -1407,7 +1432,6 @@ public class ScreenGame implements Screen {
                 }
             }
 
-            ArrayList<Room> tempRooms = new ArrayList<>();
             Room room = new Room(world, roomX, roomY, roomWidth, roomHeight, doors, rooms, roomType);
             setDoors();
             rooms.add(room);
@@ -1556,10 +1580,18 @@ public class ScreenGame implements Screen {
                         spawnY = MathUtils.random(room.getY() + THICKNESS * 3, room.getY() + room.getHeight() - THICKNESS * 3);
                         size = MathUtils.random(5) + 10;
 
-                        Obstacle obstacle = new Obstacle(world, size, size, spawnX, spawnY);
-                        obstacle.setRoomNum(i);
-                        obstacles.add(obstacle);
-                        obstacle.setImgNumber(random.nextInt(imgObstacle.length));
+                        if (MathUtils.random(5)==0) {
+                            AnimatedObstacle animatedObstacle = new AnimatedObstacle(world, size, size, spawnX, spawnY, 2, 125);
+                            animatedObstacle.setRoomNum(i);
+                            animatedObstacles.add(animatedObstacle);
+                            animatedObstacle.setImgNumber(random.nextInt(imgAnimatedObstacle.length));
+                        }
+                        else {
+                            Obstacle obstacle = new Obstacle(world, size, size, spawnX, spawnY);
+                            obstacle.setRoomNum(i);
+                            obstacles.add(obstacle);
+                            obstacle.setImgNumber(random.nextInt(imgStaticObstacle.length));
+                        }
                     }
 
                     if (random.nextInt(6) == 1) {

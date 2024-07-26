@@ -11,7 +11,7 @@ public class AnimatedObstacle extends Obstacle {
         super(world, width, height, x, y);
         phase = 0;
         this.nPhases = nPhases;
-        this.timePhaseInterval = timePhaseInterval; // except running animation!
+        this.timePhaseInterval = timePhaseInterval;
         body.setUserData("animatedObstacle");
     }
 

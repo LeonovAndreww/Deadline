@@ -19,15 +19,18 @@ public class Chest extends AnimatedObstacle {
         }
     }
 
-    public void updateChest() {
+    public void updateChest(boolean isBattle) {
         if (body!=null) {
-            if (body.getUserData() == "chestOpen") {
+            if (body.getUserData() == "chestOpen" && isBattle) {
                 changePhase();
+            }
+            else {
+                body.setUserData("chestClosed");
             }
         }
     }
 
     public boolean dropLoot() {
-        return tPhase>nPhases+2;
+        return tPhase>nPhases+4;
     }
 }
