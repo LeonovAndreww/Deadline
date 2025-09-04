@@ -8,7 +8,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class Player extends Entity {
     private static final float BASIC_SPEED = 50f, BATTLE_SPEED = 75f;
@@ -25,9 +24,12 @@ public class Player extends Entity {
     private final Sound sndStep;
     private final Sound sndPlayerHurt;
 
+    private boolean shopping = false;
+    private boolean moved = false;
+
     public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timeBasePhaseInterval, Weapon weapon) {
         super(world, width, height, x, y, maxHealth, nPhases, timeBasePhaseInterval);
-        getBody().setUserData("player");
+        getBody().setUserData(this);
         this.timeBasePhaseInterval = timeBasePhaseInterval;
         this.timePhaseInterval = timeBasePhaseInterval;
         this.weapon = weapon;
@@ -66,24 +68,39 @@ public class Player extends Entity {
 //        }
 //    }
 
-    public void hit() {
-        String hit = this.getBody().getUserData().toString();
+    public void receiveDamage(int dmg) {
         if (TimeUtils.millis() - this.timeLastDamaged > 2650) {
-            if (!(Objects.equals(hit, "player") || Objects.equals(hit, "moved") || Objects.equals(hit, "shopping"))) {
-                char charHit = hit.charAt(hit.length() - 1);
-                int value = Character.getNumericValue(charHit);
-                System.out.println(value);
-                System.out.println(this.health);
-                this.health -= value;
-                sndPlayerHurt.play(0.65f*soundVolume);
-                this.timeLastDamaged = TimeUtils.millis();
+            this.health -= dmg;
+            sndPlayerHurt.play(0.65f * soundVolume);
+            this.timeLastDamaged = TimeUtils.millis();
+            if (this.health <= 0) {
+                this.isAlive = false;
+                this.health = 0;
             }
         }
-        else this.getBody().setUserData("player");
-        if (this.health <= 0) {
-            this.isAlive = false;
-            this.health = 0;
-        }
+    }
+//    public void hit() {
+//        String hit = this.getBody().getUserData().toString();
+//        if (TimeUtils.millis() - this.timeLastDamaged > 2650) {
+//            if (!(Objects.equals(hit, "player") || Objects.equals(hit, "moved") || Objects.equals(hit, "shopping"))) {
+//                char charHit = hit.charAt(hit.length() - 1);
+//                int value = Character.getNumericValue(charHit);
+//                System.out.println(value);
+//                System.out.println(this.health);
+//                this.health -= value;
+//                sndPlayerHurt.play(0.65f*soundVolume);
+//                this.timeLastDamaged = TimeUtils.millis();
+//            }
+//        }
+//        else this.getBody().setUserData("player");
+//        if (this.health <= 0) {
+//            this.isAlive = false;
+//            this.health = 0;
+//        }
+//    }
+
+    public void hit() {
+        // damage now handled in MyContactListener.receiveDamage calls
     }
 
     public void step(boolean joystickAct) {
@@ -193,7 +210,19 @@ public class Player extends Entity {
         this.speedUp = speedUp;
     }
 
-//    public MeleeRegion getMeleeRegion() {
-//        return meleeRegion;
-//    }
+     public boolean isShopping() {
+        return shopping;
+    }
+
+    public void setShopping(boolean shopping) {
+        this.shopping = shopping;
+    }
+
+    public boolean isMoved() {
+        return moved;
+    }
+
+    public void setMoved(boolean moved) {
+        this.moved = moved;
+    }
 }

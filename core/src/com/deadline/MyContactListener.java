@@ -11,15 +11,26 @@ import java.util.Random;
 public class MyContactListener implements ContactListener {
     Random random = new Random();
 
-    @Override
-    public void beginContact(Contact contact) {
+    private boolean isUD(Body b, String s) {
+        if (b == null) return false;
+        Object ud = b.getUserData();
+        return s.equals(ud);
+    }
 
+    private boolean isPlayer(Body b) {
+        if (b == null) return false;
+        return b.getUserData() instanceof Player;
+    }
+
+    private boolean isMobileType(Body b) {
+        return isUD(b, "ghost") || isUD(b, "coin") || isUD(b, "zombie");
     }
 
     @Override
-    public void endContact(Contact contact) {
+    public void beginContact(Contact contact) { }
 
-    }
+    @Override
+    public void endContact(Contact contact) { }
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
@@ -29,147 +40,147 @@ public class MyContactListener implements ContactListener {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        if ((bodyA.getUserData()=="projectile" || bodyA.getUserData()=="projectileWarden") && (bodyB.getUserData()=="wall" || bodyB.getUserData()=="closeDoor" || bodyB.getUserData()=="elevator" || bodyB.getUserData()=="vending" || bodyB.getUserData()=="obstacle"  || bodyB.getUserData()=="animatedObstacle")) {
+        if ((isUD(bodyA, "projectile") || isUD(bodyA, "projectileWarden")) && (isUD(bodyB, "wall") || isUD(bodyB, "closeDoor") || isUD(bodyB, "elevator") || isUD(bodyB, "vending") || isUD(bodyB, "obstacle")  || isUD(bodyB, "animatedObstacle"))) {
             bodyA.setActive(false);
         }
-        else if ((bodyB.getUserData()=="projectile" || bodyB.getUserData()=="projectileWarden") && (bodyA.getUserData()=="wall" || bodyA.getUserData()=="closeDoor" || bodyA.getUserData()=="elevator" || bodyA.getUserData()=="vending" || bodyA.getUserData()=="obstacle" || bodyA.getUserData()=="animatedObstacle")) {
+        else if ((isUD(bodyB, "projectile") || isUD(bodyB, "projectileWarden")) && (isUD(bodyA, "wall") || isUD(bodyA, "closeDoor") || isUD(bodyA, "elevator") || isUD(bodyA, "vending") || isUD(bodyA, "obstacle") || isUD(bodyA, "animatedObstacle"))) {
             bodyB.setActive(false);
         }
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="openDoor") {
+        else if (isUD(bodyA, "projectile") && isUD(bodyB, "openDoor")) {
             contact.setEnabled(false);
         }
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="openDoor") {
-            contact.setEnabled(false);
-        }
-
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="player") {
-            contact.setEnabled(false);
-        }
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="player") {
+        else if (isUD(bodyB, "projectile") && isUD(bodyA, "openDoor")) {
             contact.setEnabled(false);
         }
 
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="ghost") {
+        else if (isUD(bodyA, "projectile") && isPlayer(bodyB)) {
+            contact.setEnabled(false);
+        }
+        else if (isUD(bodyB, "projectile") && isPlayer(bodyA)) {
+            contact.setEnabled(false);
+        }
+
+        else if (isUD(bodyB, "projectile") && isUD(bodyA, "ghost")) {
             bodyA.setUserData("hit");
         }
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="ghost") {
+        else if (isUD(bodyA, "projectile") && isUD(bodyB, "ghost")) {
             bodyB.setUserData("hit");
         }
 
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="zombie") {
+        else if (isUD(bodyB, "projectile") && isUD(bodyA, "zombie")) {
             bodyA.setUserData("hit");
         }
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="zombie") {
+        else if (isUD(bodyA, "projectile") && isUD(bodyB, "zombie")) {
             bodyB.setUserData("hit");
         }
 
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="warden") {
+        else if (isUD(bodyB, "projectile") && isUD(bodyA, "warden")) {
             bodyA.setUserData("hit");
         }
-        else if (bodyA.getUserData()=="projectile" && bodyB.getUserData()=="warden") {
+        else if (isUD(bodyA, "projectile") && isUD(bodyB, "warden")) {
             bodyB.setUserData("hit");
         }
 
-        else if (bodyB.getUserData()=="projectile" && bodyA.getUserData()=="projectile") {
+        else if (isUD(bodyB, "projectile") && isUD(bodyA, "projectile")) {
             contact.setEnabled(false);
         }
 
-        else if (bodyB.getUserData()=="projectileWarden" && (bodyA.getUserData()=="projectile" || bodyA.getUserData()=="projectileWarden" || bodyA.getUserData()=="obstacle" || bodyA.getUserData()=="animatedObstacle")) {
+        else if (isUD(bodyB, "projectileWarden") && (isUD(bodyA, "projectile") || isUD(bodyA, "projectileWarden") || isUD(bodyA, "obstacle") || isUD(bodyA, "animatedObstacle"))) {
             contact.setEnabled(false);
         }
-        else if (bodyA.getUserData()=="projectileWarden" && (bodyB.getUserData()=="projectile" || bodyB.getUserData()=="projectileWarden" || bodyB.getUserData()=="obstacle" || bodyB.getUserData()=="animatedObstacle")) {
-            contact.setEnabled(false);
-        }
-
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="openDoor") {
-            contact.setEnabled(false);
-        }
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="openDoor") {
+        else if (isUD(bodyA, "projectileWarden") && (isUD(bodyB, "projectile") || isUD(bodyB, "projectileWarden") || isUD(bodyB, "obstacle") || isUD(bodyB, "animatedObstacle"))) {
             contact.setEnabled(false);
         }
 
-//        else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="coin") {
-////            bodyA.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
-////            bodyB.setLinearVelocity(random.nextInt(20)-10, random.nextInt(20)-10);
-//        }
-
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="ghost") {
-            bodyB.setUserData("hit1");
+        else if (isPlayer(bodyA) && isUD(bodyB, "openDoor")) {
+            contact.setEnabled(false);
         }
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="ghost") {
-            bodyA.setUserData("hit1");
+        else if (isPlayer(bodyB) && isUD(bodyA, "openDoor")) {
+            contact.setEnabled(false);
         }
 
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="zombie") {
-            bodyB.setUserData("hit2");
+        else if (isPlayer(bodyB) && isUD(bodyA, "ghost")) {
+            Player p = (Player) bodyB.getUserData();
+            p.receiveDamage(1);
         }
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="zombie") {
-            bodyA.setUserData("hit2");
-        }
-
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="projectileWarden") {
-            bodyB.setUserData("hit2");
-        }
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="projectileWarden") {
-            bodyA.setUserData("hit2");
+        else if (isPlayer(bodyA) && isUD(bodyB, "ghost")) {
+            Player p = (Player) bodyA.getUserData();
+            p.receiveDamage(1);
         }
 
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="coin") {
+        else if (isPlayer(bodyB) && isUD(bodyA, "zombie")) {
+            Player p = (Player) bodyB.getUserData();
+            p.receiveDamage(2);
+        }
+        else if (isPlayer(bodyA) && isUD(bodyB, "zombie")) {
+            Player p = (Player) bodyA.getUserData();
+            p.receiveDamage(2);
+        }
+
+        else if (isPlayer(bodyB) && isUD(bodyA, "projectileWarden")) {
+            Player p = (Player) bodyB.getUserData();
+            p.receiveDamage(2);
+        }
+        else if (isPlayer(bodyA) && isUD(bodyB, "projectileWarden")) {
+            Player p = (Player) bodyA.getUserData();
+            p.receiveDamage(2);
+        }
+
+        else if (isPlayer(bodyB) && isUD(bodyA, "coin")) {
             bodyA.setUserData("got");
         }
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="coin") {
+        else if (isPlayer(bodyA) && isUD(bodyB, "coin")) {
             bodyB.setUserData("got");
         }
 
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="chestClosed") {
-            bodyA.setUserData("chestOpen");
+        // player touches closed chest -> mark open only if player not in battle
+        else if (isPlayer(bodyA) && isUD(bodyB, "chestClosed")) {
+            Player p = (Player) bodyA.getUserData();
+            if (!p.isBattle) bodyB.setUserData("chestOpen");
         }
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="chestClosed") {
-            bodyB.setUserData("chestOpen");
-        }
-
-        else if (bodyB.getUserData()=="coin" && bodyA.getUserData()=="ghost") {
-            contact.setEnabled(false);
-        }
-        else if (bodyA.getUserData()=="coin" && bodyB.getUserData()=="ghost") {
-            contact.setEnabled(false);
+        else if (isPlayer(bodyB) && isUD(bodyA, "chestClosed")) {
+            Player p = (Player) bodyB.getUserData();
+            if (!p.isBattle) bodyA.setUserData("chestOpen");
         }
 
-        else if ((bodyB.getUserData()=="ghost" || bodyB.getUserData()=="coin" || bodyB.getUserData()=="zombie") && (bodyB.getUserData()=="zombie" || bodyA.getUserData()=="coin" || bodyA.getUserData()=="ghost")) {
+        else if (isUD(bodyB, "coin") && isUD(bodyA, "ghost")) {
+            contact.setEnabled(false);
+        }
+        else if (isUD(bodyA, "coin") && isUD(bodyB, "ghost")) {
+            contact.setEnabled(false);
+        }
+
+        else if (isMobileType(bodyA) && isMobileType(bodyB)) {
             bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
         }
 
-        else if ((bodyB.getUserData()=="obstacle" || bodyB.getUserData()=="animatedObstacle" || bodyB.getUserData()=="chest") && (bodyA.getUserData()=="ghost" || bodyA.getUserData()=="warden")) {
+        else if ((isUD(bodyB, "obstacle") || isUD(bodyB, "animatedObstacle") || isUD(bodyB, "chestClosed") || isUD(bodyB, "chestOpen")) && (isUD(bodyA, "ghost") || isUD(bodyA, "warden"))) {
             contact.setEnabled(false);
         }
-        else if ((bodyA.getUserData()=="obstacle" || bodyA.getUserData()=="animatedObstacle" || bodyA.getUserData()=="chest") && (bodyB.getUserData()=="ghost" || bodyB.getUserData()=="warden")) {
+        else if ((isUD(bodyA, "obstacle") || isUD(bodyA, "animatedObstacle") || isUD(bodyA, "chestClosed") || isUD(bodyA, "chestOpen")) && (isUD(bodyB, "ghost") || isUD(bodyB, "warden"))) {
             contact.setEnabled(false);
         }
 
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="elevatorOn") {
-            bodyA.setUserData("moved");
+        else if (isPlayer(bodyA) && isUD(bodyB, "elevatorOn")) {
+            Player p = (Player) bodyA.getUserData();
+            p.setMoved(true);
         }
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="elevatorOn") {
-            bodyB.setUserData("moved");
+        else if (isPlayer(bodyB) && isUD(bodyA, "elevatorOn")) {
+            Player p = (Player) bodyB.getUserData();
+            p.setMoved(true);
         }
 
-        else if (bodyA.getUserData()=="player" && bodyB.getUserData()=="vending") {
-            bodyA.setUserData("shopping");
+        else if (isPlayer(bodyA) && isUD(bodyB, "vending")) {
+            Player p = (Player) bodyA.getUserData();
+            p.setShopping(true);
         }
-        else if (bodyB.getUserData()=="player" && bodyA.getUserData()=="vending") {
-            bodyB.setUserData("shopping");
-        }
-        else if (bodyA.getUserData()=="shopping" && bodyB.getUserData()!="vending") {
-            bodyA.setUserData("player");
-        }
-        else if (bodyB.getUserData()=="shopping" && bodyA.getUserData()!="vending") {
-            bodyB.setUserData("player");
+        else if (isPlayer(bodyB) && isUD(bodyA, "vending")) {
+            Player p = (Player) bodyB.getUserData();
+            p.setShopping(true);
         }
     }
 
     @Override
-    public void postSolve(Contact contact, ContactImpulse impulse) {
-
-    }
+    public void postSolve(Contact contact, ContactImpulse impulse) { }
 }
