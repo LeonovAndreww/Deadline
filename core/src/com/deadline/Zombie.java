@@ -9,7 +9,7 @@
     public class Zombie extends Entity{
         private final World world;
         protected long timePhaseInterval;
-        private Weapon weapon;
+        private final Weapon weapon;
         private long timeLastAttack, timeLastPhase;
         private int phase, nPhases;
         private int room;

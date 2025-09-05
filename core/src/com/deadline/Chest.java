@@ -4,8 +4,8 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.TimeUtils;
 
 public class Chest extends AnimatedObstacle {
-    int tPhase = 0;
-    private boolean opened = false;
+    int tPhase;
+    private boolean opened;
 
     public Chest(World world, float width, float height, float x, float y, int nPhases, long timePhaseInterval) {
         super(world, width, height, x, y, nPhases, timePhaseInterval);

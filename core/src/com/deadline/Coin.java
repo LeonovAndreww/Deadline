@@ -7,7 +7,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class Coin {
-    private Body body;
+    private final Body body;
     private final float radius;
     private final int value;
 

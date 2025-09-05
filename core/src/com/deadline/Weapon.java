@@ -11,7 +11,7 @@ public class Weapon {
     private final long duration;
     private final float reloadTime;
     private final int damage;
-    private boolean isMelee;
+    private final boolean isMelee;
 
     public Weapon(Texture texture, String name, float speed, long duration, float reloadTime, int damage) {
         this.texture = texture;

@@ -204,7 +204,7 @@
             imgRoom[6] = new Texture("textures/room6.png");
             imgRoom[7] = new Texture("textures/room7.png");
             imgRoom[8] = new Texture("textures/room8.png"); // потом это в текстур-регион переделать! Ибо выглядит страшно
-    
+            // turn hor wall into texture region
             imgHorWall = new Texture("textures/horizontalWall.png");
             imgVerWall = new Texture("textures/verticalWall.png");
     
@@ -1302,7 +1302,7 @@
                     Coin coin = coins.get(i);
                     if (coin.getBody().getUserData() == "got") {
                         world.destroyBody(coin.getBody());
-                        wallet++;
+                        wallet+=coin.getValue();
                         sndCoinUp.play(0.65f * soundVolume);
                         coins.remove(i);
                         break;
@@ -1313,7 +1313,7 @@
     
         private void chestsUpdate() {
             if (!player.isBattle) {
-                int lootNum = 0;
+                int lootNum;
                 for (int i = 0; i < chests.size(); i++) {
                     Chest chest = chests.get(i);
                     chest.updateChest(player.isBattle);
@@ -1374,7 +1374,7 @@
         public void vendingUpdate() {
             if (player.isShopping() && !actVending && vendingCloseTime + 4250 < TimeUtils.millis()) {
                 actVending = true;
-                player.setShopping(false); // снимаем флаг при открытии UI
+                player.setShopping(false);
                 vendingCloseTime = TimeUtils.millis();
             }
         }
@@ -1392,7 +1392,7 @@
     //                if (ghost.getRoom()==getPlayerRoom()) {
     //                    if (meleeRegion.getX()>ghost.getX() && meleeRegion.getX()<ghost.getX()+ghost.getWidth()/2 && meleeRegion.getY()>ghost.getY() && meleeRegion.getY()<ghost.getY()+ghost.getHeight()/2) {
     //                        ghost.getBody().setUserData("hit");
-    //                        System.out.println("HTTED BY CUTTER");
+    //                        System.out.println("HITTED BY CUTTER");
     //                    }
     //                }
     //            }
@@ -1402,7 +1402,7 @@
         private void generateMap(int maxRooms) {
             float roomX = 0, roomY = 0;
             float roomWidth = 200, roomHeight = 200;
-            char roomType = 'd';
+            char roomType;
             ArrayList<Character> doors = new ArrayList<>();
     
     

@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import java.util.ArrayList;
 
 public class Elevator {
-    private World world;
+    private final World world;
     private Body body;
     private float x, y;
     private float width, height;
@@ -36,8 +36,6 @@ public class Elevator {
         if (walls.contains('l')) doors.set(2, '0');
         if (walls.contains('r')) doors.set(3, '0');
 
-//        width/=2;
-//        height/=2;
 
         BodyDef bodyDef = new BodyDef();
 
