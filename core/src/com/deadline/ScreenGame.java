@@ -740,7 +740,7 @@
     
             musBackground[musicNumber].stop();
             musicNumber = random.nextInt(musBackground.length);
-            musBackground[musicNumber].setVolume(0.35f * musicVolume);
+            musBackground[musicNumber].setVolume(0.65f * musicVolume);
             musBackground[musicNumber].setLooping(true);
             musBackground[musicNumber].play();
     
@@ -1159,7 +1159,7 @@
                         ghost.getBody().setActive(false);
                         world.destroyBody(ghost.getBody());
                         ghosts.remove(i);
-                        sndMonsterDeath.play(0.25f * soundVolume);
+                        sndMonsterDeath.play(0.20f * soundVolume);
                         for (int j = 0; j < random.nextInt(3) - 1; j++) {
                             Coin coin = new Coin(world, ghost.getX() + (random.nextInt(10) + 5) * j, ghost.getY() + (random.nextInt(10) + 5) * j, 4.5f, 1);
                             coins.add(coin);
@@ -1194,7 +1194,7 @@
                         zombie.getBody().setActive(false);
                         world.destroyBody(zombie.getBody());
                         zombies.remove(i);
-                        sndMonsterDeath.play(0.25f * soundVolume);
+                        sndMonsterDeath.play(0.20f * soundVolume);
                         for (int j = 0; j < random.nextInt(4) - 1; j++) {
                             Coin coin = new Coin(world, zombie.getX() + (random.nextInt(10) + 5) * j, zombie.getY() + (random.nextInt(10) + 5) * j, 4.5f, 1);
                             coins.add(coin);
@@ -1229,7 +1229,7 @@
                         warden.getBody().setActive(false);
                         world.destroyBody(warden.getBody());
                         wardens.remove(i);
-                        sndMonsterDeath.play(0.25f * soundVolume);
+                        sndMonsterDeath.play(0.2f * soundVolume);
                         for (int j = 0; j < random.nextInt(4) - 1; j++) {
                             Coin coin = new Coin(world, warden.getX() + (random.nextInt(10) + 5) * j, warden.getY() + (random.nextInt(10) + 5) * j, 4.5f, 1);
                             coins.add(coin);
