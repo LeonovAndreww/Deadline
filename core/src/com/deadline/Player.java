@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.util.ArrayList;
 
 public class Player extends Entity {
-    private static final float BASIC_SPEED = 50f, BATTLE_SPEED = 75f;
+    private static final float BASIC_SPEED = 40f, BATTLE_SPEED = 55f;
     private final World world;
     private Weapon weapon;
     private int damageUp = 0, speedUp = 0;
