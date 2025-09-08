@@ -1,0 +1,228 @@
+package com.deadline;
+
+import static com.deadline.DdlnGame.soundVolume;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.TimeUtils;
+
+import java.util.ArrayList;
+
+public class Player extends Entity {
+    private static final float BASIC_SPEED = 40f, BATTLE_SPEED = 55f;
+    private final World world;
+    private Weapon weapon;
+    private int damageUp = 0, speedUp = 0;
+    private int health, maxHealth;
+    private boolean isAlive;
+    private long timeLastAttack, timeLastDamaged, timeLastStep;
+//    private MeleeRegion meleeRegion;
+    private ArrayList<Projectile> projectiles = new ArrayList<>();
+
+    private final Sound sndPaperSwing, sndPaperBump;
+    private final Sound sndStep;
+    private final Sound sndPlayerHurt;
+
+    private boolean shopping = false;
+    private boolean moved = false;
+
+    public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timeBasePhaseInterval, Weapon weapon) {
+        super(world, width, height, x, y, maxHealth, nPhases, timeBasePhaseInterval);
+        getBody().setUserData(this);
+        this.timeBasePhaseInterval = timeBasePhaseInterval;
+        this.timePhaseInterval = timeBasePhaseInterval;
+        this.weapon = weapon;
+        this.health = maxHealth;
+        this.isAlive = true;
+        this.maxHealth = maxHealth;
+        this.world = world;
+
+        sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.mp3"));
+        sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.mp3"));
+        sndStep = Gdx.audio.newSound(Gdx.files.internal("sounds/step.mp3"));
+        sndPlayerHurt = Gdx.audio.newSound(Gdx.files.internal("sounds/playerHurt.mp3"));
+    }
+
+    void attack() {
+        if (weapon == null) return;
+
+        if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()) {
+            if (weapon.isMelee()) {
+                meleeAttack();
+            } else {
+                rangedAttack();
+            }
+            sndPaperSwing.play(); // сделать зависимость звука от орудия
+            timeLastAttack = TimeUtils.millis();
+        }
+    }
+
+//    public void updateMeleeRegion() {
+//        if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()/2){
+//            if (weapon.isMelee()) {
+//                if (meleeRegion!=null) {
+//                    meleeRegion.getBody().setUserData("meleeRegionFalse");
+//                }
+//            }
+//        }
+//    }
+
+    public void receiveDamage(int dmg) {
+        if (TimeUtils.millis() - this.timeLastDamaged > 2650) {
+            this.health -= dmg;
+            sndPlayerHurt.play(0.65f * soundVolume);
+            this.timeLastDamaged = TimeUtils.millis();
+            if (this.health <= 0) {
+                this.isAlive = false;
+                this.health = 0;
+            }
+        }
+    }
+//    public void hit() {
+//        String hit = this.getBody().getUserData().toString();
+//        if (TimeUtils.millis() - this.timeLastDamaged > 2650) {
+//            if (!(Objects.equals(hit, "player") || Objects.equals(hit, "moved") || Objects.equals(hit, "shopping"))) {
+//                char charHit = hit.charAt(hit.length() - 1);
+//                int value = Character.getNumericValue(charHit);
+//                System.out.println(value);
+//                System.out.println(this.health);
+//                this.health -= value;
+//                sndPlayerHurt.play(0.65f*soundVolume);
+//                this.timeLastDamaged = TimeUtils.millis();
+//            }
+//        }
+//        else this.getBody().setUserData("player");
+//        if (this.health <= 0) {
+//            this.isAlive = false;
+//            this.health = 0;
+//        }
+//    }
+
+    public void hit() {
+        // damage now handled in MyContactListener.receiveDamage calls
+    }
+
+    public void step(boolean joystickAct) {
+        if (joystickAct) {
+            timePhaseInterval = timeBasePhaseInterval-150;
+            if (TimeUtils.millis() - timeLastStep > timePhaseInterval*2) {
+                if (isBattle) {
+                    if (getPhase()%2==0) {
+                        sndStep.play(0.65f * soundVolume);
+                        timeLastStep = TimeUtils.millis();
+                    }
+                }
+                else if(getPhase()==2 || getPhase()==5) {
+                    sndStep.play(0.7f * soundVolume);
+                    timeLastStep = TimeUtils.millis();
+                }
+            }
+        }
+    }
+
+    private void meleeAttack() {
+//        if (meleeRegion==null) {
+//            meleeRegion = new MeleeRegion(world, getX() - getWidth() / 4, getY(), getWidth()/2, getHeight()/2, weapon.getSpeed()+getSpeed()+speedUp*2, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+//        }
+//        else {
+//            meleeRegion.update(direction, getX(), getY());
+//        }
+//        meleeRegion.getBody().setUserData("meleeRegionTrue");
+    }
+
+    private void rangedAttack() {
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*4, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+        projectiles.add(projectile);
+    }
+
+    void setBattleState(boolean isBattle) {
+        this.isBattle = isBattle;
+        if (this.isBattle) super.setSpeed(BATTLE_SPEED+speedUp*4);
+        else super.setSpeed(BASIC_SPEED+speedUp*4);
+    }
+
+    public Weapon getWeapon() {
+        return weapon;
+    }
+
+    public void setWeapon(Weapon weapon) {
+        this.weapon = weapon;
+    }
+
+    public ArrayList<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    public void updateProjectiles() {
+        for (int i = 0; i < projectiles.size(); i++) {
+            if (!projectiles.get(i).getBody().isActive()) {
+                projectiles.get(i).resetCreateTime();
+                projectiles.get(i).resetCreateTime();
+                world.destroyBody(projectiles.get(i).getBody());
+                projectiles.remove(i);
+                sndPaperBump.play();
+                break;
+//                i--;
+            } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() <= TimeUtils.millis()){
+                projectiles.get(i).resetCreateTime();
+                projectiles.get(i).getBody().setActive(false);
+                world.destroyBody(projectiles.get(i).getBody());
+                projectiles.remove(i);
+                sndPaperBump.play();
+                break;
+            }
+        }
+    }
+
+    public void dispose() {
+        sndPaperSwing.dispose();
+        sndPaperBump.dispose();
+        sndStep.dispose();
+        sndPlayerHurt.dispose();
+    }
+
+    public int getHealth() {
+        return this.health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public boolean isAlive() {
+        return this.isAlive;
+    }
+
+    public int getDamageUp() {
+        return damageUp;
+    }
+
+    public void setDamageUp(int damageUp) {
+        this.damageUp = damageUp;
+    }
+
+    public int getSpeedUp() {
+        return speedUp;
+    }
+
+    public void setSpeedUp(int speedUp) {
+        this.speedUp = speedUp;
+    }
+
+     public boolean isShopping() {
+        return shopping;
+    }
+
+    public void setShopping(boolean shopping) {
+        this.shopping = shopping;
+    }
+
+    public boolean isMoved() {
+        return moved;
+    }
+
+    public void setMoved(boolean moved) {
+        this.moved = moved;
+    }
+}
