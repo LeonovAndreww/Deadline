@@ -4,11 +4,10 @@ buildscript {
     gradlePluginPortal()
     mavenLocal()
     google()
-    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
   }
   dependencies {
     classpath 'com.android.tools.build:gradle:8.12.2'
-
   }
 }
 
@@ -25,9 +24,13 @@ allprojects {
   }
 }
 
-configure(subprojects - project(':android')) {
+configure(subprojects.findAll { it.name != 'android' }) {
   apply plugin: 'java-library'
-  sourceCompatibility = 8
+
+  java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
 
   // From https://lyze.dev/2021/04/29/libGDX-Internal-Assets-List/
   // The article can be helpful when using assets.txt in your project.
@@ -59,13 +62,10 @@ subprojects {
   ext.appName = 'Deadline'
   repositories {
     mavenCentral()
-//    maven { url 'https://s01.oss.sonatype.org' }
     // You may want to remove the following line if you have errors downloading dependencies.
     mavenLocal()
-//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-//    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
+    maven { url = 'https://jitpack.io' }
   }
 }
 
