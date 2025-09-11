@@ -132,7 +132,7 @@ public class Player extends Entity {
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getSpeed()+speedUp*4, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getBody().getInertia()+speedUp*4, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
         projectiles.add(projectile);
     }
 

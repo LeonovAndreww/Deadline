@@ -332,8 +332,8 @@
             btnVendingBuyDamageUp = new MyButton(0, 0, 26, 26);
             btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
 
-            paperWad = new Weapon(imgPaperWad, "Paper wad", 25, 550, 950, 1);
-            cutter = new Weapon(imgCutter[0], "Cutter", 25, 750, 650, 1);
+            paperWad = new Weapon(imgPaperWad, "Paper wad", 30, 450, 950, 1);
+            cutter = new Weapon(imgCutter[0], "Cutter", 40, 500, 650, 2);
             ghostOrb = new Weapon("Ghost orb", 1250, 2500, 1);
 
 

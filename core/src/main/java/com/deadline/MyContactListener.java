@@ -151,6 +151,27 @@ public class MyContactListener implements ContactListener {
             contact.setEnabled(false);
         }
 
+        else if (isUD(bodyB, "zombie") && isUD(bodyA, "ghost")) {
+            contact.setEnabled(false);
+        }
+        else if (isUD(bodyA, "zombie") && isUD(bodyB, "ghost")) {
+            contact.setEnabled(false);
+        }
+
+        else if (isUD(bodyB, "warden") && isUD(bodyA, "ghost")) {
+            contact.setEnabled(false);
+        }
+        else if (isUD(bodyA, "warden") && isUD(bodyB, "ghost")) {
+            contact.setEnabled(false);
+        }
+
+        else if (isUD(bodyB, "projectileWarden") && isUD(bodyA, "ghost")) {
+            contact.setEnabled(false);
+        }
+        else if (isUD(bodyA, "projectileWarden") && isUD(bodyB, "ghost")) {
+            contact.setEnabled(false);
+        }
+
         else if (isMobileType(bodyA) && isMobileType(bodyB)) {
             bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
             bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);

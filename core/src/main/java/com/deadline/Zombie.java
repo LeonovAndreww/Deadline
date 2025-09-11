@@ -55,7 +55,7 @@
 
         public void attack(Vector2 playerPos) {
             if (isBattle) {
-                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)));
+                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(5)));
 //                    sndAttack.play(); // if touched, not if attacked
                 }
             }
