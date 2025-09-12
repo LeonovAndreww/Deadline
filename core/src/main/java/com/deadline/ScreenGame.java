@@ -332,8 +332,8 @@
             btnVendingBuyDamageUp = new MyButton(0, 0, 26, 26);
             btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
 
-            paperWad = new Weapon(imgPaperWad, "Paper wad", 30, 450, 950, 1);
-            cutter = new Weapon(imgCutter[0], "Cutter", 40, 500, 650, 2);
+            paperWad = new Weapon(imgPaperWad, "Paper wad", 35, 450, 950, 1);
+            cutter = new Weapon(imgCutter[0], "Cutter", 45, 500, 650, 2);
             ghostOrb = new Weapon("Ghost orb", 1250, 2500, 1);
 
 
@@ -1619,7 +1619,7 @@
                         float spawnX;
                         float spawnY;
                         int size;
-                        for (int j = 0; j < MathUtils.random(4 - level / 2) + 1; j++) {
+                        for (int j = 0; j < 3 - MathUtils.random(1) - level/4; j++) {
                             size = MathUtils.random(10) - 5;
                             spawnX = MathUtils.random(room.getX() + THICKNESS * 3, room.getX() + room.getWidth() - THICKNESS * 3);
                             spawnY = MathUtils.random(room.getY() + THICKNESS * 3, room.getY() + room.getHeight() - THICKNESS * 3);
