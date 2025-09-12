@@ -125,6 +125,9 @@ public class ScreenMenu implements Screen {
         imgBg.dispose();
         imgBtnShutdown.dispose();
         imgNote.dispose();
+        sndClick.dispose();
+        sndShutdown.dispose();
+        sndStartup.dispose();
         batch.dispose();
     }
 
