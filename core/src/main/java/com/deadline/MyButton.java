@@ -29,7 +29,6 @@ public class MyButton {
         GlyphLayout glyphLayout = new GlyphLayout(font, text);
         width = glyphLayout.width;
         height = glyphLayout.height;
-        this.x -= width/2;
         isTextButton = true;
     }
 
@@ -42,7 +41,7 @@ public class MyButton {
 
     public void update(float x, float y) {
         this.x = x;
-        this. y = y;
+        this.y = y;
     }
 
     public boolean hit(float touchX, float touchY){

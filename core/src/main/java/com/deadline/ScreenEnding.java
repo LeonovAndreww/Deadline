@@ -13,7 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
 
 public class ScreenEnding implements Screen {
-    DdlnGame game;
+    private final DdlnGame game;
     SpriteBatch batch;
     OrthographicCamera camera;
     Vector3 touch;
@@ -79,7 +79,17 @@ public class ScreenEnding implements Screen {
 
         if (TimeUtils.millis()-timeStart>17500) {
             batch.draw(imgBlank[2], 0, 0, SCR_WIDTH, SCR_HEIGHT);
-            fontUi.draw(batch, "Вы успешно вернулись домой с работы!\nСпасибо Вам за то, что дошли до конца)\n\nОтдельная благодарность:\n-Моему младшему брату\nза тестирование игры и мотивацию\n\nМарку (@mrkkleem)\nза музыкальное сопровождение\n\nЖдите обновлений!!", SCR_WIDTH*0.1f, SCR_HEIGHT*0.9f);
+            fontUi.draw(batch, "Вы успешно вернулись домой с работы!" +
+                "\nСпасибо Вам за то, что дошли до конца)" +
+                "\n" +
+                "\nОтдельная благодарность:" +
+                "\n-Моему младшему брату" +
+                "\n   за тестирование игры и мотивацию" +
+                "\n" +
+                "\nМарку (@mrkkleem)" +
+                "\n   за музыкальное сопровождение" +
+                "\n" +
+                "\nЖдите обновлений!!", SCR_WIDTH*0.1f, SCR_HEIGHT*0.9f);
         }
         else if (TimeUtils.millis()-timeStart>15000) {
             if (TimeUtils.millis() - timeStart > 17500) {

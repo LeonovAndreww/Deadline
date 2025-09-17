@@ -12,26 +12,37 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
+import com.deadline.buttons.Button;
+import com.deadline.buttons.RectangleButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScreenMenu implements Screen {
-    DdlnGame game;
+    private final DdlnGame game;
 
     SpriteBatch batch;
     OrthographicCamera camera;
     Vector3 touch;
     BitmapFont font, fontUi;
 
+    List<Button> buttons = new ArrayList<>();
+    UiInput uiInput;
+
     Texture imgBg;
-    Texture imgBtnShutdown;
+    Texture imgBtnShutdownAtlas;
     Texture imgNote;
+    TextureRegion[] imgBtnShutdown = new TextureRegion[2];
 
     Sound sndClick;
     Sound sndShutdown;
     Sound sndStartup;
 
-    MyButton btnShutdown;
+    RectangleButton btnShutdown;
 
     String dialogue = "<-- Пора выключать компьютер и идти домой";
 
@@ -46,54 +57,51 @@ public class ScreenMenu implements Screen {
         glyphLayout = new GlyphLayout();
 
         imgBg = new Texture("textures/menu.png");
-        imgBtnShutdown = new Texture("textures/shutdown.png");
+        imgBtnShutdownAtlas = new Texture("textures/buttonShutdownAtlas.png");
         imgNote = new Texture("textures/note.png");
+
+        for (int i = 0; i < imgBtnShutdown.length; i++) {
+            imgBtnShutdown[i] = new TextureRegion(imgBtnShutdownAtlas, 0, i*16, 16, 16);
+        }
 
         sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.mp3"));
         sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.mp3"));
         sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.mp3"));
 
-        btnShutdown = new MyButton(5, 10, 8);
+        btnShutdown = new RectangleButton(5, 10, 16, 16, imgBtnShutdown, false, () -> {
+            sndClick.play();
+        }, () -> {
+            sndShutdown.play();
+            btnShutdown.setClickable(false);
+
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    game.setScreen(game.screenGame);
+                }
+            }, 1f);
+        });
+        buttons.add(btnShutdown);
+
+        uiInput = new UiInput(camera, buttons);
     }
 
     @Override
     public void show() {
         resetMenu();
+        Gdx.input.setInputProcessor(uiInput);
         sndStartup.play();
     }
 
 
     @Override
     public void render(float delta) {
-        // касания
-        if (Gdx.input.justTouched()) {
-            touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touch);
-            if (btnShutdown.hit(touch.x, touch.y) && !btnShutdown.isPressed) {
-                btnShutdown.isPressed = true;
-                sndClick.play();
-                sndShutdown.play();
-                if (btnShutdown.timePressed == 0) {
-                    btnShutdown.timePressed = TimeUtils.millis();
-                }
-            }
-        }
-
-        // события
-
-        if (btnShutdown.isPressed) {
-            if (TimeUtils.millis() > btnShutdown.timePressed+2150) {
-                game.setScreen(game.screenGame);
-            }
-        }
-
-        //  отрисовка
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
         batch.draw(imgBg, -45, 0);
-        batch.draw(imgBtnShutdown, btnShutdown.x, btnShutdown.y, btnShutdown.width, btnShutdown.height);
+        for (Button button: buttons) button.draw(batch);
         batch.draw(imgNote, 150, 45);
         font.draw(batch, dialogue, 22, 22);
 
@@ -123,17 +131,16 @@ public class ScreenMenu implements Screen {
     @Override
     public void dispose() {
         imgBg.dispose();
-        imgBtnShutdown.dispose();
+        imgBtnShutdownAtlas.dispose();
         imgNote.dispose();
         sndClick.dispose();
         sndShutdown.dispose();
         sndStartup.dispose();
-        batch.dispose();
     }
 
     public void resetMenu() {
-        btnShutdown.isPressed = false;
-        btnShutdown.timePressed = 0;
+        for (Button button: buttons) button.setTimePressed(0);
+        btnShutdown.setClickable(true);
         camera.setToOrtho(false, SCR_WIDTH, SCR_HEIGHT);
     }
 }
