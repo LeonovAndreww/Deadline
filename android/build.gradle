@@ -48,6 +48,8 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+  ndkVersion '29.0.14033849 rc4'
+  buildToolsVersion '36.0.0'
 }
 
 repositories {

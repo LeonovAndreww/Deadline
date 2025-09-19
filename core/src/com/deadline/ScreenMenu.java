@@ -47,9 +47,9 @@ public class ScreenMenu implements Screen {
         imgBtnShutdown = new Texture("textures/shutdown.png");
         imgNote = new Texture("textures/note.png");
 
-        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.mp3"));
-        sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.mp3"));
-        sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.mp3"));
+        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.ogg"));
+        sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.ogg"));
+        sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.ogg"));
 
         btnShutdown = new MyButton(5, 10, 8);
     }

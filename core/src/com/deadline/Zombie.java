@@ -26,7 +26,7 @@
             this.phase = random.nextInt(4);
             getBody().setUserData("zombie");
 
-//            sndAttack = Gdx.audio.newSound(Gdx.files.internal("zombieAttack.mp3"));
+//            sndAttack = Gdx.audio.newSound(Gdx.files.internal("zombieAttack.ogg"));
         }
 
         @Override

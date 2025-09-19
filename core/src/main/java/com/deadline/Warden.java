@@ -32,8 +32,8 @@ public class Warden extends Entity {
         this.phase = random.nextInt(4);
         getBody().setUserData("warden");
 
-        sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.mp3"));
-        sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.mp3"));
+        sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.ogg"));
+        sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.ogg"));
     }
 
     @Override

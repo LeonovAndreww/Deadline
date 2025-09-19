@@ -38,10 +38,10 @@ public class Player extends Entity {
         this.maxHealth = maxHealth;
         this.world = world;
 
-        sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.mp3"));
-        sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.mp3"));
-        sndStep = Gdx.audio.newSound(Gdx.files.internal("sounds/step.mp3"));
-        sndPlayerHurt = Gdx.audio.newSound(Gdx.files.internal("sounds/playerHurt.mp3"));
+        sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.ogg"));
+        sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.ogg"));
+        sndStep = Gdx.audio.newSound(Gdx.files.internal("sounds/step.ogg"));
+        sndPlayerHurt = Gdx.audio.newSound(Gdx.files.internal("sounds/playerHurt.ogg"));
     }
 
     void attack() {

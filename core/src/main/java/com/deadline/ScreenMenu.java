@@ -14,7 +14,6 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.deadline.buttons.Button;
 import com.deadline.buttons.RectangleButton;
@@ -64,9 +63,9 @@ public class ScreenMenu implements Screen {
             imgBtnShutdown[i] = new TextureRegion(imgBtnShutdownAtlas, 0, i*16, 16, 16);
         }
 
-        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.mp3"));
-        sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.mp3"));
-        sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.mp3"));
+        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.ogg"));
+        sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.ogg"));
+        sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.ogg"));
 
         btnShutdown = new RectangleButton(5, 10, 16, 16, imgBtnShutdown, false, () -> {
             sndClick.play();

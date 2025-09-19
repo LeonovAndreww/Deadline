@@ -29,7 +29,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
-//import com.badlogic.gdx.utils.Timer;
 import com.deadline.buttons.Button;
 import com.deadline.buttons.RectangleButton;
 import com.deadline.buttons.TextButton;
@@ -338,21 +337,21 @@ public class ScreenGame implements Screen {
         imgVerDoor[0] = new TextureRegion(imgVerDoorAtlas, 0, 0, 16, 64);
         imgVerDoor[1] = new TextureRegion(imgVerDoorAtlas, 16, 0, 16, 64);
 
-        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.mp3"));
-        sndError = Gdx.audio.newSound(Gdx.files.internal("sounds/error.mp3"));
-        sndPowerUp = Gdx.audio.newSound(Gdx.files.internal("sounds/powerUp.mp3"));
-        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.mp3"));
-        sndCoinUp = Gdx.audio.newSound(Gdx.files.internal("sounds/coinUp.mp3"));
-        sndMonsterDeath = Gdx.audio.newSound(Gdx.files.internal("sounds/monsterDeath.mp3"));
-        sndElevatorUse = Gdx.audio.newSound(Gdx.files.internal("sounds/elevatorUse.mp3"));
-        sndPlayerDeath = Gdx.audio.newSound(Gdx.files.internal("sounds/playerDeath.mp3"));
-        sndPhew = Gdx.audio.newSound(Gdx.files.internal("sounds/phew.mp3"));
-        sndChestOpen = Gdx.audio.newSound(Gdx.files.internal("sounds/chestOpen.mp3"));
+        sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.ogg"));
+        sndError = Gdx.audio.newSound(Gdx.files.internal("sounds/error.ogg"));
+        sndPowerUp = Gdx.audio.newSound(Gdx.files.internal("sounds/powerUp.ogg"));
+        sndPaperBump = Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.ogg"));
+        sndCoinUp = Gdx.audio.newSound(Gdx.files.internal("sounds/coinUp.ogg"));
+        sndMonsterDeath = Gdx.audio.newSound(Gdx.files.internal("sounds/monsterDeath.ogg"));
+        sndElevatorUse = Gdx.audio.newSound(Gdx.files.internal("sounds/elevatorUse.ogg"));
+        sndPlayerDeath = Gdx.audio.newSound(Gdx.files.internal("sounds/playerDeath.ogg"));
+        sndPhew = Gdx.audio.newSound(Gdx.files.internal("sounds/phew.ogg"));
+        sndChestOpen = Gdx.audio.newSound(Gdx.files.internal("sounds/chestOpen.ogg"));
 
-        musBackground[0] = Gdx.audio.newMusic(Gdx.files.internal("music/Bye-bye - qklmv.mp3"));
-        musBackground[1] = Gdx.audio.newMusic(Gdx.files.internal("music/Dangerous - qklmv.mp3"));
-        musBackground[2] = Gdx.audio.newMusic(Gdx.files.internal("music/Faded - qklmv.mp3"));
-        musBackground[3] = Gdx.audio.newMusic(Gdx.files.internal("music/Opulence - qklmv.mp3"));
+        musBackground[0] = Gdx.audio.newMusic(Gdx.files.internal("music/Bye-bye - qklmv.ogg"));
+        musBackground[1] = Gdx.audio.newMusic(Gdx.files.internal("music/Dangerous - qklmv.ogg"));
+        musBackground[2] = Gdx.audio.newMusic(Gdx.files.internal("music/Faded - qklmv.ogg"));
+        musBackground[3] = Gdx.audio.newMusic(Gdx.files.internal("music/Opulence - qklmv.ogg"));
 
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 

@@ -30,7 +30,7 @@
             getBody().setLinearDamping(0.75f);
             getBody().setUserData("ghost");
 
-            sndAttack = Gdx.audio.newSound(Gdx.files.internal("sounds/ghostAttack.mp3"));
+            sndAttack = Gdx.audio.newSound(Gdx.files.internal("sounds/ghostAttack.ogg"));
         }
 
         @Override
