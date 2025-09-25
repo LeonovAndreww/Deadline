@@ -498,12 +498,12 @@ public class ScreenGame implements Screen {
         //        fontUi.draw(batch, player.getMeleeRegion().getBody().getUserData()+"", position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
         //        fontUi.draw(batch, wardens.size() + "", position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
         //        fontUi.draw(batch, "direction: " + joystick.getDirectionVector(), position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
-//            fontUi.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + "\nDelta: " + delta + "\nSystem Delta: " + Gdx.graphics.getDeltaTime(), position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
-//            if (TimeUtils.millis() % 1000 < 16) {
-//                Gdx.app.log("perf", "FPS=" + Gdx.graphics.getFramesPerSecond() +
-//                    " delta=" + delta +
-//                    " SystemDelta=" + Gdx.graphics.getDeltaTime());
-//            }
+        //            fontUi.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + "\nDelta: " + delta + "\nSystem Delta: " + Gdx.graphics.getDeltaTime(), position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
+        //            if (TimeUtils.millis() % 1000 < 16) {
+        //                Gdx.app.log("perf", "FPS=" + Gdx.graphics.getFramesPerSecond() +
+        //                    " delta=" + delta +
+        //                    " SystemDelta=" + Gdx.graphics.getDeltaTime());
+        //            }
 
         batch.end();
 
@@ -1686,11 +1686,9 @@ public class ScreenGame implements Screen {
     }
 
     private void buttonsCreate() {
-        btnMenu = new RectangleButton(0, 0, 14, 14, imgButtonMenu, false, () -> {
-            sndClick.play(0.9f * soundVolume);
-        }, () -> {
-            actMenu = !actMenu;
-        });
+        btnMenu = new RectangleButton(0, 0, 14, 14, imgButtonMenu, false,
+            () -> sndClick.play(0.9f * soundVolume),
+            () -> actMenu = !actMenu);
         buttons.add(btnMenu);
 
         btnMenuClose = new RectangleButton(0, 0, 10, 10, imgButtonClose, false, () -> {
@@ -1746,7 +1744,6 @@ public class ScreenGame implements Screen {
                     sndPowerUp.play(0.65f * soundVolume);
                 } else {
                     sndError.play(0.85f * soundVolume);
-
                 }
             }
         });

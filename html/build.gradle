@@ -4,7 +4,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'org.gretty:gretty:4.1.7'
+    classpath 'org.gretty:gretty:4.1.10'
     classpath "org.docstr:gwt-gradle-plugin:$gwtPluginVersion"
 
   }

@@ -57,19 +57,6 @@ public class DdlnGame extends Game {
         super.dispose();
 	}
 
-//	private void fontGenerate() {
-//		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/font.ttf"));
-//		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-//		parameter.characters = FONT_CHARS;
-//		parameter.size = 10;
-//		parameter.color = Color.BLACK;
-//		font = generator.generateFont(parameter);
-//		parameter.size = 10;
-//		parameter.color = Color.WHITE;
-//		fontUi = generator.generateFont(parameter);
-//		generator.dispose();
-//	}
-
 	private void fontGenerate() {
 		font = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
 		fontUi = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
