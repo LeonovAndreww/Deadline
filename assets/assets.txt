@@ -1,40 +1,46 @@
 d:assets:assets:0:application/unknown:1
-t:assets.txt:assets-165c9b59331d7cdb444adf90faee2604.txt:1611:text/plain:1
+t:assets.txt:assets-273acdfe823ce76a895bda5620bd7365.txt:1778:text/plain:1
 d:fonts:fonts:0:application/unknown:1
-t:fonts/font.fnt:fonts/font-31d77dadacd43717ded7304cce99c406.fnt:29156:application/unknown:1
+t:fonts/font.fnt:fonts/font-e320eb9e5af84af01dd2f44455bf65fb.fnt:28893:application/unknown:1
 i:fonts/font.png:fonts/font-c5c1b8cce91532a8fce04faa841ec212.png:12720:image/png:1
+b:fonts/font.ttf:fonts/font-0d7b038fb3ce1e579d48372b7daf1172.ttf:454720:application/unknown:1
 d:music:music:0:application/unknown:1
-a:music/Bye-bye - qklmv.mp3:music/Bye-bye - qklmv-9102633dd147d798541aa3e1a79bee27.mp3:3947694:audio/mpeg:1
-a:music/Dangerous - qklmv.mp3:music/Dangerous - qklmv-e5d5001d77d941f1dd30c6893f59d9b8.mp3:7382274:audio/mpeg:1
-a:music/Faded - qklmv.mp3:music/Faded - qklmv-6a0617dc7b4d65023b158f3d1041f65b.mp3:1597719:audio/mpeg:1
-a:music/Opulence - qklmv.mp3:music/Opulence - qklmv-ca48045a0c54d3aed52f22b4233a7cfc.mp3:8719743:audio/mpeg:1
+a:music/Bye-bye - qklmv.ogg:music/Bye-bye - qklmv-5b24cb14ec74cbd8fb1a6515af0e2467.ogg:1591711:audio/ogg:1
+a:music/Dangerous - qklmv.ogg:music/Dangerous - qklmv-e868ea2375df283bc518d5cf58dcce6a.ogg:3021702:audio/ogg:1
+a:music/Faded - qklmv.ogg:music/Faded - qklmv-989dfda1ffa04f30a4885e3817340739.ogg:543458:audio/ogg:1
+a:music/Opulence - qklmv.ogg:music/Opulence - qklmv-f3e16826de0a1c71b2e3927194b7e510.ogg:3419574:audio/ogg:1
 d:sounds:sounds:0:application/unknown:1
-a:sounds/chestOpen.mp3:sounds/chestOpen-2ece66f72d934e7e8cf9873494a1ad2a.mp3:5850:audio/mpeg:1
-a:sounds/click.mp3:sounds/click-ddb4b930df3c315e9c5fe5027a1d7549.mp3:3623:audio/mpeg:1
-a:sounds/coinUp.mp3:sounds/coinUp-1173f95768c04141ca1e159519c0925b.mp3:20311:audio/mpeg:1
-a:sounds/elevatorUse.mp3:sounds/elevatorUse-5195d7d952389ff64eacb3a8a8edbddc.mp3:30092:audio/mpeg:1
-a:sounds/error.mp3:sounds/error-5223f557f65ba16e1fe4406dc2717dd5.mp3:10301:audio/mpeg:1
-a:sounds/ghostAttack.mp3:sounds/ghostAttack-8dc77feb20eb3605b9022347078d3402.mp3:48960:audio/mpeg:1
-a:sounds/monsterDeath.mp3:sounds/monsterDeath-6fc6a7b094404811f859d791c16a5f32.mp3:28290:audio/mpeg:1
-a:sounds/paperBump.mp3:sounds/paperBump-9e910cd0b431d65493483f77c8737410.mp3:5059:audio/mpeg:1
-a:sounds/paperSwing.mp3:sounds/paperSwing-8b0f9f7c8f94e54a793576c4258aa814.mp3:15858:audio/mpeg:1
-a:sounds/phew.mp3:sounds/phew-6ff9358503eefeb83c17ae5928c06589.mp3:11910:audio/mpeg:1
-a:sounds/playerDeath.mp3:sounds/playerDeath-b226d6314a1dc32427d2dff0900eb695.mp3:47652:audio/mpeg:1
-a:sounds/playerHurt.mp3:sounds/playerHurt-c2c6107f9b1f3efe551ee9219db4b832.mp3:8612:audio/mpeg:1
-a:sounds/powerUp.mp3:sounds/powerUp-9e16e8807b8a982e5baf93cede2279da.mp3:34229:audio/mpeg:1
-a:sounds/shutdown.mp3:sounds/shutdown-fbb3fe1f407064938dbba8a8d8fc2211.mp3:52288:audio/mpeg:1
-a:sounds/startup.mp3:sounds/startup-2910e3e768cc5ca9abdedda605cabc3d.mp3:34374:audio/mpeg:1
-a:sounds/step.mp3:sounds/step-923fb98c3ca18392708e427c2c503249.mp3:15183:audio/mpeg:1
+a:sounds/chestOpen.ogg:sounds/chestOpen-f5f8f0e6f7bccc86aa1e3ed353660599.ogg:14182:audio/ogg:1
+a:sounds/click.ogg:sounds/click-ebd721f2f0612818746c698f3d64fba7.ogg:5980:audio/ogg:1
+a:sounds/coinUp.ogg:sounds/coinUp-368820343a9a0a6b03606ab5a47821cf.ogg:7127:audio/ogg:1
+a:sounds/elevatorUse.ogg:sounds/elevatorUse-091dcbcab9582c9a65dd8af75b2b3f42.ogg:44033:audio/ogg:1
+a:sounds/error.ogg:sounds/error-8932db70ca667248419477774d684311.ogg:12138:audio/ogg:1
+a:sounds/ghostAttack.ogg:sounds/ghostAttack-eee1fa0f4db387a4a312497850ab45b6.ogg:14684:audio/ogg:1
+a:sounds/monsterDeath.ogg:sounds/monsterDeath-1a6d23cd3454cdd2881a13247aa4ba7d.ogg:35298:audio/ogg:1
+a:sounds/paperBump.ogg:sounds/paperBump-4f7b8f0ddc69e7889adab6b530668fcb.ogg:7376:audio/ogg:1
+a:sounds/paperSwing.ogg:sounds/paperSwing-9c470334372113ebed462d73b8161e19.ogg:9388:audio/ogg:1
+a:sounds/phew.ogg:sounds/phew-f8181ce155fd36a80b71426c030aca94.ogg:15365:audio/ogg:1
+a:sounds/playerDeath.ogg:sounds/playerDeath-d9d7b41187aae27f0a7dd293aa20d204.ogg:49719:audio/ogg:1
+a:sounds/playerHurt.ogg:sounds/playerHurt-e0b7840ca1c768d47b269a7ba773e931.ogg:13300:audio/ogg:1
+a:sounds/powerUp.ogg:sounds/powerUp-60271d471815b5eeedd686891ed0de29.ogg:21848:audio/ogg:1
+a:sounds/shutdown.ogg:sounds/shutdown-824e8cb04f8d7921e3e267e03082c6b2.ogg:51122:audio/ogg:1
+a:sounds/startup.ogg:sounds/startup-715a9c0bbf64aee183d2b390f59f6af6.ogg:32608:audio/ogg:1
+a:sounds/step.ogg:sounds/step-4b934996b9806e83371a43745f7d69ee.ogg:8156:audio/ogg:1
 d:textures:textures:0:application/unknown:1
 i:textures/animatedObstacleAtlas.png:textures/animatedObstacleAtlas-bfac810f2eb84e9c05cedd16877cef30.png:4611:image/png:1
 i:textures/blankAtlas.png:textures/blankAtlas-079e5bfc25bd27bdb420fb396d497ecc.png:1589:image/png:1
+i:textures/buttonCloseAtlas.png:textures/buttonCloseAtlas-cb6b16e322c4075af7af39360c369f4b.png:428:image/png:1
+i:textures/buttonLongAtlas.png:textures/buttonLongAtlas-fbd4d8be7d84fbed049c6b9758e1f241.png:671:image/png:1
+i:textures/buttonMenuAtlas.png:textures/buttonMenuAtlas-349f685fe0b257edcf85ad207cb023e3.png:335:image/png:1
+i:textures/buttonShutdownAtlas.png:textures/buttonShutdownAtlas-fb4537869fc316a6e4b4cee3405978dd.png:1049:image/png:1
+i:textures/buttonSquareAtlas.png:textures/buttonSquareAtlas-ffaf71b27b9ef08bbae4b197483277e0.png:639:image/png:1
 i:textures/chestAtlas.png:textures/chestAtlas-3552d679fd28fa1fb80d846b3a70f5ce.png:920:image/png:1
 i:textures/cutter.png:textures/cutter-2d4d8135c1c6e889008e65d29e24f9fc.png:3054:image/png:1
 i:textures/cutterAtlas.png:textures/cutterAtlas-0fb0144f360b992d55d8a319953b92b7.png:3571:image/png:1
 i:textures/damageUp.png:textures/damageUp-362ed9b9230b77f8bfbeba7137ba089b.png:252:image/png:1
 i:textures/elevator.png:textures/elevator-1cb341e49a2adf3000537cbea372653f.png:4372:image/png:1
 i:textures/elevatorAtlas.png:textures/elevatorAtlas-609dc2ee615826e333e9d40e6326174c.png:2190:image/png:1
-i:textures/gameMenu.png:textures/gameMenu-2a74dd31d2ada15ed12896e53edcb14b.png:7597:image/png:1
+i:textures/gameMenu.png:textures/gameMenu-2ba2c048d7c8d0c446af23438b0289e4.png:5259:image/png:1
 i:textures/ghostAtlas.png:textures/ghostAtlas-bdbbde307ca341558d99ef5739fa8b8c.png:2108:image/png:1
 i:textures/heal.png:textures/heal-87cd0d223af73ea5b3c0d7d88164db39.png:181:image/png:1
 i:textures/healthbarAtlas.png:textures/healthbarAtlas-5b3b3273abc152de35f2ef9d5b82fe21.png:3164:image/png:1
@@ -67,7 +73,7 @@ i:textures/speedUp.png:textures/speedUp-0de2532f9364f16a87d07defa0296561.png:218
 i:textures/staticObstacleAtlas.png:textures/staticObstacleAtlas-0c71e515b384779110420a9b3d4d5c06.png:5805:image/png:1
 i:textures/street.jpeg:textures/street-d4f21e0155198039566ad1408287cb03.jpeg:692063:image/jpeg:1
 i:textures/vendingMachine.png:textures/vendingMachine-f66cefe73c62a54d4147335b5abb80be.png:5123:image/png:1
-i:textures/vendingUi.png:textures/vendingUi-21c166bbfcff0a5755d66c7166fc1bfb.png:6025:image/png:1
+i:textures/vendingUi.png:textures/vendingUi-208a8b5a07d17af8d11b0f54914040a6.png:4214:image/png:1
 i:textures/verticalDoor.png:textures/verticalDoor-d4f7c859cd0c0374fcacb63d9ae41f77.png:2566:image/png:1
 i:textures/verticalDoorAtlas.png:textures/verticalDoorAtlas-95a5779510b13ced6144c419a5dd3640.png:2887:image/png:1
 i:textures/verticalWall.png:textures/verticalWall-cd6d8d7c89bdec4518daea659dd0951a.png:1847:image/png:1
