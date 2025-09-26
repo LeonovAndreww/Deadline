@@ -10,11 +10,15 @@ import java.util.List;
 
 public class UiInput implements InputProcessor {
     private final OrthographicCamera camera;
-    private final List<Button> buttons;
+    private List<Button> buttons;
     private final Vector3 temp = new Vector3();
 
     public UiInput(OrthographicCamera camera, List<Button> buttons) {
         this.camera = camera;
+        this.buttons = buttons;
+    }
+
+    public void setButtons(List<Button> buttons) {
         this.buttons = buttons;
     }
 

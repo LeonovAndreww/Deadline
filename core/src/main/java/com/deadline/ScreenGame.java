@@ -52,6 +52,7 @@ public class ScreenGame implements Screen {
     World world;
     //    Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
     Vector2 position = new Vector2(0, 0);
+    private final ArrayList<Body> bodiesToDestroy = new ArrayList<>();
 
     RayHandler rayHandler;
     PointLight playerLight;
@@ -62,7 +63,10 @@ public class ScreenGame implements Screen {
 
     OnScreenJoystick joystick;
 
-    List<Button> buttons = new ArrayList<>();
+    List<Button> hudButtons = new ArrayList<>();
+    List<Button> menuButtons = new ArrayList<>();
+    List<Button> vendingButtons = new ArrayList<>();
+
     UiInput uiInput;
 
     Texture imgJstBase, imgJstKnob;
@@ -141,8 +145,6 @@ public class ScreenGame implements Screen {
     ArrayList<Chest> chests = new ArrayList<>();
 
     MyButton btnAttack;
-    //MyButton btnMenuClose, btnMenuResume, btnMenuMain;
-    //MyButton btnVendingClose, btnVendingBuyHeal, btnVendingBuyDamageUp, btnVendingBuySpeedUp;
 
     RectangleButton btnMenu, btnMenuClose;
     TextButton btnMenuResume, btnMenuSettings, btnMenuDesktop;
@@ -355,22 +357,12 @@ public class ScreenGame implements Screen {
 
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 
-        //btnMenu = new MyButton(0, 0, 15, 15);
-//            btnMenuClose = new MyButton(0, 0, 12, 12);
-//            btnMenuMain = new MyButton(0, 0, 80, 22);
-//            btnMenuResume = new MyButton(0, 0, 80, 22);
-
-//            btnVendingClose = new MyButton(0, 0, 15, 15);
-//            btnVendingBuyHeal = new MyButton(0, 0, 26, 26);
-//            btnVendingBuyDamageUp = new MyButton(0, 0, 26, 26);
-//            btnVendingBuySpeedUp = new MyButton(0, 0, 26, 26);
-
-        paperWad = new Weapon(imgPaperWad, "Paper wad", 35, 450, 950, 1);
-        cutter = new Weapon(imgCutter[0], "Cutter", 45, 500, 650, 2);
+        paperWad = new Weapon(imgPaperWad, "Paper wad", 60, 450, 950, 1);
+        cutter = new Weapon(imgCutter[0], "Cutter", 70, 500, 650, 2);
         ghostOrb = new Weapon("Ghost orb", 1250, 2500, 1);
 
 
-        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad);
+        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad, game.screenGame);
         playerLight = new PointLight(rayHandler, 512, new Color(1, 1, 1, 0.475f), playerLightDistance, player.getX(), player.getY());
         playerLight.setSoftnessLength(25);
 
@@ -395,14 +387,16 @@ public class ScreenGame implements Screen {
         vending = new Vending(world, 32, 24, rooms.get(0).getX() + rooms.get(0).getWidth() - 35, rooms.get(0).getY() + rooms.get(0).getHeight() - 35);
         vendingPointLight = new PointLight(rayHandler, 512, new Color(0.1f, 0.5f, 0.85f, 0.695f), 95, vending.getX() + vending.getWidth() / 3, vending.getY() + 20);
         vendingPointLight.setSoftnessLength(50);
-        uiInput = new UiInput(camera, buttons);
+        uiInput = new UiInput(camera, hudButtons);
     }
 
     @Override
     public void show() {
         resetWorld();
         Gdx.input.setInputProcessor(uiInput);
-        for (Button button : buttons) button.setTimePressed(0);
+        for (Button button : hudButtons) button.setTimePressed(0);
+        for (Button button : menuButtons) button.setTimePressed(0);
+        for (Button button : vendingButtons) button.setTimePressed(0);
     }
 
     @Override
@@ -416,20 +410,15 @@ public class ScreenGame implements Screen {
         down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
         left = Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT);
         right = Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
+
         attack = Gdx.input.isKeyPressed(Input.Keys.SPACE) || Gdx.input.isKeyPressed(Input.Keys.ENTER);
         menu = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.BACK);
 
         menuX = position.x - SCR_WIDTH / 4;
         menuY = position.y - SCR_HEIGHT / 3;
-//            menuWidth = SCR_WIDTH / 2;
-//            menuHeight = SCR_HEIGHT * 0.8f;
-//            menuButtonWidth = menuWidth * 0.8f;
-//            menuButtonHeight = menuHeight * 0.1f;
 
         vendingX = position.x - SCR_WIDTH / 4;
         vendingY = position.y - SCR_HEIGHT / 4;
-//            vendingWidth = SCR_WIDTH / 2;
-//            vendingHeight = SCR_HEIGHT / 2f;
 
         // касания
 
@@ -437,13 +426,12 @@ public class ScreenGame implements Screen {
 
         // события
 
-        if (deathTime == 0 && !actMenu) { //add !actVending after vending fix
+        if (deathTime == 0 && !actMenu && !actVending) {
             player.changePhase();
             ghostsChangePhase();
             zombiesChangePhase();
             wardensChangePhase();
             animatedObstaclesChangePhase();
-            player.hit();
             player.step(actJoystick);
             player.updateProjectiles();
             wardensUpdateProjectiles();
@@ -509,7 +497,7 @@ public class ScreenGame implements Screen {
 
         playerLight.attachToBody(player.getBody());
         rayHandler.updateAndRender();
-
+        destroyScheduledBodies();
     }
 
     @Override
@@ -639,11 +627,12 @@ public class ScreenGame implements Screen {
             player.getBody().setLinearVelocity(0, 0);
         }
 
-        if (actAttack || attack) {
-            //            player.changeBattleState(!player.getBattleState());
-            player.attack();
+        if (actAttack || attack) player.attack();
+        if (menu) {
+            actMenu = !actMenu;
+            uiInput.setButtons(hudButtons);
+            if (actMenu) uiInput.setButtons(menuButtons);
         }
-        if (menu) actMenu = !actMenu;
 
         if (up) {
             player.setDirection('u');
@@ -746,7 +735,7 @@ public class ScreenGame implements Screen {
         int tempSpeedUp = player.getSpeedUp();
         int tempHealth = player.getHealth();
         Weapon tWeapon = player.getWeapon();
-        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, tWeapon);
+        player = new Player(world, 14, 18, 75, 75, 6, 6, 350, tWeapon, game.screenGame);
         player.setDamageUp(tempDamageUp);
         player.setSpeedUp(tempSpeedUp);
         player.setHealth(tempHealth);
@@ -1187,7 +1176,7 @@ public class ScreenGame implements Screen {
     //                        &&(projectile.getY()>ghost.getY()-ghost.getHeight()/2 && projectile.getY()<ghost.getY()+ghost.getHeight()/2)) {
     //                    ghosts.get(i).hit(player.getProjectiles().get(j).getDamage());
     //                    player.getProjectiles().get(j).getBody().setActive(false);
-    //                    world.destroyBody(player.getProjectiles().get(j).getBody());
+    //                    scheduleBodyDestroy(player.getProjectiles().get(j).getBody());
     //                }
     //            }
     //        }
@@ -1204,7 +1193,7 @@ public class ScreenGame implements Screen {
                         if (ghost.getBody().getUserData() == "hit") {
                             ghosts.get(i).hit(player.getWeapon().getDamage() + player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
-                            world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
+                            scheduleBodyDestroy(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
                             ghost.getBody().setUserData("ghost");
                             sndPaperBump.play(0.65f * soundVolume);
@@ -1213,7 +1202,7 @@ public class ScreenGame implements Screen {
                 }
                 if (!ghost.isAlive()) {
                     ghost.getBody().setActive(false);
-                    world.destroyBody(ghost.getBody());
+                    scheduleBodyDestroy(ghost.getBody());
                     ghosts.remove(i);
                     sndMonsterDeath.play(0.15f * soundVolume);
                     for (int j = 0; j < random.nextInt(3) - 1; j++) {
@@ -1239,7 +1228,7 @@ public class ScreenGame implements Screen {
                         if (zombie.getBody().getUserData() == "hit") {
                             zombies.get(i).hit(player.getWeapon().getDamage() + player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
-                            world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
+                            scheduleBodyDestroy(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
                             zombie.getBody().setUserData("zombie");
                             sndPaperBump.play(0.65f * soundVolume);
@@ -1248,7 +1237,7 @@ public class ScreenGame implements Screen {
                 }
                 if (!zombie.isAlive()) {
                     zombie.getBody().setActive(false);
-                    world.destroyBody(zombie.getBody());
+                    scheduleBodyDestroy(zombie.getBody());
                     zombies.remove(i);
                     sndMonsterDeath.play(0.15f * soundVolume);
                     for (int j = 0; j < random.nextInt(4) - 1; j++) {
@@ -1274,7 +1263,7 @@ public class ScreenGame implements Screen {
                         if (warden.getBody().getUserData() == "hit") {
                             wardens.get(i).hit(player.getWeapon().getDamage() + player.getDamageUp());
                             player.getProjectiles().get(player.getProjectiles().size() - 1).getBody().setActive(false);
-                            world.destroyBody(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
+                            scheduleBodyDestroy(player.getProjectiles().get(player.getProjectiles().size() - 1).getBody());
                             player.getProjectiles().remove(player.getProjectiles().size() - 1);
                             warden.getBody().setUserData("warden");
                             sndPaperBump.play(0.65f * soundVolume);
@@ -1283,7 +1272,7 @@ public class ScreenGame implements Screen {
                 }
                 if (!warden.isAlive()) {
                     warden.getBody().setActive(false);
-                    world.destroyBody(warden.getBody());
+                    scheduleBodyDestroy(warden.getBody());
                     wardens.remove(i);
                     sndMonsterDeath.play(0.15f * soundVolume);
                     for (int j = 0; j < random.nextInt(4) - 1; j++) {
@@ -1357,7 +1346,7 @@ public class ScreenGame implements Screen {
             if (coins.get(i) != null) {
                 Coin coin = coins.get(i);
                 if (coin.getBody().getUserData() == "got") {
-                    world.destroyBody(coin.getBody());
+                    scheduleBodyDestroy(coin.getBody());
                     wallet += coin.getValue();
                     sndCoinUp.play(0.65f * soundVolume);
                     coins.remove(i);
@@ -1401,7 +1390,7 @@ public class ScreenGame implements Screen {
                         }
                     }
                     chest.getBody().setActive(false);
-                    world.destroyBody(chest.getBody());
+                    scheduleBodyDestroy(chest.getBody());
                     chests.remove(i);
                     break;
                 }
@@ -1427,11 +1416,13 @@ public class ScreenGame implements Screen {
     }
 
     public void vendingUpdate() {
-        if (player.isShopping() && !actVending && vendingCloseTime + 4250 < TimeUtils.millis()) {
+        if (player.isShopping() && !actVending && vendingCloseTime + 1250 < TimeUtils.millis()) {
             actVending = true;
+            uiInput.setButtons(vendingButtons);
             player.setShopping(false);
             vendingCloseTime = TimeUtils.millis();
         }
+        else if (player.isShopping() && !actVending) player.setShopping(false);
     }
 
     //    public void meleeRegionUpdate() {
@@ -1625,7 +1616,7 @@ public class ScreenGame implements Screen {
                             spawnX = MathUtils.random(room.getX() + THICKNESS * 3, room.getX() + room.getWidth() - THICKNESS * 3);
                             spawnY = MathUtils.random(room.getY() + THICKNESS * 3, room.getY() + room.getHeight() - THICKNESS * 3);
 
-                            Warden warden = new Warden(world, 12 + size, 13.5f + size, spawnX, spawnY, 8, 8, 175, paperWad);
+                            Warden warden = new Warden(world, 12 + size, 13.5f + size, spawnX, spawnY, 8, 8, 175, paperWad, game.screenGame);
                             warden.setRoomNum(i);
                             wardens.add(warden);
                         }
@@ -1688,100 +1679,100 @@ public class ScreenGame implements Screen {
     private void buttonsCreate() {
         btnMenu = new RectangleButton(0, 0, 14, 14, imgButtonMenu, false,
             () -> sndClick.play(0.9f * soundVolume),
-            () -> actMenu = !actMenu);
-        buttons.add(btnMenu);
+            () -> {
+                actMenu = !actMenu;
+                uiInput.setButtons(hudButtons);
+                if (actMenu) uiInput.setButtons(menuButtons);
+            });
+        hudButtons.add(btnMenu);
+        menuButtons.add(btnMenu);
 
         btnMenuClose = new RectangleButton(0, 0, 10, 10, imgButtonClose, false, () -> {
-            if (actMenu) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actMenu) actMenu = false;
+            actMenu = false;
+            uiInput.setButtons(hudButtons);
         });
-        buttons.add(btnMenuClose);
+        menuButtons.add(btnMenuClose);
 
         btnMenuDesktop = new TextButton(0, 0, menuButtonWidth, menuButtonHeight, "To Desktop", fontButton, imgButtonLong, false, () -> {
-            if (actMenu) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actMenu) {
-                actMenu = false;
-                game.setScreen(game.screenMenu);
-            }
+            actMenu = false;
+            uiInput.setButtons(hudButtons);
+            game.setScreen(game.screenMenu);
         });
-        buttons.add(btnMenuDesktop);
+        menuButtons.add(btnMenuDesktop);
 
         btnMenuSettings = new TextButton(0, 0, menuButtonWidth, menuButtonHeight, "Settings", fontButton, imgButtonLong, false, () -> {
-            if (actMenu) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            // WIP
+            sndError.play(0.85f * soundVolume);
         });
-        buttons.add(btnMenuSettings);
+        menuButtons.add(btnMenuSettings);
 
         btnMenuResume = new TextButton(0, 0, menuButtonWidth, menuButtonHeight, "Resume", fontButton, imgButtonLong, false, () -> {
-            if (actMenu) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actMenu) actMenu = false;
+            actMenu = false;
+            uiInput.setButtons(hudButtons);
         });
-        buttons.add(btnMenuResume);
+        menuButtons.add(btnMenuResume);
 
         btnVendingClose = new RectangleButton(0, 0, 10, 10, imgButtonClose, false, () -> {
-            if (actVending) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actVending) {
-                actVending = false;
-                player.setShopping(false);
-                vendingCloseTime = TimeUtils.millis();
-            }
+            actVending = false;
+            player.setShopping(false);
+            uiInput.setButtons(hudButtons);
+            vendingCloseTime = TimeUtils.millis();
+
         });
-        buttons.add(btnVendingClose);
+        vendingButtons.add(btnVendingClose);
 
         btnVendingBuyHeal = new RectangleButton(0, 0, 26, 26, imgButtonSquare, false, () -> {
-            if (actVending) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actVending) {
-                if (player.getHealth() < player.getMaxHealth() && wallet >= healCost) {
-                    wallet -= healCost;
-                    healCost += 1;
-                    player.setHealth(player.getMaxHealth());
-                    sndPowerUp.play(0.65f * soundVolume);
-                } else {
-                    sndError.play(0.85f * soundVolume);
-                }
+            if (player.getHealth() < player.getMaxHealth() && wallet >= healCost) {
+                wallet -= healCost;
+                healCost += 1;
+                player.setHealth(player.getMaxHealth());
+                sndPowerUp.play(0.65f * soundVolume);
+            } else {
+                sndError.play(0.85f * soundVolume);
             }
         });
-        buttons.add(btnVendingBuyHeal);
+        vendingButtons.add(btnVendingBuyHeal);
 
         btnVendingBuyDamageUp = new RectangleButton(0, 0, 26, 26, imgButtonSquare, false, () -> {
-            if (actVending) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actVending) {
-                if (wallet >= damageUpCost) {
-                    wallet -= damageUpCost;
-                    damageUpCost *= 1.45f;
-                    player.setDamageUp(player.getDamageUp() + 1);
-                    sndPowerUp.play(0.65f * soundVolume);
-                } else {
-                    sndError.play(0.85f * soundVolume);
-                }
-
+            if (wallet >= damageUpCost) {
+                wallet -= damageUpCost;
+                damageUpCost *= 1.45f;
+                player.setDamageUp(player.getDamageUp() + 1);
+                sndPowerUp.play(0.65f * soundVolume);
+            } else {
+                sndError.play(0.85f * soundVolume);
             }
+
+
         });
-        buttons.add(btnVendingBuyDamageUp);
+        vendingButtons.add(btnVendingBuyDamageUp);
 
         btnVendingBuySpeedUp = new RectangleButton(0, 0, 26, 26, imgButtonSquare, false, () -> {
-            if (actVending) sndClick.play(0.9f * soundVolume);
+            sndClick.play(0.9f * soundVolume);
         }, () -> {
-            if (actVending) {
-                if (wallet >= speedUpCost) {
-                    wallet -= speedUpCost;
-                    speedUpCost *= 1.25f;
-                    player.setSpeedUp(player.getSpeedUp() + 2);
-                    sndPowerUp.play(0.65f * soundVolume);
-                } else {
-                    sndError.play(0.85f * soundVolume);
-                }
-
+            if (wallet >= speedUpCost) {
+                wallet -= speedUpCost;
+                speedUpCost *= 1.25f;
+                player.setSpeedUp(player.getSpeedUp() + 2);
+                sndPowerUp.play(0.65f * soundVolume);
+            } else {
+                sndError.play(0.85f * soundVolume);
             }
         });
-        buttons.add(btnVendingBuySpeedUp);
+        vendingButtons.add(btnVendingBuySpeedUp);
     }
 
     private void buttonsUpdate() {
@@ -1799,5 +1790,16 @@ public class ScreenGame implements Screen {
         btnVendingBuyHeal.update(vendingX + 9, vendingY + 17.5f); // some day I'll deal with that hardcode
         btnVendingBuyDamageUp.update(vendingX + 47, vendingY + 17.5f);
         btnVendingBuySpeedUp.update(vendingX + 85, vendingY + 17.5f);
+    }
+
+    public void scheduleBodyDestroy(Body body) {
+        if (!bodiesToDestroy.contains(body)) bodiesToDestroy.add(body);
+    }
+
+    private void destroyScheduledBodies() {
+        for (Body body : bodiesToDestroy) {
+            if (body != null) world.destroyBody(body);
+        }
+        bodiesToDestroy.clear();
     }
 }

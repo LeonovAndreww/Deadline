@@ -4,6 +4,7 @@ import static com.deadline.DdlnGame.soundVolume;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 public class Player extends Entity {
     private static final float BASIC_SPEED = 40f, BATTLE_SPEED = 55f;
     private final World world;
+    private final ScreenGame screen;
     private Weapon weapon;
     private int damageUp = 0, speedUp = 0;
     private int health, maxHealth;
@@ -27,7 +29,7 @@ public class Player extends Entity {
     private boolean shopping = false;
     private boolean moved = false;
 
-    public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timeBasePhaseInterval, Weapon weapon) {
+    public Player(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timeBasePhaseInterval, Weapon weapon, ScreenGame screen) {
         super(world, width, height, x, y, maxHealth, nPhases, timeBasePhaseInterval);
         getBody().setUserData(this);
         this.timeBasePhaseInterval = timeBasePhaseInterval;
@@ -37,6 +39,7 @@ public class Player extends Entity {
         this.isAlive = true;
         this.maxHealth = maxHealth;
         this.world = world;
+        this.screen = screen;
 
         sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.ogg"));
         sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.ogg"));
@@ -99,10 +102,6 @@ public class Player extends Entity {
 //        }
 //    }
 
-    public void hit() {
-        // damage now handled in MyContactListener.receiveDamage calls
-    }
-
     public void step(boolean joystickAct) {
         if (joystickAct) {
             timePhaseInterval = timeBasePhaseInterval-150;
@@ -132,8 +131,14 @@ public class Player extends Entity {
     }
 
     private void rangedAttack() {
-        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed()+getBody().getInertia()+speedUp*4, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
+        Vector2 playerVelocity = getBody().getLinearVelocity();
+        float projectileSpeed = weapon.getSpeed() + speedUp*4;
+
+        Vector2 velocity = new Vector2(playerVelocity.x, playerVelocity.y).add(directionToVector(getDirection()).scl(projectileSpeed));
+
+        Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, projectileSpeed, getDirection(), TimeUtils.millis(), weapon.getDamage()+damageUp);
         projectiles.add(projectile);
+        projectile.getBody().setLinearVelocity(velocity);
     }
 
     void setBattleState(boolean isBattle) {
@@ -159,7 +164,7 @@ public class Player extends Entity {
             if (!projectiles.get(i).getBody().isActive()) {
                 projectiles.get(i).resetCreateTime();
                 projectiles.get(i).resetCreateTime();
-                world.destroyBody(projectiles.get(i).getBody());
+                screen.scheduleBodyDestroy(projectiles.get(i).getBody());
                 projectiles.remove(i);
                 sndPaperBump.play();
                 break;
@@ -167,11 +172,21 @@ public class Player extends Entity {
             } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() <= TimeUtils.millis()){
                 projectiles.get(i).resetCreateTime();
                 projectiles.get(i).getBody().setActive(false);
-                world.destroyBody(projectiles.get(i).getBody());
+                screen.scheduleBodyDestroy(projectiles.get(i).getBody());
                 projectiles.remove(i);
                 sndPaperBump.play();
                 break;
             }
+        }
+    }
+
+    private Vector2 directionToVector(char dir) {
+        switch (dir) {
+            case 'u': return new Vector2(0, 1);
+            case 'd': return new Vector2(0, -1);
+            case 'l': return new Vector2(-1, 0);
+            case 'r': return new Vector2(1, 0);
+            default: return new Vector2(0, 0);
         }
     }
 

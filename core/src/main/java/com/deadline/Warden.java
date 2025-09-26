@@ -13,6 +13,7 @@ import java.util.Random;
 
 public class Warden extends Entity {
     private final World world;
+    private final ScreenGame screen;
     protected long timePhaseInterval;
     private final Weapon weapon;
     private long timeLastAttack, timeLastPhase;
@@ -22,9 +23,10 @@ public class Warden extends Entity {
     private ArrayList<Projectile> projectiles = new ArrayList<>();
     Random random = new Random();
 
-    public Warden(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
+    public Warden(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon, ScreenGame screen) {
         super(world, width, height, x, y, maxHealth, nPhases, timePhaseInterval);
         this.world = world;
+        this.screen = screen;
         this.nPhases = nPhases;
         this.timePhaseInterval = timePhaseInterval+random.nextInt(101);
         this.weapon = weapon;
@@ -88,7 +90,7 @@ public class Warden extends Entity {
             if (!projectiles.get(i).getBody().isActive()) {
                 projectiles.get(i).resetCreateTime();
                 projectiles.get(i).resetCreateTime();
-                world.destroyBody(projectiles.get(i).getBody());
+                screen.scheduleBodyDestroy(projectiles.get(i).getBody());
                 projectiles.remove(i);
 //                sndPaperBump.play(0.25f*soundVolume);
                 break;
@@ -96,7 +98,7 @@ public class Warden extends Entity {
             } else if (projectiles.get(i).getCreateTime() + getWeapon().getDuration() <= TimeUtils.millis()){
                 projectiles.get(i).resetCreateTime();
                 projectiles.get(i).getBody().setActive(false);
-                world.destroyBody(projectiles.get(i).getBody());
+                screen.scheduleBodyDestroy(projectiles.get(i).getBody());
                 projectiles.remove(i);
 //                sndPaperBump.play(0.25f*soundVolume);
                 break;
