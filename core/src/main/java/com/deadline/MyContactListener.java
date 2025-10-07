@@ -41,10 +41,10 @@ public class MyContactListener implements ContactListener {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        if ((isUD(bodyA, "projectile") || isUD(bodyA, "projectileWarden")) && (isUD(bodyB, "wall") || isUD(bodyB, "closeDoor") || isUD(bodyB, "elevatorOn") || isUD(bodyB, "elevatorOff") || isUD(bodyB, "vending") || isUD(bodyB, "obstacle")  || isUD(bodyB, "animatedObstacle"))) {
+        if ((isUD(bodyA, "projectile") || isUD(bodyA, "projectileWarden")) && (isUD(bodyB, "wall") || isUD(bodyB, "closeDoor") || isUD(bodyB, "elevatorOn") || isUD(bodyB, "elevatorOff") || isUD(bodyB, "vending") || isUD(bodyB, "obstacle")  || isUD(bodyB, "animatedObstacle" ) || isUD(bodyB, "chestOpen") || isUD(bodyB, "chestClosed"))) {
             bodyA.setActive(false);
         }
-        else if ((isUD(bodyB, "projectile") || isUD(bodyB, "projectileWarden")) && (isUD(bodyA, "wall") || isUD(bodyA, "closeDoor") || isUD(bodyA, "elevatorOn") || isUD(bodyA, "elevatorOff") || isUD(bodyA, "vending") || isUD(bodyA, "obstacle") || isUD(bodyA, "animatedObstacle"))) {
+        else if ((isUD(bodyB, "projectile") || isUD(bodyB, "projectileWarden")) && (isUD(bodyA, "wall") || isUD(bodyA, "closeDoor") || isUD(bodyA, "elevatorOn") || isUD(bodyA, "elevatorOff") || isUD(bodyA, "vending") || isUD(bodyA, "obstacle") || isUD(bodyA, "animatedObstacle") || isUD(bodyA, "chestOpen") || isUD(bodyA, "chestClosed"))) {
             bodyB.setActive(false);
         }
         else if (isUD(bodyA, "projectile") && isUD(bodyB, "openDoor")) {

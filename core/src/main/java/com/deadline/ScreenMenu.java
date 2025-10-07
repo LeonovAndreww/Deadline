@@ -33,15 +33,17 @@ public class ScreenMenu implements Screen {
     UiInput uiInput;
 
     Texture imgBg;
-    Texture imgBtnShutdownAtlas;
+    Texture imgBtnShutdownAtlas, imgBtnInternetAtlas, imgBtnComputerAtlas;
     Texture imgNote;
     TextureRegion[] imgBtnShutdown = new TextureRegion[2];
+    TextureRegion[] imgBtnInternet = new TextureRegion[2];
+    TextureRegion[] imgBtnComputer = new TextureRegion[2];
 
-    Sound sndClick;
+    Sound sndClick, sndError;
     Sound sndShutdown;
     Sound sndStartup;
 
-    RectangleButton btnShutdown;
+    RectangleButton btnShutdown, btnInternet, btnComputer;
 
     String dialogue = "<-- It's time to turn off the computer and go home!";
 
@@ -56,16 +58,25 @@ public class ScreenMenu implements Screen {
         glyphLayout = new GlyphLayout();
 
         imgBg = new Texture("textures/menu.png");
-        imgBtnShutdownAtlas = new Texture("textures/buttonShutdownAtlas.png");
         imgNote = new Texture("textures/note.png");
+        imgBtnShutdownAtlas = new Texture("textures/buttonShutdownAtlas.png");
+        imgBtnInternetAtlas = new Texture("textures/buttonInternetAtlas.png");
+        imgBtnComputerAtlas = new Texture("textures/buttonComputerAtlas.png");
 
         for (int i = 0; i < imgBtnShutdown.length; i++) {
             imgBtnShutdown[i] = new TextureRegion(imgBtnShutdownAtlas, 0, i*16, 16, 16);
+        }
+        for (int i = 0; i < imgBtnInternet.length; i++) {
+            imgBtnInternet[i] = new TextureRegion(imgBtnInternetAtlas, 0, i*16, 16, 16);
+        }
+        for (int i = 0; i < imgBtnComputer.length; i++) {
+            imgBtnComputer[i] = new TextureRegion(imgBtnComputerAtlas, 0, i*16, 16, 16);
         }
 
         sndClick = Gdx.audio.newSound(Gdx.files.internal("sounds/click.ogg"));
         sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.ogg"));
         sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.ogg"));
+        sndError = Gdx.audio.newSound(Gdx.files.internal("sounds/error.ogg"));
 
         btnShutdown = new RectangleButton(5, 10, 16, 16, imgBtnShutdown, false, () -> sndClick.play(), () -> {
             sndShutdown.play();
@@ -79,6 +90,16 @@ public class ScreenMenu implements Screen {
             }, 1f);
         });
         buttons.add(btnShutdown);
+
+        btnInternet = new RectangleButton(5, 95, 16, 16, imgBtnInternet, false, () -> sndClick.play(), () -> {
+            sndError.play();
+        });
+        buttons.add(btnInternet);
+
+        btnComputer = new RectangleButton(5, 116, 16, 16, imgBtnComputer, false, () -> sndClick.play(), () -> {
+            sndError.play();
+        });
+        buttons.add(btnComputer);
 
         uiInput = new UiInput(camera, buttons);
     }
@@ -99,8 +120,7 @@ public class ScreenMenu implements Screen {
 
         batch.draw(imgBg, -45, 0);
         for (Button button: buttons) button.draw(batch);
-        batch.draw(imgNote, 150, 45);
-        font.draw(batch, dialogue, 22, 22);
+        batch.draw(imgNote, 75, 45);
 
         batch.end();
     }
@@ -129,8 +149,11 @@ public class ScreenMenu implements Screen {
     public void dispose() {
         imgBg.dispose();
         imgBtnShutdownAtlas.dispose();
+        imgBtnInternetAtlas.dispose();
+        imgBtnComputerAtlas.dispose();
         imgNote.dispose();
         sndClick.dispose();
+        sndError.dispose();
         sndShutdown.dispose();
         sndStartup.dispose();
     }
