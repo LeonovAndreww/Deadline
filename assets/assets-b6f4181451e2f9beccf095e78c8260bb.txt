@@ -24,12 +24,13 @@ sounds/step.ogg
 textures/animatedObstacleAtlas.png
 textures/blankAtlas.png
 textures/buttonCloseAtlas.png
+textures/buttonComputerAtlas.png
+textures/buttonInternetAtlas.png
 textures/buttonLongAtlas.png
 textures/buttonMenuAtlas.png
 textures/buttonShutdownAtlas.png
 textures/buttonSquareAtlas.png
 textures/chestAtlas.png
-textures/cutter.png
 textures/cutterAtlas.png
 textures/damageUp.png
 textures/elevator.png
@@ -62,7 +63,6 @@ textures/room6.png
 textures/room7.png
 textures/room8.png
 textures/rouble.png
-textures/shutdown.png
 textures/speedUp.png
 textures/staticObstacleAtlas.png
 textures/street.jpeg

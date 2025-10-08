@@ -1,5 +1,5 @@
 d:assets:assets:0:application/unknown:1
-t:assets.txt:assets-273acdfe823ce76a895bda5620bd7365.txt:1778:text/plain:1
+t:assets.txt:assets-b6f4181451e2f9beccf095e78c8260bb.txt:1802:text/plain:1
 d:fonts:fonts:0:application/unknown:1
 t:fonts/font.fnt:fonts/font-e320eb9e5af84af01dd2f44455bf65fb.fnt:28893:application/unknown:1
 i:fonts/font.png:fonts/font-c5c1b8cce91532a8fce04faa841ec212.png:12720:image/png:1
@@ -30,12 +30,13 @@ d:textures:textures:0:application/unknown:1
 i:textures/animatedObstacleAtlas.png:textures/animatedObstacleAtlas-bfac810f2eb84e9c05cedd16877cef30.png:4611:image/png:1
 i:textures/blankAtlas.png:textures/blankAtlas-079e5bfc25bd27bdb420fb396d497ecc.png:1589:image/png:1
 i:textures/buttonCloseAtlas.png:textures/buttonCloseAtlas-cb6b16e322c4075af7af39360c369f4b.png:428:image/png:1
+i:textures/buttonComputerAtlas.png:textures/buttonComputerAtlas-4701f9cda83b9750c55b6c5b2cc9f792.png:1435:image/png:1
+i:textures/buttonInternetAtlas.png:textures/buttonInternetAtlas-4b404522ab00b9866da5eac697621298.png:1644:image/png:1
 i:textures/buttonLongAtlas.png:textures/buttonLongAtlas-fbd4d8be7d84fbed049c6b9758e1f241.png:671:image/png:1
 i:textures/buttonMenuAtlas.png:textures/buttonMenuAtlas-349f685fe0b257edcf85ad207cb023e3.png:335:image/png:1
 i:textures/buttonShutdownAtlas.png:textures/buttonShutdownAtlas-fb4537869fc316a6e4b4cee3405978dd.png:1049:image/png:1
 i:textures/buttonSquareAtlas.png:textures/buttonSquareAtlas-ffaf71b27b9ef08bbae4b197483277e0.png:639:image/png:1
 i:textures/chestAtlas.png:textures/chestAtlas-3552d679fd28fa1fb80d846b3a70f5ce.png:920:image/png:1
-i:textures/cutter.png:textures/cutter-2d4d8135c1c6e889008e65d29e24f9fc.png:3054:image/png:1
 i:textures/cutterAtlas.png:textures/cutterAtlas-0fb0144f360b992d55d8a319953b92b7.png:3571:image/png:1
 i:textures/damageUp.png:textures/damageUp-362ed9b9230b77f8bfbeba7137ba089b.png:252:image/png:1
 i:textures/elevator.png:textures/elevator-1cb341e49a2adf3000537cbea372653f.png:4372:image/png:1
@@ -54,7 +55,7 @@ i:textures/menu.png:textures/menu-41ba54e6e174c9a34a2eb66140e96949.png:48691:ima
 i:textures/menuButton.png:textures/menuButton-8d712b6a54872571795916fa1e8cb95e.png:1619:image/png:1
 i:textures/minimapBackground.png:textures/minimapBackground-f2645c45e508924754df6b540ea56eb7.png:1851:image/png:1
 i:textures/minimapRoomAtlas.png:textures/minimapRoomAtlas-d1ff2594736c2aa80e4841090b25bc4f.png:2710:image/png:1
-i:textures/note.png:textures/note-f5a900caee1d9c6a8b557b62524d065d.png:6058:image/png:1
+i:textures/note.png:textures/note-16651c2c11cf3d950bfa53f235557d21.png:15513:image/png:1
 i:textures/paperWad.png:textures/paperWad-490f85b73ec2055740e99904942f20d1.png:1777:image/png:1
 i:textures/playerAtlas.png:textures/playerAtlas-4bef687176fb809df2ac387b814b7f3e.png:9901:image/png:1
 i:textures/poisonBall.png:textures/poisonBall-0bb58d485f8596b54029fcfd7186e49b.png:1670:image/png:1
@@ -68,7 +69,6 @@ i:textures/room6.png:textures/room6-a3db37c9a56115eb418b4cacc2d19014.png:8434:im
 i:textures/room7.png:textures/room7-bb713e93c682a11b9c2b092d2414abbb.png:9762:image/png:1
 i:textures/room8.png:textures/room8-f70576c5820fff52d60d2e30d71ecb44.png:13260:image/png:1
 i:textures/rouble.png:textures/rouble-0108abe93155babdeb96591fb6be7c04.png:1726:image/png:1
-i:textures/shutdown.png:textures/shutdown-9abb16cf224518b873d1d3aeb64388e3.png:2116:image/png:1
 i:textures/speedUp.png:textures/speedUp-0de2532f9364f16a87d07defa0296561.png:218:image/png:1
 i:textures/staticObstacleAtlas.png:textures/staticObstacleAtlas-0c71e515b384779110420a9b3d4d5c06.png:5805:image/png:1
 i:textures/street.jpeg:textures/street-d4f21e0155198039566ad1408287cb03.jpeg:692063:image/jpeg:1
