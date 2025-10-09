@@ -13,6 +13,7 @@
         private long timeLastAttack, timeLastPhase;
         private int phase, nPhases;
         private int room;
+        private float speedOffset;
 //        private final Sound sndAttack;
         Random random = new Random();
 
@@ -25,6 +26,7 @@
             isBattle = false;
             this.phase = random.nextInt(4);
             getBody().setUserData("zombie");
+            speedOffset = random.nextInt(5);
 
 //            sndAttack = Gdx.audio.newSound(Gdx.files.internal("zombieAttack.ogg"));
         }
@@ -55,7 +57,7 @@
 
         public void attack(Vector2 playerPos) {
             if (isBattle) {
-                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(5)));
+                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+ speedOffset));
 //                    sndAttack.play(); // if touched, not if attacked
                 }
             }

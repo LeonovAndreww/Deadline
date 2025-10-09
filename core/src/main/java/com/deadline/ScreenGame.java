@@ -28,6 +28,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.deadline.buttons.Button;
@@ -49,12 +50,15 @@ public class ScreenGame implements Screen {
 
     SpriteBatch batch;
     OrthographicCamera camera;
+    OrthographicCamera cameraUi;
     Vector3 touch;
 
+    static final float STEP_TIME = 1f/120f;
+    float accumulator = 0;
     World world;
     //    Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
     Vector2 position = new Vector2(0, 0);
-    private final ArrayList<Body> bodiesToDestroy = new ArrayList<>();
+    private final ObjectSet<Body> bodiesToDestroy = new ObjectSet<>();
 
     RayHandler rayHandler;
     PointLight playerLight;
@@ -162,6 +166,8 @@ public class ScreenGame implements Screen {
     boolean isPlayerDeathSoundOn;
     boolean tempBattleMode;
 
+    boolean isPaused;
+
     long deathTime = 0;
     long elevatorUseTime = 0;
     long vendingCloseTime = 0;
@@ -195,6 +201,7 @@ public class ScreenGame implements Screen {
 
         isPlayerDeathSoundOn = false;
         tempBattleMode = false;
+        isPaused = false;
         isMusicOn = false;
 
         world = new World(new Vector2(0, 0), true);
@@ -202,6 +209,10 @@ public class ScreenGame implements Screen {
         world.setContactListener(contactListener);
         rayHandler = new RayHandler(world);
         rayHandler.setAmbientLight(ambientLight - 0.025f * level);
+
+        cameraUi = new OrthographicCamera(SCR_WIDTH, SCR_HEIGHT);
+        cameraUi.position.set(SCR_WIDTH / 2f, SCR_HEIGHT / 2f, 0);
+        cameraUi.update();
 
         glyphLayout = new GlyphLayout();
 
@@ -356,8 +367,8 @@ public class ScreenGame implements Screen {
 
         btnAttack = new MyButton(SCR_WIDTH / 3, SCR_HEIGHT / 3, SCR_WIDTH / 20);
 
-        paperWad = new Weapon(imgPaperWad, "Paper wad", 60, 450, 950, 1);
-        cutter = new Weapon(imgCutter[0], "Cutter", 70, 500, 650, 2);
+        paperWad = new Weapon(imgPaperWad, "Paper wad", 125f, 575, 950, 1);
+        cutter = new Weapon(imgCutter[0], "Cutter", 175f, 650, 650, 2);
         ghostOrb = new Weapon("Ghost orb", 1250, 2500, 1);
 
         player = new Player(world, 14, 18, 75, 75, 6, 6, 350, paperWad, game.screenGame);
@@ -385,7 +396,7 @@ public class ScreenGame implements Screen {
         vending = new Vending(world, 32, 24, rooms.get(0).getX() + rooms.get(0).getWidth() - 35, rooms.get(0).getY() + rooms.get(0).getHeight() - 35);
         vendingPointLight = new PointLight(rayHandler, 512, new Color(0.1f, 0.5f, 0.85f, 0.695f), 95, vending.getX() + vending.getWidth() / 3, vending.getY() + 20);
         vendingPointLight.setSoftnessLength(50);
-        uiInput = new UiInput(camera, hudButtons);
+        uiInput = new UiInput(cameraUi, hudButtons);
     }
 
     @Override
@@ -399,13 +410,16 @@ public class ScreenGame implements Screen {
 
     @Override
     public void render(float delta) {
-        if (Gdx.app.getType() != Application.ApplicationType.WebGL) {
-            if (Gdx.graphics.getDisplayMode().refreshRate <= 60) {
-                world.step(delta, 6, 2);
+        accumulator += Math.min(delta, 0.25f);
+
+        while (accumulator >= STEP_TIME) {
+            accumulator -= STEP_TIME;
+            if (!isPaused) {
+                world.step(STEP_TIME, 6, 2);
+                updateGameLogic();
             }
         }
-
-        updateGameLogic();
+        destroyScheduledBodies();
         renderGame();
     }
 
@@ -466,7 +480,7 @@ public class ScreenGame implements Screen {
         sndElevatorUse.dispose();
         sndPlayerDeath.dispose();
         imgMinimapBackground.dispose();
-        imgMinimapRoomAtlas.dispose();
+        imgMinimapRoomAtlas.dispose(); // CHECK AM I DISPOSING ALL OF THE TEXTURES?
         for (int i = 0; i < ghosts.size(); i++) {
             ghosts.get(i).dispose();
         }
@@ -496,15 +510,15 @@ public class ScreenGame implements Screen {
         for (int i = 0; i < 3; i++) {
             if (Gdx.input.isTouched(i)) {
                 touches.get(i).set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
-                camera.unproject(touches.get(i));
+                cameraUi.unproject(touches.get(i));
 
-                if (touches.get(i).x < player.getX()) {
+                if (touches.get(i).x < SCR_WIDTH / 2) {
                     actJoystick = true;
                     joystick.updateKnob(touches.get(i));
                     if (player.isShopping()) {
                         player.setShopping(false);
                     }
-                } else if (touches.get(i).x > player.getX()) {
+                } else if (touches.get(i).x > SCR_WIDTH / 2) {
                     if (btnAttack.hit(touches.get(i).x, touches.get(i).y)) {
                         actAttack = true;
                     }
@@ -556,6 +570,7 @@ public class ScreenGame implements Screen {
                 actMenu = !actMenu;
                 uiInput.setButtons(hudButtons);
                 if (actMenu) uiInput.setButtons(menuButtons);
+                isPaused = !isPaused;
             }
         }
 
@@ -970,21 +985,21 @@ public class ScreenGame implements Screen {
         float mapX, mapY;
         //        float shiftX, shiftY;
         //        shiftX = shiftY = 0;
-        mapX = position.x + SCR_WIDTH / 2 - mapSize - 8;
-        mapY = position.y + SCR_HEIGHT / 2 - mapSize - (imgButtonMenu[0].getRegionHeight() + 8);
+        mapX = SCR_WIDTH - mapSize - 8;
+        mapY = SCR_HEIGHT - mapSize - (imgButtonMenu[0].getRegionHeight() + 8);
 
         if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
         if (player.getHealth() < 0) player.setHealth(0);
 
-        batch.draw(imgHealth[player.getHealth()], position.x - SCR_WIDTH / 2 + 2, position.y + SCR_HEIGHT / 2.5f - 4);
+        batch.draw(imgHealth[player.getHealth()], 2, SCR_HEIGHT / 2f + SCR_HEIGHT / 2.5f - 4);
         if (wallet == 0)
-            batch.draw(imgWallet[0], position.x - SCR_WIDTH / 2 + 2, position.y + SCR_HEIGHT / 2.5f - 22);
+            batch.draw(imgWallet[0], 2, SCR_HEIGHT / 2f + SCR_HEIGHT / 2.5f - 22);
         else if (wallet < 5)
-            batch.draw(imgWallet[1], position.x - SCR_WIDTH / 2 + 2, position.y + SCR_HEIGHT / 2.5f - 22);
+            batch.draw(imgWallet[1], 2, SCR_HEIGHT / 2f + SCR_HEIGHT / 2.5f - 22);
         else if (wallet < 10)
-            batch.draw(imgWallet[2], position.x - SCR_WIDTH / 2 + 2, position.y + SCR_HEIGHT / 2.5f - 22);
+            batch.draw(imgWallet[2], 2, SCR_HEIGHT / 2f + SCR_HEIGHT / 2.5f - 22);
         else
-            batch.draw(imgWallet[3], position.x - SCR_WIDTH / 2 + 2, position.y + SCR_HEIGHT / 2.5f - 22);
+            batch.draw(imgWallet[3], 2, SCR_HEIGHT / 2f + SCR_HEIGHT / 2.5f - 22);
 
         //        batch.draw(imgMinimapBackground, mapX, mapY, mapSize, mapSize);
         for (int i = 0; i < rooms.size(); i++) {
@@ -993,7 +1008,7 @@ public class ScreenGame implements Screen {
             float roomX = mapX + mapSize / 2;
             float roomY = mapY + mapSize / 2;
 
-            roomX += ((int) room.getX() / room.getWidth()) * roomSize - roomSize / 2f;
+            roomX += ((int) room.getX() / room.getWidth()) * roomSize - roomSize / 2f; // REWORK MAP DRAW
             roomY += ((int) room.getY() / room.getHeight()) * roomSize - roomSize / 2f;
 
             //            if (roomX<0) shiftX+=roomSize/2f;
@@ -1014,7 +1029,7 @@ public class ScreenGame implements Screen {
         }
         btnMenu.draw(batch);
 
-        joystick.render(batch, imgJstBase, imgJstKnob, position.x - SCR_WIDTH / 2.75f, position.y - SCR_HEIGHT / 4);
+        joystick.render(batch, imgJstBase, imgJstKnob, SCR_WIDTH / 2 - SCR_WIDTH / 2.75f, SCR_HEIGHT / 2 - SCR_HEIGHT / 4);
         batch.draw(imgJstBase, btnAttack.x, btnAttack.y, btnAttack.width, btnAttack.height);
         if (player.getWeapon().getTexture() == null) {
             batch.draw(imgCutter[0], btnAttack.x + player.getWeapon().getTextureRegion().getRegionWidth() / 2.5f, btnAttack.y + player.getWeapon().getTextureRegion().getRegionHeight() / 2.5f, btnAttack.width / 2, btnAttack.height / 2);
@@ -1025,7 +1040,7 @@ public class ScreenGame implements Screen {
 
     private void batchVendingUi() {
         if (actVending) {
-            batch.draw(imgBlank[1], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+            batch.draw(imgBlank[1], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             batch.draw(imgVendingUi, vendingX, vendingY, vendingWidth, vendingHeight);
 
             btnVendingClose.draw(batch);
@@ -1050,18 +1065,18 @@ public class ScreenGame implements Screen {
     private void batchElevatorBlank() {
         if (elevatorUseTime != 0) {
             if (elevatorUseTime < TimeUtils.millis() - 2500) {
-                batch.draw(imgBlank[2], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+                batch.draw(imgBlank[2], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             } else if (elevatorUseTime < TimeUtils.millis() - 1250) {
-                batch.draw(imgBlank[1], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+                batch.draw(imgBlank[1], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             } else if (elevatorUseTime < TimeUtils.millis() - 500) {
-                batch.draw(imgBlank[0], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+                batch.draw(imgBlank[0], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             }
         }
     }
 
     private void batchGameMenu() {
         if (actMenu) {
-            batch.draw(imgBlank[1], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+            batch.draw(imgBlank[1], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             batch.draw(imgGameMenu, menuX, menuY, menuWidth, menuHeight);
             btnMenu.draw(batch);
             btnMenuClose.draw(batch);
@@ -1073,12 +1088,11 @@ public class ScreenGame implements Screen {
 
     private void batchDeathScreen() {
         if (player.getHealth() > 0 && !actMenu) {
-            world.step(1 / 60f, 6, 2);
         } else if (player.getHealth() <= 0) {
-            batch.draw(imgBlank[1], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+            batch.draw(imgBlank[1], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             musBackground[musicNumber].stop();
             glyphLayout.setText(fontUi, "I'm not ready to die yet");
-            fontUi.draw(batch, "I'm not ready to die yet", position.x - glyphLayout.width / 2, position.y);
+            fontUi.draw(batch, "I'm not ready to die yet", SCR_WIDTH / 2 - glyphLayout.width / 2, SCR_HEIGHT / 2 - glyphLayout.height / 2);
             if (deathTime == 0) {
                 deathTime = TimeUtils.millis();
             } else if (deathTime + 1000 < TimeUtils.millis() && !isPlayerDeathSoundOn) {
@@ -1087,6 +1101,7 @@ public class ScreenGame implements Screen {
             } else if (deathTime + 4000 < TimeUtils.millis()) {
                 resetProgress();
                 musBackground[musicNumber].stop();
+                isPaused = false;
                 game.setScreen(game.screenMenu);
             }
         }
@@ -1335,6 +1350,7 @@ public class ScreenGame implements Screen {
                 resetWorld();
                 level++;
                 if (level == imgRoom.length) {
+                    isPaused = false;
                     game.setScreen(game.screenEnding);
                 }
             }
@@ -1608,6 +1624,7 @@ public class ScreenGame implements Screen {
                 actMenu = !actMenu;
                 uiInput.setButtons(hudButtons);
                 if (actMenu) uiInput.setButtons(menuButtons);
+                isPaused = !isPaused;
             });
         hudButtons.add(btnMenu);
         menuButtons.add(btnMenu);
@@ -1617,6 +1634,7 @@ public class ScreenGame implements Screen {
         }, () -> {
             actMenu = false;
             uiInput.setButtons(hudButtons);
+            isPaused = !isPaused;
         });
         menuButtons.add(btnMenuClose);
 
@@ -1626,6 +1644,7 @@ public class ScreenGame implements Screen {
             actMenu = false;
             uiInput.setButtons(hudButtons);
             musBackground[musicNumber].stop();
+            isPaused = false;
             game.setScreen(game.screenMenu);
         });
         menuButtons.add(btnMenuDesktop);
@@ -1642,6 +1661,7 @@ public class ScreenGame implements Screen {
         }, () -> {
             actMenu = false;
             uiInput.setButtons(hudButtons);
+            isPaused = !isPaused;
         });
         menuButtons.add(btnMenuResume);
 
@@ -1701,11 +1721,11 @@ public class ScreenGame implements Screen {
     }
 
     private void updateButtons() {
-        btnAttack.update(position.x + SCR_WIDTH / 3, position.y - SCR_HEIGHT / 3);
+        btnAttack.update(SCR_WIDTH / 2 + SCR_WIDTH / 3, SCR_HEIGHT / 2 - SCR_HEIGHT / 3);
 
-        //batch.draw(imgBlank[1], position.x - SCR_WIDTH, position.y - SCR_HEIGHT, Gdx.graphics.getWidth() * 2, Gdx.graphics.getHeight() * 2);
+        //batch.draw(imgBlank[1], 0,  0, SCR_WIDTH, SCR_HEIGHT);
 
-        btnMenu.update(position.x + SCR_WIDTH / 2 - 16f, position.y + SCR_HEIGHT / 2 - 16f);
+        btnMenu.update(SCR_WIDTH - 16f, SCR_HEIGHT - 16f);
         btnMenuClose.update(menuX + menuWidth - 12, menuY + menuHeight - 12.75f);
         btnMenuDesktop.update(menuX + (menuWidth - menuButtonWidth) / 2f, menuY + menuButtonHeight - menuButtonHeight / 2);
         btnMenuSettings.update(menuX + (menuWidth - menuButtonWidth) / 2f, menuY + menuButtonHeight * 2);
@@ -1717,6 +1737,13 @@ public class ScreenGame implements Screen {
         btnVendingBuySpeedUp.update(vendingX + 85, vendingY + 17.5f);
     }
 
+    private void updateUi() {
+        menuX = SCR_WIDTH / 4;
+        menuY = SCR_HEIGHT / 2 - SCR_HEIGHT / 3;
+
+        vendingX = SCR_WIDTH / 4;
+        vendingY = SCR_HEIGHT / 4;
+    }
     public void scheduleBodyDestroy(Body body) {
         if (!bodiesToDestroy.contains(body)) bodiesToDestroy.add(body);
     }
@@ -1729,11 +1756,6 @@ public class ScreenGame implements Screen {
     }
 
     private void updateGameLogic() {
-        if (!actMenu && !actVending)
-            position.lerp(new Vector2(player.getX(), player.getY()), 0.1f); // 0.1f - camera smoothing coefficient
-        camera.position.set(position, 0);
-        camera.update();
-
         up = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP);
         down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
         left = Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT);
@@ -1741,12 +1763,6 @@ public class ScreenGame implements Screen {
 
         attack = Gdx.input.isKeyPressed(Input.Keys.SPACE) || Gdx.input.isKeyPressed(Input.Keys.ENTER);
         menu = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.BACK);
-
-        menuX = position.x - SCR_WIDTH / 4;
-        menuY = position.y - SCR_HEIGHT / 3;
-
-        vendingX = position.x - SCR_WIDTH / 4;
-        vendingY = position.y - SCR_HEIGHT / 4;
 
         // touch handler
 
@@ -1773,7 +1789,6 @@ public class ScreenGame implements Screen {
             updateChests();
             updateLevel();
             updateVending();
-            updateButtons();
         }
     }
 
@@ -1783,9 +1798,13 @@ public class ScreenGame implements Screen {
         //        debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
         rayHandler.setCombinedMatrix(camera.combined, camera.position.x, camera.position.y, camera.viewportWidth, camera.viewportHeight);
+        if (!actMenu && !actVending)
+            position.lerp(new Vector2(player.getX(), player.getY()), 0.1f); // 0.1f - camera smoothing coefficient
+        camera.position.set(position, 0);
         camera.update();
 
         batch.begin();
+
 
         batchWall();
         batchProjectile();
@@ -1801,11 +1820,24 @@ public class ScreenGame implements Screen {
         batchGhosts();
         batchWardens();
         batchDoorPost();
+
+        batch.end();
+
+
+
+        batch.setProjectionMatrix(cameraUi.combined);
+
+        batch.begin();
+
+        updateButtons();
+        updateUi();
         batchHud();
         batchVendingUi();
         batchElevatorBlank();
         batchGameMenu();
         batchDeathScreen();
+
+        batch.end();
 
         // Debug on-screen messages:
         //        fontUi.draw(batch, "Floor:" + (imgRoom.length-level), position.x - SCR_WIDTH / 2, position.y + SCR_HEIGHT / 2);
@@ -1824,10 +1856,7 @@ public class ScreenGame implements Screen {
         //                    " SystemDelta=" + Gdx.graphics.getDeltaTime());
         //            }
 
-        batch.end();
-
         playerLight.attachToBody(player.getBody());
         rayHandler.updateAndRender();
-        destroyScheduledBodies();
     }
 }

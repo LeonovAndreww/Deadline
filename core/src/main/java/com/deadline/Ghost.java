@@ -18,8 +18,9 @@
         private int phase, nPhases;
         private int room;
         private final Sound sndAttack;
+        private float attackOffset;
+        private float speedOffset;
         Random random = new Random();
-
         public Ghost(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon) {
             super(world, width, height, x, y, maxHealth, nPhases, timePhaseInterval);
             this.world = world;
@@ -30,6 +31,8 @@
             this.phase = random.nextInt(4);
             getBody().setLinearDamping(0.75f);
             getBody().setUserData("ghost");
+            attackOffset = 1000 + random.nextInt(500);
+            speedOffset = random.nextInt(25);
 
             sndAttack = Gdx.audio.newSound(Gdx.files.internal("sounds/ghostAttack.ogg"));
         }
@@ -47,20 +50,17 @@
 
 
         public void update() {
-            if (isAlive()) {
-//                if (getBody().getUserData()=="hit") {
-//                    hit(damage);
-//                    getBody().setUserData("ghost");
-//                }
-            }
+            // I should make it the same way as in the Zombie.java
         }
 
         public void attack(Vector2 playerPos) {
             if (isBattle) {
-                if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
-                    getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(55+random.nextInt(35)));
+                if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime() + attackOffset) {
+                    getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(75f + speedOffset));
                     sndAttack.play(0.75f * soundVolume);
                     timeLastAttack = TimeUtils.millis();
+                    attackOffset = random.nextInt(450);
+                    speedOffset = random.nextInt(55);
                 }
             }
         }

@@ -16,7 +16,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Timer;
 import com.deadline.buttons.Button;
-import com.deadline.buttons.RectangleButton;
+import com.deadline.buttons.RectangleTextButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ScreenMenu implements Screen {
     Sound sndShutdown;
     Sound sndStartup;
 
-    RectangleButton btnShutdown, btnInternet, btnComputer;
+    RectangleTextButton btnShutdown, btnInternet, btnComputer;
 
     String dialogue = "<-- It's time to turn off the computer and go home!";
 
@@ -78,7 +78,7 @@ public class ScreenMenu implements Screen {
         sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.ogg"));
         sndError = Gdx.audio.newSound(Gdx.files.internal("sounds/error.ogg"));
 
-        btnShutdown = new RectangleButton(5, 10, 16, 16, imgBtnShutdown, false, () -> sndClick.play(), () -> {
+        btnShutdown = new RectangleTextButton(10, 10, "Shutdown", font, 16, 16, imgBtnShutdown, false, () -> sndClick.play(), () -> {
             sndShutdown.play();
             btnShutdown.setClickable(false);
 
@@ -91,12 +91,12 @@ public class ScreenMenu implements Screen {
         });
         buttons.add(btnShutdown);
 
-        btnInternet = new RectangleButton(5, 95, 16, 16, imgBtnInternet, false, () -> sndClick.play(), () -> {
+        btnInternet = new RectangleTextButton(10, 95, "Internet Discover", font, 16, 16, imgBtnInternet, false, () -> sndClick.play(), () -> {
             sndError.play();
         });
         buttons.add(btnInternet);
 
-        btnComputer = new RectangleButton(5, 116, 16, 16, imgBtnComputer, false, () -> sndClick.play(), () -> {
+        btnComputer = new RectangleTextButton(10, 116, "My computer", font, 16, 16, imgBtnComputer, false, () -> sndClick.play(), () -> {
             sndError.play();
         });
         buttons.add(btnComputer);

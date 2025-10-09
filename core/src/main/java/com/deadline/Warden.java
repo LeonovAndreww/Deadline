@@ -21,6 +21,7 @@ public class Warden extends Entity {
     private int room;
     private Sound sndPaperSwing, sndPaperBump;
     private ArrayList<Projectile> projectiles = new ArrayList<>();
+    private float attackOffset; // I guess I should make parent class Enemy.java and make it abstract
     Random random = new Random();
 
     public Warden(World world, float width, float height, float x, float y, int maxHealth, int nPhases, long timePhaseInterval, Weapon weapon, ScreenGame screen) {
@@ -33,6 +34,7 @@ public class Warden extends Entity {
         isBattle = false;
         this.phase = random.nextInt(4);
         getBody().setUserData("warden");
+        attackOffset = 1000 + random.nextInt(500);
 
         sndPaperSwing = Gdx.audio.newSound(Gdx.files.internal("sounds/paperSwing.ogg"));
         sndPaperBump =  Gdx.audio.newSound(Gdx.files.internal("sounds/paperBump.ogg"));
@@ -64,7 +66,7 @@ public class Warden extends Entity {
 
     public void attack(Vector2 playerPos) {
         if (isBattle) {
-            if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime()+random.nextInt(2550)) {
+            if (TimeUtils.millis() - timeLastAttack > weapon.getReloadTime() + attackOffset) {
                 Character[] directions = {'u', 'd', 'l', 'r'};
                 for (int i = 0; i < 4; i++) {
                     Projectile projectile = new Projectile(world, getX() - getWidth() / 4, getY(), 1.5f, weapon.getSpeed() + getSpeed(), directions[i], TimeUtils.millis(), weapon.getDamage());
@@ -79,8 +81,9 @@ public class Warden extends Entity {
                 float randomYOffset = random.nextInt(30) - 15;
                 getBody().setLinearVelocity(directionToPlayer.scl(randomSpeed).add(randomXOffset, randomYOffset));
 //                getBody().setLinearVelocity(playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)).x+random.nextInt(30)-15, playerPos.sub(getPosition()).nor().scl(15+random.nextInt(35)).y+random.nextInt(30)-15);
-                timeLastAttack = TimeUtils.millis();
                 sndPaperSwing.play(0.3f*soundVolume);
+                timeLastAttack = TimeUtils.millis();
+                attackOffset = random.nextInt(450);
             }
         }
     }
