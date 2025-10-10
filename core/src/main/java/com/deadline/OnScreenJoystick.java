@@ -21,7 +21,7 @@ public class OnScreenJoystick {
     public void render(SpriteBatch batch, Texture base, Texture knob, float x, float y) {
         position.x = x;
         position.y = y;
-        batch.draw(base, position.x - baseRadius, position.y - baseRadius, baseRadius * 2, baseRadius * 2);
+        batch.draw(base, position.x - baseRadius - 2.5f, position.y - baseRadius - 2.5f, baseRadius * 2 + 5, baseRadius * 2 + 5);
         batch.draw(knob, knobPos.x - knobRadius, knobPos.y - knobRadius, knobRadius * 2, knobRadius * 2);
     }
 

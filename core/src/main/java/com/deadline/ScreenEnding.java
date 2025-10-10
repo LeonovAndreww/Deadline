@@ -86,7 +86,7 @@ public class ScreenEnding implements Screen {
                 "\n-Моему младшему брату" +
                 "\n   за тестирование игры и мотивацию" +
                 "\n" +
-                "\nМарку (@mrkkleem)" +
+                "\nМарку (@Bubadubi)" +
                 "\n   за музыкальное сопровождение" +
                 "\n" +
                 "\nЖдите обновлений!!", SCR_WIDTH*0.1f, SCR_HEIGHT*0.9f);

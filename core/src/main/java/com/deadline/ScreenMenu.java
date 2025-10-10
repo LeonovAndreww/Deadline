@@ -7,6 +7,7 @@ import static com.deadline.DdlnGame.glyphLayout;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -27,7 +28,7 @@ public class ScreenMenu implements Screen {
     SpriteBatch batch;
     OrthographicCamera camera;
     Vector3 touch;
-    BitmapFont font, fontUi;
+    BitmapFont fontIcon;
 
     List<Button> buttons = new ArrayList<>();
     UiInput uiInput;
@@ -42,18 +43,16 @@ public class ScreenMenu implements Screen {
     Sound sndClick, sndError;
     Sound sndShutdown;
     Sound sndStartup;
+    Music musNoise;
 
     RectangleTextButton btnShutdown, btnInternet, btnComputer;
-
-    String dialogue = "<-- It's time to turn off the computer and go home!";
 
     public ScreenMenu(DdlnGame game){
         this.game = game;
         batch = game.batch;
         camera = game.camera;
         touch = game.touch;
-        font = game.font;
-        fontUi = game.fontUi;
+        fontIcon = game.fontIcon;
 
         glyphLayout = new GlyphLayout();
 
@@ -77,26 +76,30 @@ public class ScreenMenu implements Screen {
         sndShutdown = Gdx.audio.newSound(Gdx.files.internal("sounds/shutdown.ogg"));
         sndStartup = Gdx.audio.newSound(Gdx.files.internal("sounds/startup.ogg"));
         sndError = Gdx.audio.newSound(Gdx.files.internal("sounds/error.ogg"));
+        musNoise = Gdx.audio.newMusic(Gdx.files.internal("sounds/noise.ogg"));
 
-        btnShutdown = new RectangleTextButton(10, 10, "Shutdown", font, 16, 16, imgBtnShutdown, false, () -> sndClick.play(), () -> {
+        musNoise.setLooping(true);
+
+        btnShutdown = new RectangleTextButton(10, 10, "Shutdown", fontIcon, 16, 16, imgBtnShutdown, false, () -> sndClick.play(), () -> {
             sndShutdown.play();
             btnShutdown.setClickable(false);
 
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
+                    musNoise.stop();
                     game.setScreen(game.screenGame);
                 }
             }, 1f);
         });
         buttons.add(btnShutdown);
 
-        btnInternet = new RectangleTextButton(10, 95, "Internet Discover", font, 16, 16, imgBtnInternet, false, () -> sndClick.play(), () -> {
+        btnInternet = new RectangleTextButton(10, 95, "Internet Discover", fontIcon, 16, 16, imgBtnInternet, false, () -> sndClick.play(), () -> {
             sndError.play();
         });
         buttons.add(btnInternet);
 
-        btnComputer = new RectangleTextButton(10, 116, "My computer", font, 16, 16, imgBtnComputer, false, () -> sndClick.play(), () -> {
+        btnComputer = new RectangleTextButton(10, 116, "My computer", fontIcon, 16, 16, imgBtnComputer, false, () -> sndClick.play(), () -> {
             sndError.play();
         });
         buttons.add(btnComputer);
@@ -109,6 +112,7 @@ public class ScreenMenu implements Screen {
         resetMenu();
         Gdx.input.setInputProcessor(uiInput);
         sndStartup.play();
+        musNoise.play();
     }
 
 
@@ -156,6 +160,7 @@ public class ScreenMenu implements Screen {
         sndError.dispose();
         sndShutdown.dispose();
         sndStartup.dispose();
+        musNoise.dispose();
     }
 
     public void resetMenu() {

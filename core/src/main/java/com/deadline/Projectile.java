@@ -55,6 +55,7 @@ public class Projectile {
         bodyDef.gravityScale = 0; // No gravity
         body = world.createBody(bodyDef);
         body.setUserData("projectile");
+        body.isBullet();
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f; // Set the density to a non-zero value

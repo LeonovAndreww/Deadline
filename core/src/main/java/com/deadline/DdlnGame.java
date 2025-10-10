@@ -16,7 +16,7 @@ public class DdlnGame extends Game {
 	public SpriteBatch batch;
 	public OrthographicCamera camera;
 	public Vector3 touch;
-	public BitmapFont font, fontUi, fontButton;
+	public BitmapFont font, fontUi, fontButton, fontIcon;
 
 	public static GlyphLayout glyphLayout;
 
@@ -24,7 +24,7 @@ public class DdlnGame extends Game {
 	ScreenGame screenGame;
 	ScreenEnding screenEnding;
 
-	static float ambientLight = 0.375f;
+	static float ambientLight = 0.275f;
 	static int playerLightDistance = 135;
 	static float musicVolume, soundVolume;
 	static boolean isMusicOn, isSoundOn;
@@ -59,13 +59,16 @@ public class DdlnGame extends Game {
 
 	private void fontGenerate() {
 		font = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
-		fontUi = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
+        fontUi = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
         fontButton = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
+        fontIcon = new BitmapFont(Gdx.files.internal("fonts/font.fnt"));
 
-		font.setColor(0, 0, 0, 1);
+        font.setColor(0, 0, 0, 1);
 		font.getData().setScale(0.25f);
 
         fontUi.getData().setScale(0.25f);
+
+        fontIcon.getData().setScale(0.25f);
 
         fontButton.setColor(0, 0, 0, 1);
         fontButton.getData().setScale(0.25f);

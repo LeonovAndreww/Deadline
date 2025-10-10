@@ -10,7 +10,12 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import java.util.Random;
 
 public class MyContactListener implements ContactListener {
+    private final ScreenGame screen;
     Random random = new Random();
+
+    public MyContactListener(ScreenGame screen) {
+        this.screen = screen;
+    }
 
     private boolean isUD(Body b, String s) {
         if (b == null) return false;
@@ -35,17 +40,17 @@ public class MyContactListener implements ContactListener {
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        Fixture fixtureA = contact.getFixtureA();
-        Fixture fixtureB = contact.getFixtureB();
+        final Fixture fixtureA = contact.getFixtureA();
+        final Fixture fixtureB = contact.getFixtureB();
 
-        Body bodyA = fixtureA.getBody();
-        Body bodyB = fixtureB.getBody();
+        final Body bodyA = fixtureA.getBody();
+        final Body bodyB = fixtureB.getBody();
 
         if ((isUD(bodyA, "projectile") || isUD(bodyA, "projectileWarden")) && (isUD(bodyB, "wall") || isUD(bodyB, "closeDoor") || isUD(bodyB, "elevatorOn") || isUD(bodyB, "elevatorOff") || isUD(bodyB, "vending") || isUD(bodyB, "obstacle")  || isUD(bodyB, "animatedObstacle" ) || isUD(bodyB, "chestOpen") || isUD(bodyB, "chestClosed"))) {
-            bodyA.setActive(false);
+            screen.scheduleAction(() -> bodyA.setActive(false));
         }
         else if ((isUD(bodyB, "projectile") || isUD(bodyB, "projectileWarden")) && (isUD(bodyA, "wall") || isUD(bodyA, "closeDoor") || isUD(bodyA, "elevatorOn") || isUD(bodyA, "elevatorOff") || isUD(bodyA, "vending") || isUD(bodyA, "obstacle") || isUD(bodyA, "animatedObstacle") || isUD(bodyA, "chestOpen") || isUD(bodyA, "chestClosed"))) {
-            bodyB.setActive(false);
+            screen.scheduleAction(() -> bodyB.setActive(false));
         }
         else if (isUD(bodyA, "projectile") && isUD(bodyB, "openDoor")) {
             contact.setEnabled(false);
@@ -62,24 +67,24 @@ public class MyContactListener implements ContactListener {
         }
 
         else if (isUD(bodyB, "projectile") && isUD(bodyA, "ghost")) {
-            bodyA.setUserData("hit");
+            screen.scheduleAction(() -> bodyA.setUserData("hit"));
         }
         else if (isUD(bodyA, "projectile") && isUD(bodyB, "ghost")) {
-            bodyB.setUserData("hit");
+            screen.scheduleAction(() -> bodyB.setUserData("hit"));
         }
 
         else if (isUD(bodyB, "projectile") && isUD(bodyA, "zombie")) {
-            bodyA.setUserData("hit");
+            screen.scheduleAction(() -> bodyA.setUserData("hit"));
         }
         else if (isUD(bodyA, "projectile") && isUD(bodyB, "zombie")) {
-            bodyB.setUserData("hit");
+            screen.scheduleAction(() -> bodyB.setUserData("hit"));
         }
 
         else if (isUD(bodyB, "projectile") && isUD(bodyA, "warden")) {
-            bodyA.setUserData("hit");
+            screen.scheduleAction(() -> bodyA.setUserData("hit"));
         }
         else if (isUD(bodyA, "projectile") && isUD(bodyB, "warden")) {
-            bodyB.setUserData("hit");
+            screen.scheduleAction(() -> bodyB.setUserData("hit"));
         }
 
         else if (isUD(bodyB, "projectile") && isUD(bodyA, "projectile")) {
@@ -102,46 +107,46 @@ public class MyContactListener implements ContactListener {
 
         else if (isPlayer(bodyB) && isUD(bodyA, "ghost")) {
             Player p = (Player) bodyB.getUserData();
-            p.receiveDamage(1);
+            screen.scheduleAction(() -> p.receiveDamage(1));
+
         }
         else if (isPlayer(bodyA) && isUD(bodyB, "ghost")) {
             Player p = (Player) bodyA.getUserData();
-            p.receiveDamage(1);
+            screen.scheduleAction(() -> p.receiveDamage(1));
         }
 
         else if (isPlayer(bodyB) && isUD(bodyA, "zombie")) {
             Player p = (Player) bodyB.getUserData();
-            p.receiveDamage(2);
+            screen.scheduleAction(() -> p.receiveDamage(2));
         }
         else if (isPlayer(bodyA) && isUD(bodyB, "zombie")) {
             Player p = (Player) bodyA.getUserData();
-            p.receiveDamage(2);
+            screen.scheduleAction(() -> p.receiveDamage(2));
         }
 
         else if (isPlayer(bodyB) && isUD(bodyA, "projectileWarden")) {
             Player p = (Player) bodyB.getUserData();
-            p.receiveDamage(2);
+            screen.scheduleAction(() -> p.receiveDamage(2));
         }
         else if (isPlayer(bodyA) && isUD(bodyB, "projectileWarden")) {
             Player p = (Player) bodyA.getUserData();
-            p.receiveDamage(2);
+            screen.scheduleAction(() -> p.receiveDamage(2));
         }
 
         else if (isPlayer(bodyB) && isUD(bodyA, "coin")) {
-            bodyA.setUserData("got");
+            screen.scheduleAction(() -> bodyA.setUserData("got"));
         }
         else if (isPlayer(bodyA) && isUD(bodyB, "coin")) {
-            bodyB.setUserData("got");
+            screen.scheduleAction(() -> bodyB.setUserData("got"));
         }
 
-        // player touches closed chest -> mark open only if player not in battle
         else if (isPlayer(bodyA) && isUD(bodyB, "chestClosed")) {
             Player p = (Player) bodyA.getUserData();
-            if (!p.isBattle) bodyB.setUserData("chestOpen");
+            if (!p.isBattle) screen.scheduleAction(() -> bodyB.setUserData("chestOpen"));
         }
         else if (isPlayer(bodyB) && isUD(bodyA, "chestClosed")) {
             Player p = (Player) bodyB.getUserData();
-            if (!p.isBattle) bodyA.setUserData("chestOpen");
+            if (!p.isBattle) screen.scheduleAction(() -> bodyA.setUserData("chestOpen"));
         }
 
         else if (isUD(bodyB, "coin") && isUD(bodyA, "ghost")) {
@@ -173,8 +178,14 @@ public class MyContactListener implements ContactListener {
         }
 
         else if (isMobileType(bodyA) && isMobileType(bodyB)) {
-            bodyA.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
-            bodyB.setLinearVelocity(random.nextInt(40)-20, random.nextInt(40)-20);
+            final float vxA = random.nextInt(40)-20;
+            final float vyA = random.nextInt(40)-20;
+            final float vxB = random.nextInt(40)-20;
+            final float vyB = random.nextInt(40)-20;
+            screen.scheduleAction(() -> {
+                bodyA.setLinearVelocity(vxA, vyA);
+                bodyB.setLinearVelocity(vxB, vyB);
+            });
         }
 
         else if ((isUD(bodyB, "obstacle") || isUD(bodyB, "animatedObstacle") || isUD(bodyB, "chestClosed") || isUD(bodyB, "chestOpen")) && (isUD(bodyA, "ghost") || isUD(bodyA, "warden"))) {
@@ -186,20 +197,20 @@ public class MyContactListener implements ContactListener {
 
         else if (isPlayer(bodyA) && isUD(bodyB, "elevatorOn")) {
             Player p = (Player) bodyA.getUserData();
-            p.setMoved(true);
+            screen.scheduleAction(() -> p.setMoved(true));
         }
         else if (isPlayer(bodyB) && isUD(bodyA, "elevatorOn")) {
             Player p = (Player) bodyB.getUserData();
-            p.setMoved(true);
+            screen.scheduleAction(() -> p.setMoved(true));
         }
 
         else if (isPlayer(bodyA) && isUD(bodyB, "vending")) {
             Player p = (Player) bodyA.getUserData();
-            p.setShopping(true);
+            screen.scheduleAction(() -> p.setShopping(true));
         }
         else if (isPlayer(bodyB) && isUD(bodyA, "vending")) {
             Player p = (Player) bodyB.getUserData();
-            p.setShopping(true);
+            screen.scheduleAction(() -> p.setShopping(true));
         }
     }
 

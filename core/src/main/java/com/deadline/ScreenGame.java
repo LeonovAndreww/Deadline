@@ -9,7 +9,6 @@ import static com.deadline.DdlnGame.musicVolume;
 import static com.deadline.DdlnGame.playerLightDistance;
 import static com.deadline.DdlnGame.soundVolume;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -53,12 +52,13 @@ public class ScreenGame implements Screen {
     OrthographicCamera cameraUi;
     Vector3 touch;
 
-    static final float STEP_TIME = 1f/120f;
+    static final float STEP_TIME = 1f/144f;
     float accumulator = 0;
     World world;
     //    Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
     Vector2 position = new Vector2(0, 0);
     private final ObjectSet<Body> bodiesToDestroy = new ObjectSet<>();
+    private final Array<Runnable> pendingActions = new Array<>();
 
     RayHandler rayHandler;
     PointLight playerLight;
@@ -184,13 +184,13 @@ public class ScreenGame implements Screen {
 
     public ScreenGame(DdlnGame game) {
         this.game = game;
-        batch = game.batch;
-        camera = game.camera;
-        touch = game.touch;
-        font = game.font;
-        fontUi = game.fontUi;
-        fontButton = game.fontButton;
-        glyphLayout = DdlnGame.glyphLayout;
+        this.batch = game.batch;
+        this.camera = game.camera;
+        this.touch = game.touch;
+        this.font = game.font;
+        this.fontUi = game.fontUi;
+        this.fontButton = game.fontButton;
+        this.glyphLayout = DdlnGame.glyphLayout;
 
         actJoystick = false;
         actAttack = false;
@@ -205,7 +205,7 @@ public class ScreenGame implements Screen {
         isMusicOn = false;
 
         world = new World(new Vector2(0, 0), true);
-        MyContactListener contactListener = new MyContactListener();
+        MyContactListener contactListener = new MyContactListener(this);
         world.setContactListener(contactListener);
         rayHandler = new RayHandler(world);
         rayHandler.setAmbientLight(ambientLight - 0.025f * level);
@@ -377,10 +377,6 @@ public class ScreenGame implements Screen {
 
         joystick = new OnScreenJoystick(SCR_HEIGHT / 6, SCR_HEIGHT / 12);
 
-        //        musicNumber = random.nextInt(musBackground.length);
-        //        musBackground[musicNumber].setVolume(0.75f*musicVolume);
-        //        musBackground[musicNumber].play();
-
         menuWidth = SCR_WIDTH / 2;
         menuHeight = SCR_HEIGHT * 0.8f;
         menuButtonWidth = menuWidth * 0.75f;
@@ -414,12 +410,22 @@ public class ScreenGame implements Screen {
 
         while (accumulator >= STEP_TIME) {
             accumulator -= STEP_TIME;
-            if (!isPaused) {
-                world.step(STEP_TIME, 6, 2);
-                updateGameLogic();
+            if (!isPaused && deathTime == 0) world.step(STEP_TIME, 6, 2);
+            updateGameLogic();
+        }
+
+        if (!pendingActions.isEmpty()) {
+            for (int i = 0; i < pendingActions.size; i++) {
+                try {
+                    pendingActions.get(i).run();
+                } catch (Throwable t) {
+                    Gdx.app.error("logcat", "pending error", t);
+                }
             }
+            pendingActions.clear();
         }
         destroyScheduledBodies();
+
         renderGame();
     }
 
@@ -526,7 +532,7 @@ public class ScreenGame implements Screen {
             }
         }
 
-        if (elevatorUseTime != 0 || actMenu || actVending || deathTime != 0) {
+        if (elevatorUseTime != 0 || deathTime != 0) {
             actJoystick = false;
             actAttack = false;
 
@@ -536,6 +542,17 @@ public class ScreenGame implements Screen {
             right = false;
             attack = false;
             menu = false;
+        }
+
+        if (actMenu || actVending) {
+            actJoystick = false;
+            actAttack = false;
+
+            up = false;
+            down = false;
+            left = false;
+            right = false;
+            attack = false;
         }
 
         if (actJoystick) {
@@ -1087,8 +1104,7 @@ public class ScreenGame implements Screen {
     }
 
     private void batchDeathScreen() {
-        if (player.getHealth() > 0 && !actMenu) {
-        } else if (player.getHealth() <= 0) {
+        if (player.getHealth() <= 0) {
             batch.draw(imgBlank[1], 0,  0, SCR_WIDTH, SCR_HEIGHT);
             musBackground[musicNumber].stop();
             glyphLayout.setText(fontUi, "I'm not ready to die yet");
@@ -1100,7 +1116,6 @@ public class ScreenGame implements Screen {
                 isPlayerDeathSoundOn = true;
             } else if (deathTime + 4000 < TimeUtils.millis()) {
                 resetProgress();
-                musBackground[musicNumber].stop();
                 isPaused = false;
                 game.setScreen(game.screenMenu);
             }
@@ -1745,14 +1760,31 @@ public class ScreenGame implements Screen {
         vendingY = SCR_HEIGHT / 4;
     }
     public void scheduleBodyDestroy(Body body) {
+        if (body == null) return;
+        try {
+            body.setUserData(null);
+            body.setActive(false);
+        } catch (Throwable ignored) {}
         if (!bodiesToDestroy.contains(body)) bodiesToDestroy.add(body);
     }
 
     private void destroyScheduledBodies() {
+        if (bodiesToDestroy.isEmpty()) return;
+        if (world.isLocked()) return;
+
         for (Body body : bodiesToDestroy) {
-            if (body != null) world.destroyBody(body);
+            if (body != null) {
+                world.destroyBody(body);
+            }
         }
+
         bodiesToDestroy.clear();
+    }
+
+    public void scheduleAction(Runnable runnable) {
+        if (runnable != null) {
+            pendingActions.add(runnable);
+        }
     }
 
     private void updateGameLogic() {
@@ -1770,7 +1802,7 @@ public class ScreenGame implements Screen {
 
         // events
 
-        if (deathTime == 0 && !actMenu && !actVending) {
+        if (deathTime == 0 && !actMenu && !isPaused && !actVending) {
             player.changePhase();
             changePhaseGhosts();
             changePhaseZombies();
@@ -1805,7 +1837,6 @@ public class ScreenGame implements Screen {
 
         batch.begin();
 
-
         batchWall();
         batchProjectile();
         // batchMeleeRegion();
@@ -1822,8 +1853,6 @@ public class ScreenGame implements Screen {
         batchDoorPost();
 
         batch.end();
-
-
 
         batch.setProjectionMatrix(cameraUi.combined);
 
